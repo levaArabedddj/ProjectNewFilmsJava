@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма создания фильма</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Форма создания фильма</h2>
+    <form enctype="multipart/form-data"
+          th:action="@{/create_movie}"
+          th:object="${movies}"
+          method="post"
+          class="needs-validation"
+          novalidate>
+        <label for="title">Название:</label>
+        <input th:field="*{title}"
+               type="text" class="form-control"
+               id="title" name="title" required>
+
+        <label for="description">Описание:</label>
+        <input type="text"
+               id="description" name="description"
+               th:field="*{description}"
+                rows="4" required>
+
+        <label for="genre">Жанр:</label>
+        <input type="text" id="genre" name="genre"
+               th:field ="*{genre}"
+               required>
+
+        <label for="actors">Актеры:</label>
+        <select multiple="multiple" id="actors" name="actors" th:field="*{actors}">
+            <option th:each="actor : ${list}" th:value="${actor.id}" th:text="${'Номер актора: ' + actor.id + ', Рейтинг: ' + actor.rating + ', Зарплата за годину: ' + actor.salaryPerHour}"></option>
+        </select>
+
+
+
+        <input type="submit" value="Создать фильм">
+    </form>
+</div>
+</body>
+</html>

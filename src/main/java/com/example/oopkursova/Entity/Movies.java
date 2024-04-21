@@ -7,7 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Set;
 
 @Data
@@ -19,10 +21,11 @@ public class Movies {
     private long id;
     private String title;
     private String description ;
-    private double rating;
+    private String genre;
 
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
-    private Directors directors;
+    @JoinColumn(name = "user_id") // добавлено для связи с пользователем
+    private Users user;
 
     @ManyToMany(mappedBy = "movies",fetch = FetchType.EAGER)
     private Set<Actors> actors;
@@ -33,9 +36,13 @@ public class Movies {
 
     private LocalDateTime dateTimeCreated;
 
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ShootingDay> shootingDays;
     @PrePersist
     private void init(){
-        dateTimeCreated = LocalDateTime.now();
+        // Форматирование времени перед сохранением
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
+        dateTimeCreated = LocalDateTime.parse(LocalDateTime.now().format(formatter), formatter);
     }
 
     @Override
@@ -45,7 +52,7 @@ public class Movies {
         result = prime * result + (int) (id ^ (id >>> 32));
         result = prime * result + ((title == null) ? 0 : title.hashCode());
         result = prime * result + ((description == null) ? 0 : description.hashCode());
-        result = prime * result + Double.hashCode(rating);
+        result = prime * result + ((genre == null) ? 0 : genre.hashCode());
         return result;
     }
 

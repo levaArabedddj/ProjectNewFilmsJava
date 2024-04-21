@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Getter
 @Entity
@@ -23,12 +25,6 @@ public class Users {
     private String name;
     private Number phone_number;
 
-//    @OneToOne(mappedBy = "user")
-//    private Directors director;
-//
-//    @OneToOne(mappedBy = "user")
-//    private Actors actors;
-//
-//    @OneToOne(mappedBy = "user")
-//    private FilmCrewMembers filmCrewMembers;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY) // добавлено для связи с фильмами
+    private List<Movies> moviesList;
 }

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список Фільмів</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .add-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<h1>Список Ваших фільмів</h1>
+<table>
+    <thead>
+    <tr>
+        <th class="text-justify">*</th>
+        <th class="text-justify">Назва</th>
+        <th class="text-justify">Опис</th>
+        <th class="text-justify">Жанр</th>
+        <th class="text-justify">Время создания фильма</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    <tr th:each="movies : ${list}">
+        <td class="align-middle" ><span th:text="${movies.id}" /></td>
+        <td class="align-middle" ><span th:text="${movies.title}" /></td>
+        <td class="align-middle" ><span th:text="${movies.description}" /></td>
+        <td class="align-middle" > <span th:text="${movies.genre}" /></td>
+        <td class="align-middle" > <span th:text="${movies.dateTimeCreated}" /></td>
+    </tr>
+    </tbody>
+</table>
+<!--<div class="col col-lg-3">-->
+<!--    <a th:href="@{/add_users}" class="btn btn-lg btn-block btn-outline-primary" role="button"-->
+<!--       aria-disabled="true"> Add student</a>>-->
+<!--</div>-->
+<!--<button class="add-btn">Додати</button>-->
+</body>
+</html>

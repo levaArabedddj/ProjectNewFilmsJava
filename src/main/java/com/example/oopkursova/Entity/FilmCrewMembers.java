@@ -18,9 +18,7 @@ public class FilmCrewMembers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long crewMember_id;
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private Users user;
+
     private int salaryPerHours;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable(

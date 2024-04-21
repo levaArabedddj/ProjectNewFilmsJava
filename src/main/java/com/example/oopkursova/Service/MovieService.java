@@ -1,6 +1,5 @@
 package com.example.oopkursova.Service;
 
-import com.example.oopkursova.Entity.Directors;
 import com.example.oopkursova.Entity.Movies;
 import com.example.oopkursova.Repository.MoviesRepo;
 import lombok.AllArgsConstructor;

@@ -38,6 +38,13 @@ public class Movies {
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ShootingDay> shootingDays;
+
+    @OneToOne(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Script script;
+
+
+    @OneToOne(mappedBy = "movie", cascade = CascadeType.ALL)
+    private Finance filmFinance;
     @PrePersist
     private void init(){
         // Форматирование времени перед сохранением

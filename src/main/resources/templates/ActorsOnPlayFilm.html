@@ -1,0 +1,9 @@
+<h1>Добавить актера к фильму</h1>
+<form th:action="@{/addActorToMovie}" method="post">
+    <label for="actorId">Выберите актера:</label>
+    <select id="actorId" name="actorId">
+        <option th:each="actor : ${actors}" th:value="${actor.id}" th:text="${actor.name + ' ' + actor.surname}"></option>
+    </select>
+    <input type="hidden" name="movieId" th:value="${movie.id}">
+    <button type="submit">Добавить актера</button>
+</form>

@@ -18,7 +18,8 @@ public class FilmCrewMembers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long crewMember_id;
-
+    private String name;
+    private String surName;
     private int salaryPerHours;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable(

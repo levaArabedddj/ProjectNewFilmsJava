@@ -15,9 +15,11 @@ public class ActorsService {
     @Autowired
     public final ActorRepo actorRepo;
 
-
     @Transactional
     public Actors CreatActors(Actors actors){
         return actorRepo.save(actors);
     }
+
+
+
 }

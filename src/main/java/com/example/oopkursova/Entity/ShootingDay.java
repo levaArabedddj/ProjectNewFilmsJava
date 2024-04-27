@@ -30,4 +30,16 @@ public class ShootingDay {
     private LocalTime shootingTime;
     private String shootingLocation;
     private int estimatedDurationHours;
+
+    @Override
+    public String toString() {
+        return "ShootingDay{" +
+                "id=" + id +
+                ", estimatedDurationHours=" + estimatedDurationHours +
+                ", shootingDate=" + shootingDate +
+                ", shootingLocation='" + shootingLocation + '\'' +
+                ", shootingTime='" + shootingTime + '\'' +
+                '}';
+    }
+
 }

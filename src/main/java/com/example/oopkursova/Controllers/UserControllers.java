@@ -1,28 +1,45 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.Users;
+import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.Service.UserService;
-import org.apache.catalina.User;
-import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
-
-@RestController
+@Controller
 public class UserControllers {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserControllers.class);
+
     private final UserService userService;
+    private final UsersRepo usersRepo;
 
-    public UserControllers(UserService userService) {
+    public UserControllers(UserService userService, UsersRepo usersRepo) {
         this.userService = userService;
+        this.usersRepo = usersRepo;
+    }
+    @GetMapping("/add_users")
+    public String addStudent(Model model) {
+        model.addAttribute("users", new Users());
+        return "add_users";
     }
 
-    @PostMapping("/user/create")
-    public ResponseEntity<Users> createUsers(@RequestBody Users user, UriComponentsBuilder uriBuilder) {
-        Users createdUser = userService.usersCreate(user);
-        return ResponseEntity.created(uriBuilder.path("/user/{id}").buildAndExpand(createdUser.getUser_id()).toUri()).body(createdUser);
+    @PostMapping("/")
+    public String processForm(@Valid Users users, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            logger.error("Validation failed for user: {}", users);
+            return "add_users";
+        }
+        usersRepo.save(users);
+        logger.info("User saved successfully: {}", users);
+        return "MenuDirectors";
     }
+
 
 }

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Actor to Movie</title>
-    <!-- Подключение Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* Дополнительные стили */
@@ -16,13 +15,13 @@
 <body>
 <h2>Add Actor to Movie</h2>
 <form enctype="multipart/form-data"
-      th:action="@{/ActorsOnPlayFilm}"
+      th:action="@{/CrewMemberOnPlayFilm}"
       method="post"
       class="needs-validation"
       novalidate>
     <div class="form-group">
-        <label for="actorId">Actor ID:</label>
-        <input type="text" class="form-control" id="actorId" name="actorId">
+        <label for="crewMemberId">Crew Member ID:</label>
+        <input type="text" class="form-control" id="crewMemberId" name="crewMemberId">
     </div>
     <div class="form-group">
         <label for="movieId">Movie ID:</label>
@@ -35,21 +34,18 @@
 <table class="table">
     <thead class="thead-dark">
     <tr>
-        <th scope="col">Actor ID</th>
+        <th scope="col">CrewMember ID</th>
         <th scope="col">Name</th>
         <th scope="col">Surname</th>
         <th scope="col">Salary Per Hour</th>
-        <th scope="col">Rating</th>
     </tr>
     </thead>
     <tbody>
-    <!-- Используйте th:each для итерации по актерам и заполнения таблицы -->
-    <tr th:each="actor : ${actors}">
-        <td><span th:text="${actor.id}" /></td>
-        <td><span th:text="${actor.name}" /></td>
-        <td><span th:text="${actor.surName}" /></td>
-        <td><span th:text="${actor.salaryPerHour}" /></td>
-        <td><span th:text="${actor.rating}" /></td>
+    <tr th:each="crewMember : ${crewMember}">
+        <td><span th:text="${crewMember.crewMember_id}" /></td>
+        <td><span th:text="${crewMember.name}" /></td>
+        <td><span th:text="${crewMember.surName}" /></td>
+        <td><span th:text="${crewMember.salaryPerHours}" /></td>
     </tr>
     </tbody>
 </table>

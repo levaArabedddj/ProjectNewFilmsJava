@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать детали фильма</title>
+    <!-- Ваши стили -->
+</head>
+<body>
+<div class="container">
+    <h2>Редактировать детали фильма</h2>
+    <form enctype="multipart/form-data"
+            th:action="@{/update_movie}"
+          th:object="${movie}" method="put" class="needs-validation" novalidate>
+        <input type="hidden" th:name="id" th:value="${id}" /> <!-- Скрытое поле для передачи ID фильма -->
+
+        <!-- Ваши поля для редактирования деталей фильма -->
+        <label for="title">Название:</label>
+        <input th:field="*{title}" type="text" th:name="title" required><br>
+
+        <label for="description">Описание:</label>
+        <textarea th:name="description" rows="4" required></textarea><br>
+
+        <label for="genre">Жанр:</label>
+        <input type="text" th:name="genre" required><br>
+
+        <input type="submit" value="Сохранить изменения">
+    </form>
+</div>
+</body>
+</html>

@@ -1,30 +1,87 @@
-<form enctype="multipart/form-data"
-      th:action="@{/}"
-      th:object="${users}"
-      method="post"
-      class="needs-validation"
-      novalidate>
-    <label for="firstname">Пошта:</label><br>
-    <input th:field="*{gmail}"
-    type="text" class="form-control"
-           id="firstname" name="firstname"
-           required><br>
-   <!-- <small class="text-danger" th:if="${#fields.hasErrors('firstname')}" th:errors="*{gmail}"/><br>!-->
-    <label for="lname">Пароль:</label><br>
-    <input type="text" id="lname" name="lname"
-           th:field="*{password}"
-           required><br>
-    <label for="patronymic">Прізвищe:</label><br>
-    <input type="text" id="patronymic" name="patronymic"
-           th:field="*{surname}"
-           required><br>
-    <label for="email">Ім'я:</label><br>
-    <input type="email" id="email" name="email"
-           th:field="*{name}"
-           required><br>
-    <label for="adress">Номер телефону:</label><br>
-    <input type="text" id="adress" name="adress"
-           th:field="*{phone_number}"
-           required><br><br>
-    <input type="submit" value="Додати студента">
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма реєстрації</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Форма реєстрації</h2>
+    <form enctype="multipart/form-data"
+          th:action="@{/}"
+          th:object="${users}"
+          method="post"
+          class="needs-validation"
+          novalidate>
+        <label for="firstname">Пошта:</label><br>
+        <input th:field="*{gmail}"
+               type="text" class="form-control"
+               id="firstname" name="firstname"
+               required><br>
+        <label for="lname">Пароль:</label><br>
+        <input type="password" id="lname" name="lname"
+               th:field="*{password}"
+               required><br>
+        <label for="patronymic">Прізвище:</label><br>
+        <input type="text" id="patronymic" name="patronymic"
+               th:field="*{surname}"
+               required><br>
+        <label for="email">Ім'я:</label><br>
+        <input type="email" id="email" name="email"
+               th:field="*{name}"
+               required><br>
+        <label for="adress">Номер телефону:</label><br>
+        <input type="text" id="adress" name="adress"
+               th:field="*{phone_number}"
+               required><br><br>
+        <input type="submit" value="Додати студента">
+    </form>
+</div>
+</body>
+</html>

@@ -13,8 +13,19 @@ import org.springframework.stereotype.Service;
 public class MovieService {
     @Autowired
     private final MoviesRepo moviesRepo;
+    public Movies findById(long id) {
+        return moviesRepo.findById(id);
+    }
+
+    public void save(Movies movie) {
+        moviesRepo.save(movie);
+    }
 
     public Movies createdMovies(Movies movies){
         return moviesRepo.save(movies);
+    }
+
+    public void update(Movies movie) {
+        moviesRepo.save(movie);
     }
 }

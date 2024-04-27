@@ -36,4 +36,18 @@ public class Finance {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id")
     private Movies movie;
+
+
+    @Override
+    public String toString() {
+        return "Finance{" +
+                "id=" + id +
+                ", budget=" + budget +
+                ", actorsSalary=" + actorsSalary +
+                ", crewSalary=" + crewSalary +
+                ", advertisingCost=" + advertisingCost +
+                ", editingCost=" + editingCost +
+                ", equipmentCost=" + equipmentCost +
+                '}';
+    }
 }

@@ -52,17 +52,15 @@ public class MovieControllers {
     }
 
     @Loggable
-    @GetMapping("/EditDetailsMovie")
-    public String showEditForm(@RequestParam("id") Long id, Model model) {
-        Movies movie = movieService.findById(id);
-        model.addAttribute("id", id);
-        model.addAttribute("movie", movie);
+    @GetMapping("/edit_movie_details")
+    public String showEditForm( Model model) {
+        model.addAttribute("movie",new Movies());
         return "edit_movie_details";
     }
 
     @Loggable
-    @PutMapping("/edit_movie_details/{id}")
-    public String updateMovie(@PathVariable("id") Long id, @RequestBody Movies updatedMovie) {
+    @PostMapping("/edit_movie_details")
+    public String updateMovie(@RequestParam("id") Long id,  @ModelAttribute Movies updatedMovie) {
         Movies movie = movieService.findById(id);
         if (movie == null) {
             return "redirect:/error";

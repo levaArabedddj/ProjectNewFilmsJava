@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,17 +10,18 @@
 <div class="container">
     <h2>Редактировать детали фильма</h2>
     <form enctype="multipart/form-data"
-            th:action="@{/edit_movie_details}"
-          th:object="${movie}" method="post" class="needs-validation" novalidate>
-        <!-- Ваши поля для редактирования деталей фильма -->
+          th:action="@{/edit_movie_details}" th:object="${movie}" method="post" class="needs-validation" novalidate>
+        <label for="id">Enter Film ID:</label>
+        <input th:field="*{id}" type="text" id="id" name="id">
+
         <label for="title">Название:</label>
-        <input th:field="*{title}" id="title" type="text" th:name="title" required><br>
+        <input th:field="*{title}" id="title" type="text" required><br>
 
         <label for="description">Описание:</label>
-        <textarea th:name="description" id="description" rows="4" required></textarea><br>
+        <textarea th:field="*{description}" id="description" rows="4" required></textarea><br>
 
         <label for="genre">Жанр:</label>
-        <input type="text" th:name="genre" id="genre" required><br>
+        <input th:field="*{genre}" type="text" id="genre" required><br>
 
         <input type="submit" value="Сохранить изменения">
     </form>

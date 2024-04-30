@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить сценарий фильма</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Добавить расходы к фильму</h1>
+    <form th:action="@{/edit_finance}" th:object="${finance}" method="post" class="needs-validation" novalidate>
+        <label for="budget">Номер финансов </label>
+        <input type="number" th:field="*{id}" name="id" id="id">
+
+        <label for="budget">Ориентировочные траты на фильм:</label>
+        <input type="number" th:field="*{budget}" id="budget" name="budget" required>
+
+        <label for="actorsSalary">Ориентировочная зарплата актерам:</label>
+        <input type="number" th:field="*{actorsSalary}" id="actorsSalary" name="actorsSalary" required>
+
+        <label for="crewSalary">Ориентировочная зарплата членам съемочной группы:</label>
+        <input type="number" th:field="*{crewSalary}" id="crewSalary" name="crewSalary" required>
+
+        <label for="advertisingCost">Затраты на рекламу:</label>
+        <input type="number" th:field="*{advertisingCost}" id="advertisingCost" name="advertisingCost" required>
+
+        <label for="editingCost">Затраты на монтаж:</label>
+        <input type="number" th:field="*{editingCost}" id="editingCost" name="editingCost" required>
+
+        <label for="equipmentCost">Затраты на оборудование:</label>
+        <input type="number" th:field="*{equipmentCost}" id="equipmentCost" name="equipmentCost" required>
+
+
+        <input type="submit" value="Обновить данные">
+    </form>
+</div>
+</body>
+</html>

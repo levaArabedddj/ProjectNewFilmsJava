@@ -1,6 +1,7 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.ShootingDay;
+import com.example.oopkursova.Loggable;
 import com.example.oopkursova.Repository.ShootingDayRepo;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ public class shootingDayController {
         this.shootingDayRepo = shootingDayRepo;
     }
 
+    @Loggable
     @PostMapping("/create_shootingDay")
     public String CreateShootingDay(@Valid ShootingDay shootingDay, BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
@@ -34,6 +36,7 @@ public class shootingDayController {
     }
 
 
+    @Loggable
     @GetMapping("/create_shootingDay")
     public String CreateShootingDayGet(Model model){
        model.addAttribute("dayShooting",new ShootingDay());

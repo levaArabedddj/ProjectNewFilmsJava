@@ -2,6 +2,7 @@ package com.example.oopkursova.Controllers;
 
 
 import com.example.oopkursova.Entity.Movies;
+import com.example.oopkursova.Loggable;
 import com.example.oopkursova.Repository.MoviesRepo;
 import com.example.oopkursova.Service.MovieService;
 import jakarta.validation.Valid;
@@ -27,13 +28,14 @@ public class MovieControllers {
         this.moviesRepo = moviesRepo;
         this.movieService = movieService;
     }
-
+    @Loggable
     @PostMapping("/create_movie")
     public String CreateFilm(@Valid Movies movies, BindingResult bindingResult){
         moviesRepo.save(movies);
         logger.info("New movie created: {}", movies);
         return "MenuDirectors";
     }
+    @Loggable
     @GetMapping("/create_movie")
     public String addMovie(Model model){
         model.addAttribute("movies",new Movies());
@@ -41,6 +43,7 @@ public class MovieControllers {
     }
 
 
+    @Loggable
     @GetMapping("/movie_details")
     public String GetFilms(Model model) {
         List<Movies> films = moviesRepo.findAll();
@@ -48,7 +51,8 @@ public class MovieControllers {
         return "movie_details";
     }
 
-    @GetMapping("/edit_movie_details")
+    @Loggable
+    @GetMapping("/EditDetailsMovie")
     public String showEditForm(@RequestParam("id") Long id, Model model) {
         Movies movie = movieService.findById(id);
         model.addAttribute("id", id);
@@ -56,11 +60,41 @@ public class MovieControllers {
         return "edit_movie_details";
     }
 
-    @PutMapping("/update_movie")
-    public String updateMovie(@ModelAttribute("movie") Movies movie) {
+    @Loggable
+    @PutMapping("/edit_movie_details/{id}")
+    public String updateMovie(@PathVariable("id") Long id, @RequestBody Movies updatedMovie) {
+        Movies movie = movieService.findById(id);
+        if (movie == null) {
+            return "redirect:/error";
+        }
+        // Оновити дані фільму з отриманими значеннями
+        movie.setTitle(updatedMovie.getTitle());
+        movie.setDescription(updatedMovie.getDescription());
+        movie.setGenre(updatedMovie.getGenre());
         movieService.update(movie);
         logger.info("Movie updated: {}", movie);
-        return "redirect:/menu"; // Перенаправляем пользователя на другую страницу после обновления фильма
+        return "MenuDirectors"; // Перенаправити користувача на іншу сторінку після оновлення фільму
     }
+
+
+    @GetMapping("/DeleteFilm")
+    public String showDeleteFilmForm() {
+        return "DeleteFilm";
+    }
+
+    @Loggable
+    @PostMapping("/DeleteFilm")
+    public String deleteMovie(@RequestParam("id") Long id) {
+        Movies movie = movieService.findById(id);
+        if (movie == null) {
+            return "redirect:/error";
+        }
+        movieService.deleteMovie(id);
+        logger.info("Movie deleted: {}", movie);
+        return "MenuDirectors"; // Перенаправление пользователя на другую страницу
+    }
+
+
+
 
 }

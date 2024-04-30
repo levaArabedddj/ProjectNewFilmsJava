@@ -1,6 +1,7 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.*;
+import com.example.oopkursova.Loggable;
 import com.example.oopkursova.Repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,6 +23,7 @@ public class GetInformationController {
     private final ActorRepo actorRepo;
     private final CrewMemberRepo crewMemberRepo;
 
+    @Loggable
     @GetMapping("/detalsForFilms/{id}")
     public String GetFilms(Model model,  @PathVariable Long id) {
         Optional<Movies> optionalFilm = moviesRepo.findById(id);
@@ -45,6 +47,7 @@ public class GetInformationController {
         return "detalsForFilms";
     }
 
+    @Loggable
     @GetMapping("/GetInformation")
     public String getFilmInformation(Model model) {
         // Ваш код для получения информации о фильме и его деталях

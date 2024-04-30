@@ -1,6 +1,7 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.Script;
+import com.example.oopkursova.Loggable;
 import com.example.oopkursova.Repository.ScriptRepo;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -21,13 +22,13 @@ public class ScriptController {
     public ScriptController(ScriptRepo scriptRepo) {
         this.scriptRepo = scriptRepo;
     }
-
+    @Loggable
     @GetMapping("/CreatingScriptMovie")
     public String createScript(Model model){
         model.addAttribute("script", new Script());
         return "CreatingScriptMovie";
     }
-
+    @Loggable
     @PostMapping("addScriptToMovie")
     public String createScriptMovie(@Valid Script script){
         scriptRepo.save(script);

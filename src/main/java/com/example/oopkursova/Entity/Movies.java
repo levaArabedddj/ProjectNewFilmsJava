@@ -63,4 +63,14 @@ public class Movies {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "Movies{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", genre='" + genre + '\'' +
+                '}';
+    }
+
 }

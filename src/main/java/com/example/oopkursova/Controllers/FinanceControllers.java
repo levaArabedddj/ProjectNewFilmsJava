@@ -1,6 +1,7 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.Finance;
+import com.example.oopkursova.Loggable;
 import com.example.oopkursova.Repository.FinanceRepo;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -21,13 +22,14 @@ public class FinanceControllers {
         this.financeRepo = financeRepo;
     }
 
+    @Loggable
     @GetMapping("/FinanceFilm")
     public String GetFormFinance(Model model){
         model.addAttribute("finance", new Finance());
         return "FinanceFilm";
     }
 
-
+    @Loggable
     @PostMapping("/FinanceFilm")
     public String createFinanceFilm(@Valid Finance finance){
         financeRepo.save(finance);

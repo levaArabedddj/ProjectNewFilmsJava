@@ -1,6 +1,7 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.Actors;
+import com.example.oopkursova.Loggable;
 import com.example.oopkursova.Repository.ActorRepo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -32,7 +33,7 @@ public class AddActorsControllers {
         this.entityManager = entityManager;
     }
 
-
+    @Loggable
     @GetMapping("/ActorsOnPlayFilm")
     public String GetFormFinance(Model model){
 
@@ -43,7 +44,7 @@ public class AddActorsControllers {
     }
 
 
-
+    @Loggable
     @PostMapping("/ActorsOnPlayFilm")
     @Transactional
     public ModelAndView addActorToMovie(

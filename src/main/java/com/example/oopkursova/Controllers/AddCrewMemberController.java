@@ -1,6 +1,7 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.FilmCrewMembers;
+import com.example.oopkursova.Loggable;
 import com.example.oopkursova.Repository.CrewMemberRepo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -26,6 +27,7 @@ public class AddCrewMemberController {
         this.crewMemberRepo = crewMemberRepo;
     }
 
+    @Loggable
     @GetMapping("/CrewMemberOnPlayFilm")
     public String GetFormFinance(Model model){
 
@@ -33,7 +35,7 @@ public class AddCrewMemberController {
         model.addAttribute("crewMember", crewMembers);
         return "CrewMemberOnPlayFilm";
     }
-
+    @Loggable
     @PostMapping("/CrewMemberOnPlayFilm")
     @Transactional
     public ModelAndView addActorToMovie(

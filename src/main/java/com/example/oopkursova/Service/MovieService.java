@@ -28,4 +28,9 @@ public class MovieService {
     public void update(Movies movie) {
         moviesRepo.save(movie);
     }
+
+    public void deleteMovie(Long id ){
+        moviesRepo.deleteById(id);
+    }
+
 }

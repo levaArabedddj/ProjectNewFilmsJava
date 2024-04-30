@@ -1,6 +1,7 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.Users;
+import com.example.oopkursova.Loggable;
 import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.Service.UserService;
 import jakarta.validation.Valid;
@@ -24,12 +25,14 @@ public class UserControllers {
         this.userService = userService;
         this.usersRepo = usersRepo;
     }
+    @Loggable
     @GetMapping("/add_users")
     public String addStudent(Model model) {
         model.addAttribute("users", new Users());
         return "add_users";
     }
 
+    @Loggable
     @PostMapping("/")
     public String processForm(@Valid Users users, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {

@@ -2,6 +2,7 @@ package com.example.oopkursova.Service;
 
 import com.example.oopkursova.Entity.FilmCrewMembers;
 import com.example.oopkursova.Repository.CrewMemberRepo;
+import com.example.oopkursova.loger.Loggable;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ public class CrewMemberService {
         return crewMemberRepo.findAllWithMovies();
     }
     @Transactional
+    @Loggable
     public FilmCrewMembers createdCrewMember(FilmCrewMembers filmCrewMembers){
         return crewMemberRepo.save(filmCrewMembers);
     }

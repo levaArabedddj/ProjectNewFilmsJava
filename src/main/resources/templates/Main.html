@@ -46,7 +46,10 @@
 </div>
 <div class="container">
     <h2>Войти в учётную запись</h2>
-    <p>Если у вас уже есть аккаунт, вы можете <a href="/login">войти здесь</a>.</p>
+    <form th:action="@{/login}" method="post">
+        <input type="submit" value="Sign Out"/>
+        <input type="hidden" name="_csrf" value="{{_csrf.token}}}">
+    </form>
     <p>Если у вас еще нет аккаунта, <a href="/add_users">зарегистрируйтесь здесь</a>.</p>
 </div>
 </body>

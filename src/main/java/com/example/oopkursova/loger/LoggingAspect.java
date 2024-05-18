@@ -1,4 +1,4 @@
-package com.example.oopkursova;
+package com.example.oopkursova.loger;
 
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;

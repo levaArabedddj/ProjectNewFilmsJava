@@ -1,7 +1,7 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.Users;
-import com.example.oopkursova.Loggable;
+import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.Service.UserService;
 import jakarta.validation.Valid;

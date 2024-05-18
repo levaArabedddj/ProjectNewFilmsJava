@@ -1,7 +1,7 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.FilmCrewMembers;
-import com.example.oopkursova.Loggable;
+import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.CrewMemberRepo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

@@ -1,4 +1,4 @@
-package com.example.oopkursova;
+package com.example.oopkursova.loger;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

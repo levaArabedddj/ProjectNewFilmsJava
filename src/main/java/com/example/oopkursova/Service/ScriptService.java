@@ -2,6 +2,7 @@ package com.example.oopkursova.Service;
 
 import com.example.oopkursova.Entity.Script;
 import com.example.oopkursova.Repository.ScriptRepo;
+import com.example.oopkursova.loger.Loggable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +18,13 @@ public class ScriptService {
         this.scriptRepo = scriptRepo;
     }
 
+    @Loggable
     public Script findById(Long id) {
         Optional<Script> scriptOptional = scriptRepo.findById(id);
         return scriptOptional.orElseThrow(() -> new RuntimeException("Script with id " + id + " not found"));
     }
+
+    @Loggable
 
     public void update(Long id ,Script updatedScript) {
         Script script = scriptRepo.findById(id).

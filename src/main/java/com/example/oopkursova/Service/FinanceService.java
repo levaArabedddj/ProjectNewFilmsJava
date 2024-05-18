@@ -2,6 +2,7 @@ package com.example.oopkursova.Service;
 
 import com.example.oopkursova.Entity.Finance;
 import com.example.oopkursova.Repository.FinanceRepo;
+import com.example.oopkursova.loger.Loggable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,8 @@ public class FinanceService {
     public FinanceService(FinanceRepo financeRepo) {
         this.financeRepo = financeRepo;
     }
+
+    @Loggable
     public void updateFinance(Long id, Finance updatedFinance) {
         Finance finance = financeRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Finance with id " + id + " not found"));
@@ -30,6 +33,7 @@ public class FinanceService {
         financeRepo.save(finance);
     }
 
+    @Loggable
     public Optional<Finance> findById(long id){
         return financeRepo.findById(id);
     }

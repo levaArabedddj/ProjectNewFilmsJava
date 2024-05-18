@@ -2,7 +2,7 @@ package com.example.oopkursova.Controllers;
 
 
 import com.example.oopkursova.Entity.Movies;
-import com.example.oopkursova.Loggable;
+import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.MoviesRepo;
 import com.example.oopkursova.Service.MovieService;
 import jakarta.validation.Valid;

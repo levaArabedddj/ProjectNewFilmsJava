@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+<!--    <appender name="FILE" class="ch.qos.logback.core.FileAppender">-->
+<!--        <file>logs/application.log</file>-->
+<!--        <encoder>-->
+<!--            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
+
+<!--    &lt;!&ndash; Апендер для SQL-запитів &ndash;&gt;-->
+<!--    <appender name="SQL_FILE" class="ch.qos.logback.core.FileAppender">-->
+<!--        <file>logs/sql_queries.log</file>-->
+<!--        <encoder>-->
+<!--            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
+
+<!--    &lt;!&ndash; Логування SQL-запитів на рівні DEBUG &ndash;&gt;-->
+<!--    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">-->
+<!--        <appender-ref ref="SQL_FILE"/>-->
+<!--    </logger>-->
+
+<!--    <root level="INFO">-->
+<!--        <appender-ref ref="FILE"/>-->
+<!--    </root>-->
+
+</configuration>

@@ -2,6 +2,7 @@ package com.example.oopkursova.Service;
 
 import com.example.oopkursova.Entity.Actors;
 import com.example.oopkursova.Repository.ActorRepo;
+import com.example.oopkursova.loger.Loggable;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ public class ActorsService {
     public final ActorRepo actorRepo;
 
     @Transactional
+    @Loggable
     public Actors CreatActors(Actors actors){
         return actorRepo.save(actors);
     }

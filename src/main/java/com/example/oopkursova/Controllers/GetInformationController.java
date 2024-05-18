@@ -1,7 +1,7 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.*;
-import com.example.oopkursova.Loggable;
+import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

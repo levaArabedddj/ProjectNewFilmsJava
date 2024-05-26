@@ -7,7 +7,9 @@ import com.example.oopkursova.Service.UserrService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class UserControllers {
 
     private static final Logger logger = LoggerFactory.getLogger(UserControllers.class);
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final UserrService userService;
     private final UsersRepo usersRepo;
@@ -37,11 +41,14 @@ public class UserControllers {
 
     @Loggable
     @PostMapping("/add_users")
-    public String processForm(@Valid Users users, BindingResult bindingResult) {
+    public String processForm(@Valid Users users, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             logger.error("Validation failed for user: {}", users);
             return "/add_users";
         }
+
+        String rawPassword = users.getPassword();
+        users.setPassword(passwordEncoder.encode(rawPassword));
         usersRepo.save(users);
         logger.info("User saved successfully: {}", users);
         return "Main";

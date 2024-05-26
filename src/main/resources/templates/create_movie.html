@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,33 +53,19 @@
 <div class="container">
     <h2>Форма создания фильма</h2>
     <form enctype="multipart/form-data"
-          th:action="@{/create_movie}"
+          th:action="@{/movie/create_movie}"
           th:object="${movies}"
           method="post"
           class="needs-validation"
           novalidate>
         <label for="title">Название:</label>
-        <input th:field="*{title}"
-               type="text" class="form-control"
-               id="title" name="title" required>
+        <input th:field="*{title}" type="text" class="form-control" id="title" name="title" required>
 
         <label for="description">Описание:</label>
-        <input type="text"
-               id="description" name="description"
-               th:field="*{description}"
-                rows="4" required>
+        <input th:field="*{description}" type="text" class="form-control" id="description" name="description" required>
 
         <label for="genre">Жанр:</label>
-        <input type="text" id="genre" name="genre"
-               th:field ="*{genre}"
-               required>
-
-<!--        <label for="actors">Актеры:</label>-->
-<!--        <select multiple="multiple" id="actors" name="actors" th:field="*{actors}">-->
-<!--            <option th:each="actor : ${list}" th:value="${actor.id}" th:text="${'Номер актора: ' + actor.id + ', Рейтинг: ' + actor.rating + ', Зарплата за годину: ' + actor.salaryPerHour}"></option>-->
-<!--        </select>-->
-
-
+        <input th:field="*{genre}" type="text" class="form-control" id="genre" name="genre" required>
 
         <input type="submit" value="Создать фильм">
     </form>

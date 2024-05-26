@@ -1,6 +1,6 @@
 package com.example.oopkursova.Service;
 
-import com.example.oopkursova.Entity.Users;
+import com.example.oopkursova.config.Users;
 import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.loger.Loggable;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @AllArgsConstructor
-public class UserService {
+public class UserrService {
     @Autowired
     private final UsersRepo usersRepo;
 

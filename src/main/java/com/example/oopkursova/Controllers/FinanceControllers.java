@@ -19,7 +19,7 @@ public class FinanceControllers {
 
     private final FinanceRepo financeRepo;
     private final FinanceService financeService;
-    private static final Logger logger = LoggerFactory.getLogger(FinanceControllers.class);
+    //private static final Logger logger = LoggerFactory.getLogger(FinanceControllers.class);
 
 
     public FinanceControllers(FinanceRepo financeRepo, FinanceService financeService) {
@@ -38,7 +38,7 @@ public class FinanceControllers {
     @PostMapping("/FinanceFilm")
     public String createFinanceFilm(@Valid Finance finance){
         financeRepo.save(finance);
-        logger.info("Finance information added for film: {}", finance);
+       // logger.info("Finance information added for film: {}", finance);
         return "MenuDirectors";
     }
 

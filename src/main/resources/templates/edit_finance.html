@@ -59,7 +59,7 @@
 <body>
 <div class="container">
     <h1>Добавить расходы к фильму</h1>
-    <form th:action="@{/edit_finance}" th:object="${finance}" method="post" class="needs-validation" novalidate>
+    <form th:action="@{/Finance/edit_finance}" th:object="${finance}" method="post" class="needs-validation" novalidate>
         <label for="budget">Номер финансов </label>
         <input type="number" th:field="*{id}" name="id" id="id">
 

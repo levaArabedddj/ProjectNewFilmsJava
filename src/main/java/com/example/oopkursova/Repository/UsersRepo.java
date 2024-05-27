@@ -15,6 +15,8 @@ public interface UsersRepo extends JpaRepository<Users, Long> {
 
      Optional<Users> findByName(String username);
 
+
+
 //     @Query("SELECT u FROM Users u LEFT JOIN FETCH u.moviesList WHERE u.id = :userId")
 //     Users findUserWithMovies(Long userId);
 

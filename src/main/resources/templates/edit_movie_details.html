@@ -59,7 +59,7 @@
 <div class="container">
     <h2>Редактировать детали фильма</h2>
     <form enctype="multipart/form-data"
-          th:action="@{/edit_movie_details}" th:object="${movie}" method="post" class="needs-validation" novalidate>
+          th:action="@{/movie/edit_movie_details}" th:object="${movie}" method="post" class="needs-validation" novalidate>
         <label for="id">Enter Film ID:</label>
         <input th:field="*{id}" type="text" id="id" name="id">
 

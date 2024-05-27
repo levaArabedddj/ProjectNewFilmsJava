@@ -26,10 +26,26 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/movie/create_movie").authenticated() // Разрешить доступ к URL
+                                .requestMatchers("/movie/**").authenticated()
+                        .requestMatchers("/Main").authenticated()
+                        .requestMatchers("/ShootingDay/**").authenticated()
+                        .requestMatchers("/Finance/**").authenticated()
+                        .requestMatchers("/Script/**").authenticated()
+                        .requestMatchers("/Actors/**").authenticated()
+                        .requestMatchers("/CrewMember/**").authenticated()
+                        .requestMatchers("/MovieDetails/**").authenticated()
                         .requestMatchers("/**").permitAll() // Разрешить доступ ко всем URL
                 )
-                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
+                .formLogin(form -> form
+                        .loginPage("/login") // Указать страницу логина, если она у вас есть
+                        .defaultSuccessUrl("/Main", true) // Перенаправление на MenuDirectors после успешного логина
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/")
+                        .permitAll()
+                )
                 .authenticationProvider(authenticationProvider()) // Добавление AuthenticationProvider
                 .build();
     }

@@ -48,20 +48,14 @@
     </tr>
     </thead>
     <tbody>
-
-    <tr th:each="movies : ${list}">
-        <td class="align-middle" ><span th:text="${movies.id}" /></td>
-        <td class="align-middle" ><span th:text="${movies.title}" /></td>
-        <td class="align-middle" ><span th:text="${movies.description}" /></td>
-        <td class="align-middle" > <span th:text="${movies.genre}" /></td>
-        <td class="align-middle" > <span th:text="${movies.dateTimeCreated}" /></td>
+    <tr th:each="movie : ${list}">
+        <td class="align-middle"><span th:text="${movie.id}"></span></td>
+        <td class="align-middle"><span th:text="${movie.title}"></span></td>
+        <td class="align-middle"><span th:text="${movie.description}"></span></td>
+        <td class="align-middle"><span th:text="${movie.genre}"></span></td>
+        <td class="align-middle"><span th:text="${movie.dateTimeCreated}"></span></td>
     </tr>
     </tbody>
 </table>
-<!--<div class="col col-lg-3">-->
-<!--    <a th:href="@{/add_users}" class="btn btn-lg btn-block btn-outline-primary" role="button"-->
-<!--       aria-disabled="true"> Add student</a>>-->
-<!--</div>-->
-<!--<button class="add-btn">Додати</button>-->
 </body>
 </html>

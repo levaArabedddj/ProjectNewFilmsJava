@@ -14,13 +14,12 @@ import java.util.List;
 
 @Controller
 @AllArgsConstructor
-@RequestMapping("/Main/")
+//@RequestMapping("/Main/")
 public class MainController {
 
     private final UsersRepo usersRepo;
 
-
-    @GetMapping("//")
+        @GetMapping("//")
     public String home(Model model) {
         List<Users> users = usersRepo.findAll();
         model.addAttribute("list", users);
@@ -33,9 +32,9 @@ public class MainController {
     }
 
 
-    @PostMapping("/login")
-    public String loginPost() {
-        return "/login"; // Убедитесь, что это имя представления правильное
+    @GetMapping("/login")
+    public String login() {
+        return "login"; // Укажите имя представления вашей страницы логина
     }
 
     @GetMapping("/Main")
@@ -44,5 +43,6 @@ public class MainController {
         return "MenuDirectors";
     }
 }
+
 
 

@@ -9,6 +9,9 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -49,6 +52,7 @@ public class MovieControllers {
 
     @Loggable
     @GetMapping("/movie_details")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public String GetFilms(Model model) {
         List<Movies> films = moviesRepo.findAll();
         model.addAttribute("list", films);
@@ -57,6 +61,7 @@ public class MovieControllers {
 
     @Loggable
     @GetMapping("/edit_movie_details")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public String showEditForm( Model model) {
         model.addAttribute("movie",new Movies());
         return "edit_movie_details";
@@ -64,7 +69,8 @@ public class MovieControllers {
 
     @Loggable
     @PostMapping("/edit_movie_details")
-    public String updateMovie(@RequestParam("id") Long id,  @ModelAttribute Movies updatedMovie) {
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public String updateMovie(@RequestParam("id") Long id,  @Valid Movies updatedMovie) {
         Movies movie = movieService.findById(id);
         if (movie == null) {
             return "redirect:/error";
@@ -75,7 +81,7 @@ public class MovieControllers {
         movie.setGenre(updatedMovie.getGenre());
         movieService.update(movie);
        // logger.info("Movie updated: {}", movie);
-        return "MenuDirectors"; // Перенаправити користувача на іншу сторінку після оновлення фільму
+        return "MenuDirectors";
     }
 
 

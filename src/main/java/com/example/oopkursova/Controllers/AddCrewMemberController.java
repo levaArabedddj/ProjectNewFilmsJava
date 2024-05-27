@@ -6,16 +6,19 @@ import com.example.oopkursova.Repository.CrewMemberRepo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
 @Controller
+@RequestMapping("/CrewMember")
 public class AddCrewMemberController {
 
     private final CrewMemberRepo crewMemberRepo;
@@ -29,6 +32,7 @@ public class AddCrewMemberController {
 
     @Loggable
     @GetMapping("/CrewMemberOnPlayFilm")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public String GetFormFinance(Model model){
 
         List<FilmCrewMembers> crewMembers = crewMemberRepo.findAll();
@@ -37,6 +41,7 @@ public class AddCrewMemberController {
     }
     @Loggable
     @PostMapping("/CrewMemberOnPlayFilm")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Transactional
     public ModelAndView addActorToMovie(
             @RequestParam long crewMemberId,

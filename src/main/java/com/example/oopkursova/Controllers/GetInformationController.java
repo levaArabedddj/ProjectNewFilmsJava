@@ -4,16 +4,19 @@ import com.example.oopkursova.Entity.*;
 import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/MovieDetails")
 public class GetInformationController {
 
     private final MoviesRepo moviesRepo;
@@ -25,6 +28,7 @@ public class GetInformationController {
 
     @Loggable
     @GetMapping("/detalsForFilms/{id}")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public String GetFilms(Model model,  @PathVariable Long id) {
         Optional<Movies> optionalFilm = moviesRepo.findById(id);
 
@@ -49,6 +53,7 @@ public class GetInformationController {
 
     @Loggable
     @GetMapping("/GetInformation")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public String getFilmInformation(Model model) {
         // Ваш код для получения информации о фильме и его деталях
         return "GetInformation"; // Возвращаем имя вашего HTML шаблона для отображения информации о фильме

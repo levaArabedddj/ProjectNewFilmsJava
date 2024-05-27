@@ -48,6 +48,7 @@ public class UserControllers {
         }
 
         String rawPassword = users.getPassword();
+        users.setRole("ROLE_USER");
         users.setPassword(passwordEncoder.encode(rawPassword));
         usersRepo.save(users);
         logger.info("User saved successfully: {}", users);

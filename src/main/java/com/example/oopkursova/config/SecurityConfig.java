@@ -37,7 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/**").permitAll() // Разрешить доступ ко всем URL
                 )
                 .formLogin(form -> form
-                        .loginPage("/login") // Указать страницу логина, если она у вас есть
+                        .loginPage("/login")
                         .defaultSuccessUrl("/Main", true) // Перенаправление на MenuDirectors после успешного логина
                         .permitAll()
                 )
@@ -46,7 +46,7 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/")
                         .permitAll()
                 )
-                .authenticationProvider(authenticationProvider()) // Добавление AuthenticationProvider
+                .authenticationProvider(authenticationProvider())
                 .build();
     }
 

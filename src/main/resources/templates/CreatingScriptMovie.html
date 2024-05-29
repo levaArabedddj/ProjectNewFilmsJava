@@ -58,18 +58,18 @@
 </head>
 <body>
 <div class="container">
-    <h1>Добавить сценарий к фильму</h1>
+    <h1>Додати сценарій до фільму</h1>
     <form enctype="multipart/form-data"
           th:action="@{/Script/addScriptToMovie}"
           th:object="${script}"
           method="post"
           class="needs-validation"
           novalidate>
-        <label for="content">Содержание сценария:</label>
+        <label for="content">Зміст сценарію:</label>
         <textarea th:field="*{content}" type="text"
                 id="content" name="content" rows="5" required></textarea>
 
-        <label for="movie_id">ID фильма:</label>
+        <label for="movie_id">ID фильму:</label>
         <input th:field="*{movie}" type="text" id="movie_id" name="movieId" required>
 
         <input type="submit" value="Добавить сценарий">

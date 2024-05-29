@@ -42,10 +42,10 @@
 <table>
     <tr>
         <th>ID</th>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Genre</th>
-        <th>Date Time Created</th>
+        <th>Назва</th>
+        <th>Опис</th>
+        <th>Жанр</th>
+        <th>Дата і Час Створення</th>
     </tr>
     <tr th:each="movies : ${film}">
         <td class="align-middle"><span th:text="${movies.id}" /></td>
@@ -56,17 +56,19 @@
     </tr>
 </table>
 
-<h3>Financial Details</h3>
+<h3>Фінансові Деталі</h3>
 <table>
     <tr>
-        <th>Budget</th>
-        <th>Actors Salary</th>
-        <th>Crew Salary</th>
-        <th>Advertising Cost</th>
-        <th>Editing Cost</th>
-        <th>Equipment Cost</th>
+        <th>Номер Фільму</th>
+        <th>Бюджет</th>
+        <th>Заробітна Плата Акторів</th>
+        <th>Заробітна Плата Команди</th>
+        <th>Витрати на Рекламу</th>
+        <th>Витрати на Монтаж</th>
+        <th>Витрати на Обладнання</th>
     </tr>
     <tr th:each="finances : ${finances}">
+        <td class="align-middle"><span th:text="${finances.id}" /></td>
         <td class="align-middle"><span th:text="${finances.budget}" /></td>
         <td class="align-middle"><span th:text="${finances.actorsSalary}" /></td>
         <td class="align-middle"><span th:text="${finances.crewSalary}" /></td>
@@ -76,23 +78,25 @@
     </tr>
 </table>
 
-<h3>Script</h3>
+<h3>Сценарій</h3>
 <table>
     <tr>
-        <th>Content</th>
+        <th>Номер сценарію</th>
+        <th>Зміст</th>
     </tr>
     <tr th:each="script : ${script}">
+        <td class="align-middle"><span th:text="${script.id}" /></td>
         <td class="align-middle"><span th:text="${script.content}" /></td>
     </tr>
 </table>
 
-<h3>Shooting Days</h3>
+<h3>Знімальні Дні</h3>
 <table>
     <tr>
-        <th>Shooting Date</th>
-        <th>Shooting Time</th>
-        <th>Shooting Location</th>
-        <th>Estimated Duration Hours</th>
+        <th>Дата Зйомки</th>
+        <th>Час Зйомки</th>
+        <th>Місце Зйомки</th>
+        <th>Орієнтовна Тривалість (години)</th>
     </tr>
     <tr th:each="shootingDays : ${shootingDays}">
         <td class="align-middle"><span th:text="${shootingDays.shootingDate}" /></td>
@@ -102,13 +106,13 @@
     </tr>
 </table>
 
-<h3>Актерский состав</h3>
+<h3>Акторський склад</h3>
 <table>
     <tr>
-        <th>Имя актера</th>
-        <th>Фамилия актера</th>
+        <th>Ім'я актора</th>
+        <th>Прізвище актора</th>
         <th>Рейтинг</th>
-        <th>Зароботная плата за час</th>
+        <th>Заробітна плата за годину</th>
     </tr>
     <tr th:each="actors : ${actors}">
         <td class="align-middle"><span th:text="${actors.name}" /></td>
@@ -118,13 +122,12 @@
     </tr>
 </table>
 
-
-<h3>Члены сьемочной группы</h3>
+<h3>Члени знімальної групи</h3>
 <table>
     <tr>
-        <th>Имя актера</th>
-        <th>Фамилия актера</th>
-        <th>Зароботная плата за час</th>
+        <th>Ім'я актора</th>
+        <th>Прізвище актора</th>
+        <th>Заробітна плата за годину</th>
     </tr>
     <tr th:each="crewMembers : ${crewMembers}">
         <td class="align-middle"><span th:text="${crewMembers.name}" /></td>

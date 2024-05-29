@@ -58,23 +58,23 @@
 </head>
 <body>
 <div class="container">
-    <h1>Добавить время для съемок фильма</h1>
+    <h1>Додати час для зйомок фільму</h1>
     <form enctype="multipart/form-data"
           th:action="@{/ShootingDay/create_shootingDay}"
           th:object="${dayShooting}"
           method="post"
     class="needs-validation"
     novalidate>
-        <label for="date">Дата съемки:</label>
+        <label for="date">Дата зйомки:</label>
         <input th:field="*{shootingDate}"
                 type="date" class="form-control"
                id="date" name="date" required>
 
-        <label for="time">Время съемки:</label>
+        <label for="time">Час зйомок:</label>
         <input th:field="*{shootingTime}"
                 type="time" id="time" name="time" required>
 
-        <label for="location">Место съемки:</label>
+        <label for="location">Місце зйомок:</label>
         <input  th:field="*{shootingLocation}"
                 type="text" id="location" name="location" required>
 
@@ -87,7 +87,7 @@
         <input th:field="*{movie}" type="text" id="movie_id" name="movieId" required>
 
 
-        <input type="submit" value="Добавить время для съемок">
+        <input type="submit" value="Додати час для зйомок">
     </form>
 </div>
 </body>

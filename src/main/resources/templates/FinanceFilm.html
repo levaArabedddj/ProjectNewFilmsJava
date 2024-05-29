@@ -58,46 +58,46 @@
 </head>
 <body>
 <div class="container">
-    <h1>Добавить расходы к фильму</h1>
+    <h1>Додати витрати до фільму</h1>
     <form enctype="multipart/form-data"
           th:action="@{/Finance/FinanceFilm}"
           th:object="${finance}"
           method="post"
           class="needs-validation"
           novalidate>
-        <label for="budget"> Ориентировочные траты на фильм : </label>
+        <label for="budget"> Орієнтовні витрати на фільм:</label>
         <input th:field="*{budget}" type="number"
                   id="budget" name="budget"  required>
 
-        <label for="SalaryActors">Ориентировочная зарплата актерам: </label>
+        <label for="SalaryActors">Орієнтовна зарплата акторам:</label>
         <input th:field="*{actorsSalary}"
                type="number" class="form-control"
                id="SalaryActors" name="SalaryActors" required>
 
-        <label for="crewSalary">Ориентировочная зарплата членам сьемочной группы: </label>
+        <label for="crewSalary">Орієнтовна зарплата членам знімальної групи: </label>
         <input th:field="*{crewSalary}"
                type="number" id="crewSalary"
                name="crewSalary" required>
 
-        <label for="advertisingCost">Затраты на рекламу: </label>
+        <label for="advertisingCost">Витрати на рекламу: </label>
         <input th:field="*{advertisingCost}"
                type="number" id="advertisingCost"
                name="advertisingCost" required>
 
-        <label for="editingCost">Затраты на монтаж: </label>
+        <label for="editingCost">Витрати на монтаж: </label>
         <input th:field="*{editingCost}"
                type="number" id="editingCost"
                name="editingCost" required>
 
-        <label for="equipmentCost">Затраты на оборудование :</label>
+        <label for="equipmentCost">Витрати обладнання:</label>
         <input th:field="*{equipmentCost}"
                type="number" id="equipmentCost"
                name="equipmentCost" required>
 
-        <label for="movie_id">ID фильма:</label>
+        <label for="movie_id">ID фильму:</label>
         <input th:field="*{movie}" type="text" id="movie_id" name="movieId" required>
 
-        <input type="submit" value="Добавить сценарий">
+        <input type="submit" value="Додати фінанси">
     </form>
 </div>
 </body>

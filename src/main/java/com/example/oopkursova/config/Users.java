@@ -22,7 +22,7 @@ public class Users {
     private String gmail;
 
     private String password;
-    ;
+    @Column(unique = true)
     private String name;
     private String role;
 

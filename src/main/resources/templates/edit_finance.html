@@ -58,31 +58,31 @@
 </head>
 <body>
 <div class="container">
-    <h1>Добавить расходы к фильму</h1>
+    <h1>Додати витрати до фільму</h1>
     <form th:action="@{/Finance/edit_finance}" th:object="${finance}" method="post" class="needs-validation" novalidate>
-        <label for="budget">Номер финансов </label>
+        <label for="budget">Номер фінансів </label>
         <input type="number" th:field="*{id}" name="id" id="id">
 
-        <label for="budget">Ориентировочные траты на фильм:</label>
+        <label for="budget">Орієнтовні витрати на фільм:</label>
         <input type="number" th:field="*{budget}" id="budget" name="budget" required>
 
-        <label for="actorsSalary">Ориентировочная зарплата актерам:</label>
+        <label for="actorsSalary">Орієнтовна зарплата акторам:</label>
         <input type="number" th:field="*{actorsSalary}" id="actorsSalary" name="actorsSalary" required>
 
-        <label for="crewSalary">Ориентировочная зарплата членам съемочной группы:</label>
+        <label for="crewSalary">Орієнтовна зарплата членам знімальної групи:</label>
         <input type="number" th:field="*{crewSalary}" id="crewSalary" name="crewSalary" required>
 
-        <label for="advertisingCost">Затраты на рекламу:</label>
+        <label for="advertisingCost">Витрати на рекламу:</label>
         <input type="number" th:field="*{advertisingCost}" id="advertisingCost" name="advertisingCost" required>
 
-        <label for="editingCost">Затраты на монтаж:</label>
+        <label for="editingCost">Витрати на монтаж:</label>
         <input type="number" th:field="*{editingCost}" id="editingCost" name="editingCost" required>
 
-        <label for="equipmentCost">Затраты на оборудование:</label>
+        <label for="equipmentCost">Витрати обладнання:</label>
         <input type="number" th:field="*{equipmentCost}" id="equipmentCost" name="equipmentCost" required>
 
 
-        <input type="submit" value="Обновить данные">
+        <input type="submit" value="Обновити дані">
     </form>
 </div>
 </body>

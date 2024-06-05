@@ -17,15 +17,6 @@ import java.util.List;
 //@RequestMapping("/Main/")
 public class MainController {
 
-    private final UsersRepo usersRepo;
-
-        @GetMapping("//")
-    public String home(Model model) {
-        List<Users> users = usersRepo.findAll();
-        model.addAttribute("list", users);
-        return "indexx";
-    }
-
     @GetMapping("/")
     public String home() {
         return "Main";
@@ -34,7 +25,7 @@ public class MainController {
 
     @GetMapping("/login")
     public String login() {
-        return "login"; // Укажите имя представления вашей страницы логина
+        return "login";
     }
 
     @GetMapping("/Main")

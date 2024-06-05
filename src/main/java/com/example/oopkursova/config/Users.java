@@ -38,8 +38,6 @@ public class Users {
                 ", name='" + name + '\'' +
                 ", password='" + password + '\'' +
                 ", role='" + role + '\'' +
-                // Убедитесь, что ленивые коллекции не участвуют в toString
-                // ", moviesList=" + moviesList +
                 '}';
     }
 }

@@ -38,7 +38,6 @@ public class FinanceControllers {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String createFinanceFilm(@Valid Finance finance){
         financeRepo.save(finance);
-       // logger.info("Finance information added for film: {}", finance);
         return "MenuDirectors";
     }
 

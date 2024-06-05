@@ -80,7 +80,6 @@ public class MovieControllers {
         movie.setDescription(updatedMovie.getDescription());
         movie.setGenre(updatedMovie.getGenre());
         movieService.update(movie);
-       // logger.info("Movie updated: {}", movie);
         return "MenuDirectors";
     }
 
@@ -98,7 +97,7 @@ public class MovieControllers {
             return "redirect:/error";
         }
         movieService.deleteMovie(id);
-       // logger.info("Movie deleted: {}", movie);
+
         return "MenuDirectors"; // Перенаправление пользователя на другую страницу
     }
 

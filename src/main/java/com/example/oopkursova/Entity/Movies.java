@@ -44,7 +44,6 @@ public class Movies {
     private Finance filmFinance;
     @PrePersist
     private void init(){
-        // Форматирование времени перед сохранением
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
         dateTimeCreated = LocalDateTime.parse(LocalDateTime.now().format(formatter), formatter);
     }

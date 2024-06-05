@@ -55,7 +55,6 @@ public class GetInformationController {
     @GetMapping("/GetInformation")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String getFilmInformation(Model model) {
-        // Ваш код для получения информации о фильме и его деталях
-        return "GetInformation"; // Возвращаем имя вашего HTML шаблона для отображения информации о фильме
+        return "GetInformation";
     }
 }

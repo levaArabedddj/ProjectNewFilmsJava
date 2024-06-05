@@ -19,7 +19,7 @@ public class ScriptController {
 
     private final ScriptRepo scriptRepo;
     private final ScriptService service;
-  //  private static final Logger logger = LoggerFactory.getLogger(ScriptController.class);
+
 
 
     public ScriptController(ScriptRepo scriptRepo, ScriptService service) {
@@ -38,7 +38,6 @@ public class ScriptController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String createScriptMovie(@Valid Script script){
         scriptRepo.save(script);
-       // logger.info("Script added to movie: {}", script);
         return "MenuDirectors";
     }
     @Loggable

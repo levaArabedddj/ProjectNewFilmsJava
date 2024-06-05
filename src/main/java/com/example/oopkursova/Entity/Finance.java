@@ -18,19 +18,19 @@ public class Finance {
 
 
     @Column(name = "actors_salary", precision = 10, scale = 2)
-    private BigDecimal actorsSalary; // Сумма выделенная на зарплату актерам
+    private BigDecimal actorsSalary;
 
     @Column(name = "crew_salary", precision = 10, scale = 2)
-    private BigDecimal crewSalary; // Сумма выделенная на зарплату членам съемочной группы
+    private BigDecimal crewSalary;
 
     @Column(name = "advertising_cost", precision = 10, scale = 2)
-    private BigDecimal advertisingCost; // Затраты на рекламу
+    private BigDecimal advertisingCost;
 
     @Column(name = "editing_cost", precision = 10, scale = 2)
-    private BigDecimal editingCost; // Затраты на монтаж
+    private BigDecimal editingCost;
 
     @Column(name = "equipment_cost", precision = 10, scale = 2)
-    private BigDecimal equipmentCost; // Затраты на оборудование
+    private BigDecimal equipmentCost;
 
 
     @OneToOne(fetch = FetchType.LAZY)

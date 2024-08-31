@@ -16,12 +16,12 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @Transactional
-    public Users loadUserByUsername(String username) {
-        Users user = usersRepo.findByGmail(username);
-        Hibernate.initialize(user.getMoviesList());
-        return user;
-    }
+//    @Transactional
+//    public Users loadUserByUsername(String username) {
+//        Users user = usersRepo.findByGmail(username);
+//        Hibernate.initialize(user.getMoviesList());
+//        return user;
+//    }
     public void createUser(String name, String rawPassword) {
         Users user = new Users();
         user.setName(name);

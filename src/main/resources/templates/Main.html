@@ -47,7 +47,7 @@
 <div class="container">
     <h2>Увійти до облікового запису</h2>
     <form th:action="@{/login}" method="post">
-        <input type="submit" value="Sign Out"/>
+        <input type="submit" value="Sign In"/>
         <input type="hidden" name="_csrf" value="{{_csrf.token}}}">
     </form>
     <p>Якщо у вас ще немає облікового запису, <a href="/login/add_users">зареєструйтесь тут</a>.</p>

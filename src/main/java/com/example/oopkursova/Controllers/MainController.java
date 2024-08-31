@@ -2,6 +2,8 @@ package com.example.oopkursova.Controllers;
 
 
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +24,18 @@ public class MainController {
     }
 
 
+    @Cacheable(value = "menuDirectorsCache")
     @GetMapping("/Main")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String MainController() {
-        return "MenuDirectors";
+        return "/MenuDirectors";
+    }
+
+    @CacheEvict(value = "menuDirectorsCache", allEntries = true)
+    @GetMapping("/invalidateCache")
+    public String invalidateCache() {
+        // Кэш будет очищен
+        return "redirect:/Main";
     }
 }
 

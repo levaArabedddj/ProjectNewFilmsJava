@@ -36,7 +36,7 @@ public class MovieControllers {
     @Loggable
     @PostMapping("/create_movie")
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String CreateFilm(@Valid Movies movies, BindingResult bindingResult){
+    public String CreateFilm(@Valid Movies movies){
         moviesRepo.save(movies);
         logger.info("New movie created: {}", movies);
         return "/MenuDirectors";

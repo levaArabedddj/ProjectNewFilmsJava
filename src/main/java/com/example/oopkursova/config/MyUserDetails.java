@@ -1,44 +1,46 @@
 package com.example.oopkursova.config;
-
-
-
+import com.example.oopkursova.Entity.Users;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.stream.Collectors;
 
+@Data
+@AllArgsConstructor
 public class MyUserDetails implements UserDetails {
 
-    private Users user;
+    private long user_id;
+    private String name;
+    private String role;
+    private String gmail;
+    private String password;
 
-    public MyUserDetails(Users user) {
-        this.user = user;
+
+    public static MyUserDetails build(Users user) {
+
+        return new MyUserDetails(
+                user.getUser_id(),
+                user.getName(),
+                user.getRole(),
+                user.getGmail(),
+                user.getPassword());
     }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        String roles = user.getRole();
-        if (roles == null || roles.isEmpty()) {
-            return Collections.emptySet();
-        }
-        return Arrays.stream(roles.split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        return Collections.singletonList(new SimpleGrantedAuthority(role));
     }
-
-
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return user.getName();
+        return name;
     }
 
     @Override

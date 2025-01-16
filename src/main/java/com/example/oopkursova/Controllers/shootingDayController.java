@@ -1,51 +1,95 @@
 package com.example.oopkursova.Controllers;
 
+import com.example.oopkursova.DTO.DtoShootingDay;
+import com.example.oopkursova.Entity.Movies;
 import com.example.oopkursova.Entity.ShootingDay;
+import com.example.oopkursova.Entity.Users;
+import com.example.oopkursova.Exception.ApiException;
+import com.example.oopkursova.Repository.MoviesRepo;
+import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.ShootingDayRepo;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-@Controller
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.Optional;
+
+@RestController
 @RequestMapping("/ShootingDay")
 public class shootingDayController {
 
-    private final ShootingDayRepo shootingDayRepo;
+    @Autowired
+    private ShootingDayRepo shootingDayRepo;
     private static final Logger logger = LoggerFactory.getLogger(shootingDayController.class);
 
+    @Autowired
+    private UsersRepo usersRepo;
+    @Autowired
+    private MoviesRepo moviesRepo;
 
     public shootingDayController(ShootingDayRepo shootingDayRepo) {
         this.shootingDayRepo = shootingDayRepo;
     }
 
     @Loggable
-    @PostMapping("/create_shootingDay")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String CreateShootingDay(@Valid ShootingDay shootingDay, BindingResult bindingResult){
-        if (bindingResult.hasErrors()) {
-            logger.error("Error creating shooting day: {}", bindingResult.getAllErrors());
-            return "/create_shootingDay";
+    @PostMapping("/create_shootingDay/{filmId}")
+    @PreAuthorize("hasAuthority('User_Role')")
+    public ResponseEntity<?> CreateShootingDay(@PathVariable("filmId") Long filmId,
+                                               @Valid @RequestBody DtoShootingDay shootingDay, Principal principal) {
+        try {
+            // Получаем имя текущего пользователя
+            String username = principal.getName();
+            Users users = usersRepo.findByName(username)
+                    .orElseThrow(() -> new ApiException("User not found"));
+
+            // Проверка, существует ли уже съемка на указанную дату
+            boolean isShootingDayExists = shootingDayRepo.existsByShootingDateAndMovieId(shootingDay.getShootingDate(), filmId);
+            if (isShootingDayExists) {
+                throw new ApiException("Shooting already exists on this day");
+            }
+
+            // Получаем фильм по ID
+            Movies movie = moviesRepo.findById(filmId)
+                    .orElseThrow(() -> new ApiException("Film not found"));
+            logger.info("Id film :" +movie);
+
+            // Создание нового объекта ShootingDay
+            ShootingDay newShootingDay = new ShootingDay();
+            newShootingDay.setShootingDate(shootingDay.getShootingDate());
+            newShootingDay.setShootingTime(shootingDay.getShootingTime());
+            newShootingDay.setShootingLocation(shootingDay.getShootingLocation());
+            newShootingDay.setEstimatedDurationHours(shootingDay.getEstimatedDurationHours());
+            newShootingDay.setMovie(movie); // Устанавливаем фильм
+
+            // Сохранение нового дня съемки в базу данных
+            shootingDayRepo.save(newShootingDay);
+            logger.info("New ShootingDay created: {}, Movie ID: {}, Date: {}", newShootingDay, movie.getId(), newShootingDay.getShootingDate());
+
+            // Создание DTO для возвращаемого объекта
+            DtoShootingDay dtoShootingDay = new DtoShootingDay();
+            dtoShootingDay.setShootingDate(newShootingDay.getShootingDate());
+            dtoShootingDay.setShootingTime(newShootingDay.getShootingTime());
+            dtoShootingDay.setShootingLocation(newShootingDay.getShootingLocation());
+            dtoShootingDay.setEstimatedDurationHours(newShootingDay.getEstimatedDurationHours());
+
+
+            return ResponseEntity.ok(dtoShootingDay);
+        } catch (ApiException e) {
+            logger.error("Error creating shooting day: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error creating shooting day", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Some error while creating shooting day");
         }
-        shootingDayRepo.save(shootingDay);
-        logger.info("Shooting day created: {}", shootingDay);
-        return "MenuDirectors";
     }
 
 
-    @Loggable
-    @GetMapping("/create_shootingDay")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String CreateShootingDayGet(Model model){
-       model.addAttribute("dayShooting",new ShootingDay());
-        return "create_shootingDay";
-    }
 }

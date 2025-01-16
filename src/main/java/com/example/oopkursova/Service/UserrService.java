@@ -1,6 +1,6 @@
 package com.example.oopkursova.Service;
 
-import com.example.oopkursova.config.Users;
+import com.example.oopkursova.Entity.Users;
 import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.loger.Loggable;
 import lombok.AllArgsConstructor;

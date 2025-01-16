@@ -1,7 +1,6 @@
 package com.example.oopkursova.Entity;
 
 
-import com.example.oopkursova.config.Users;
 import jakarta.persistence.*;
 import lombok.Data;
 

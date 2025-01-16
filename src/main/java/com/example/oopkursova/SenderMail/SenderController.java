@@ -1,7 +1,7 @@
 package com.example.oopkursova.SenderMail;
 
 import com.example.oopkursova.Repository.UsersRepo;
-import com.example.oopkursova.config.Users;
+import com.example.oopkursova.Entity.Users;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

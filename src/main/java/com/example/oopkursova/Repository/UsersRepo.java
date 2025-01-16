@@ -1,9 +1,8 @@
 package com.example.oopkursova.Repository;
 
-import com.example.oopkursova.config.Users;
+import com.example.oopkursova.Entity.Users;
 import com.example.oopkursova.loger.Loggable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -17,6 +16,9 @@ public interface UsersRepo extends JpaRepository<Users, Long> {
 
      @Loggable
      Optional<Users> findByName(String username);
+
+     Boolean existsUsersByGmail(String gmail);
+     Boolean existsUsersByName(String name);
 
 
 

@@ -1,12 +1,9 @@
-package com.example.oopkursova.config;
+package com.example.oopkursova.Entity;
 
 
-import com.example.oopkursova.Entity.Movies;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 

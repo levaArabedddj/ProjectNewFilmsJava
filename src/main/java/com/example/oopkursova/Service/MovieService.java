@@ -87,17 +87,15 @@ public class MovieService {
                 .collect(Collectors.toSet());
 
         Set<DtoShootingDay> dtoShootingDays = movie.getShootingDays().stream()
-                .map(shootingDay -> new DtoShootingDay(shootingDay.getId(), shootingDay.getShootingDate(), shootingDay.getShootingTime(), shootingDay.getShootingLocation(), shootingDay.getEstimatedDurationHours()))
+                .map(shootingDay -> new DtoShootingDay( shootingDay.getShootingDate(), shootingDay.getShootingTime(), shootingDay.getShootingLocation(), shootingDay.getEstimatedDurationHours()))
                 .collect(Collectors.toSet());
 
         DtoScript dtoScript = new DtoScript();
         if(movie.getScript() != null) {
-            dtoScript.setId(movie.getScript().getId());
             dtoScript.setContent(movie.getScript().getContent());
         }
         DtoFinance dtoFinance = new DtoFinance();
         if(movie.getFilmFinance() != null) {
-            dtoFinance.setId(movie.getFilmFinance().getId());
             dtoFinance.setBudget(movie.getFilmFinance().getBudget());
             dtoFinance.setActorsSalary(movie.getFilmFinance().getActorsSalary());
             dtoFinance.setCrewSalary(movie.getFilmFinance().getCrewSalary());

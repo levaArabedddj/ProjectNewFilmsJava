@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -92,4 +93,34 @@ public class shootingDayController {
     }
 
 
+    @Loggable
+    @GetMapping("/get_shootingDays/{filmId}")
+    public ResponseEntity<?> GetShootingDays(@PathVariable("filmId") Long filmId,
+                                             Principal principal) throws ApiException {
+
+        try{
+            String username = principal.getName();
+            Users users = usersRepo.findByName(username).
+                    orElseThrow(() -> new ApiException("User not found"));
+            Movies movies = moviesRepo.findById(filmId).
+                    orElseThrow(() -> new ApiException("Movie not found"));
+            List<ShootingDay> shootingDays = shootingDayRepo.findByMovieId(filmId);
+
+            List<DtoShootingDay> dtoShootingDays = shootingDays.stream()
+                    .map(day ->{
+                        DtoShootingDay dto = new DtoShootingDay();
+                        dto.setShootingDate(day.getShootingDate());
+                        dto.setShootingTime(day.getShootingTime());
+                        dto.setShootingLocation(day.getShootingLocation());
+                        dto.setEstimatedDurationHours(day.getEstimatedDurationHours());
+                        return dto;
+
+            }).toList();
+
+            return ResponseEntity.ok(dtoShootingDays);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 }

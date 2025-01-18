@@ -1,6 +1,10 @@
 package com.example.oopkursova.config;
 
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -25,6 +29,10 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -37,6 +45,9 @@ public class SecurityConfig {
   @Autowired
     private TokenFilter tokenFilter;
     private MyUserDetailsService userService;
+
+    @Value("${GOOGLE_APPLICATION_CREDENTIALS}")
+    String password;
 
     @Autowired
     public SecurityConfig(MyUserDetailsService userService, TokenFilter authTokenFilter) {
@@ -91,6 +102,16 @@ public class SecurityConfig {
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public Storage storage() throws IOException {
+        try (FileInputStream serviceAccountStream = new FileInputStream(password)) {
+            return StorageOptions.newBuilder()
+                    .setCredentials(ServiceAccountCredentials.fromStream(serviceAccountStream))
+                    .build()
+                    .getService();
+        }
     }
 }
 

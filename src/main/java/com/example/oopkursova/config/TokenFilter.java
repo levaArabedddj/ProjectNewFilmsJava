@@ -27,7 +27,14 @@ public class TokenFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+        if (request.getRequestURI().startsWith("/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String jwt = null;
         String name = null;
         UserDetails userDetails;
@@ -37,7 +44,19 @@ public class TokenFilter extends OncePerRequestFilter {
             if (authHeader != null && authHeader.startsWith("Bearer")) {
                 jwt = authHeader.substring(7);
             }
-            if (jwt != null && jwtCore.isValidToken(jwt)) { // Вызов через экземпляр
+            else {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
+                return; // Блокуємо запит
+            }
+
+
+
+            if(jwt == null || !jwtCore.isValidToken(jwt)){
+                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
+                 return;
+             }
+
+
                 try {
                     name = jwtCore.getNameFromToken(jwt); // Вызов через экземпляр
                 } catch (ExpiredJwtException e) {
@@ -50,11 +69,12 @@ public class TokenFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     } else {
                         if (!userDetails.isAccountNonLocked()) {
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Account is locked");
                             return;
                         }
                     }
                 }
-            }
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

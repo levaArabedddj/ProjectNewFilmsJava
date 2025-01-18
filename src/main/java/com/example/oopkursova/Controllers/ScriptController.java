@@ -1,31 +1,67 @@
 package com.example.oopkursova.Controllers;
 
+import com.example.oopkursova.DTO.DtoScript;
 import com.example.oopkursova.Entity.Script;
+import com.example.oopkursova.Entity.Users;
+import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.ScriptRepo;
 import com.example.oopkursova.Service.ScriptService;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Storage;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.io.*;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.security.Principal;
+import java.util.List;
+import java.util.Map;
 
 
-@Controller
+@RestController
 @RequestMapping("/Script")
 public class ScriptController {
 
     private final ScriptRepo scriptRepo;
     private final ScriptService service;
+    private final UsersRepo usersRepo;
+    private final Storage storage;
+    @Value("${google.cloud.storage.bucket.name}")
+    private String bucketName;
 
 
 
-    public ScriptController(ScriptRepo scriptRepo, ScriptService service) {
+    public ScriptController(ScriptRepo scriptRepo, ScriptService service, UsersRepo usersRepo, Storage storage) {
         this.scriptRepo = scriptRepo;
         this.service = service;
+        this.usersRepo = usersRepo;
+        this.storage = storage;
     }
+
+//    @Loggable
+//    @PostMapping("/createScript/{filmId}")
+//    @PreAuthorize("hasAuthority('User_Role')")
+//    public ResponseEntity<?> createScript(@PathVariable("filmId") Long filmId,
+//                                          @Valid @RequestBody DtoScript dtoScript,
+//                                          Principal principal){
+//
+//        try {
+//            String username = principal.getName();
+//            Users users = usersRepo.findByName(username)
+//                    .orElseThrow(()-> new RuntimeException("User not found"));
+//
+//        }
+//    }
     @Loggable
     @GetMapping("/CreatingScriptMovie")
     @PreAuthorize("hasAuthority('ROLE_USER')")
@@ -57,5 +93,106 @@ public class ScriptController {
         return "MenuDirectors";
     }
 
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadScript(@RequestParam("file") MultipartFile file) {
+        try {
+            String fileUrl = service.uploadFile(file);
+            return ResponseEntity.ok(fileUrl);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    @GetMapping("/download/{fileName}")
+    public void downloadFile(@PathVariable String fileName, HttpServletResponse response) {
+        try (InputStream inputStream = downloadFileFromGCS(fileName);
+             OutputStream outputStream = response.getOutputStream()) {
+
+            Blob blob = storage.get(bucketName, fileName);
+            if (blob == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found");
+            }
+
+            String contentType = blob.getContentType(); // Отримуємо Content-Type з GCS
+            if (contentType == null) {
+                contentType = "application/octet-stream"; // Встановлюємо за замовчуванням
+            }
+
+            response.setContentType(contentType);
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            outputStream.flush();
+
+        } catch (FileNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found", e);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error downloading file", e);
+        }
+    }
+
+
+
+    private InputStream downloadFileFromGCS(String objectName) throws IOException {
+        Blob blob = storage.get(bucketName, objectName);
+        if (blob == null) {
+            throw new FileNotFoundException("File not found in GCS.");
+        }
+
+        ReadableByteChannel channel = blob.reader();
+        return Channels.newInputStream(channel);
+    }
+
+    @DeleteMapping("/delete/{fileName}")
+    public ResponseEntity<String> deleteScript(@PathVariable String fileName) {
+        boolean deleted = service.deleteFile(fileName);
+        if (deleted) {
+            return ResponseEntity.ok("Script deleted.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Script not found.");
+        }
+    }
+
+    @GetMapping("/files")
+    public ResponseEntity<List<String>> listFiles() {
+        List<String> files = service.listFiles();
+        return ResponseEntity.ok(files);
+    }
+
+    @GetMapping("/information/{fileName}")
+    public ResponseEntity<Map<String,Object>> getFileInformation(@PathVariable String fileName) {
+        Map<String,Object> fileInfo = service.getInfoFile(fileName);
+        return ResponseEntity.ok(fileInfo);
+    }
+
+    @PostMapping("/create-folder/{folderName}")
+    public ResponseEntity<String> createFolder(@PathVariable String folderName) {
+        boolean created = service.createFolder(folderName);
+        if (created) {
+            return ResponseEntity.ok("Folder created.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create folder.");
+        }
+    }
+
+    @PostMapping("/update/{fileName}")
+    public ResponseEntity<String> updateFile(@PathVariable String fileName, MultipartFile file){
+        try {
+            String fileUrl = service.updateFile(fileName,file);
+            return ResponseEntity.ok("File update:"+fileUrl);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
+
+
+
+
+
+
+

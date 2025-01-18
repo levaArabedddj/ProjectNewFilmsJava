@@ -14,4 +14,8 @@ public interface FinanceRepo extends JpaRepository<Finance, Long> {
     List<Finance> findByMovieId(Long id);
     @Loggable
      Optional<Finance> findById(Long id);
+
+    Boolean existsByMovieId(Long id);
+
+    Boolean existsFinanceById(Long id);
 }

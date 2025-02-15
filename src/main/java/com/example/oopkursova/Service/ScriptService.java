@@ -6,6 +6,7 @@ import com.example.oopkursova.loger.Loggable;
 
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.*;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -13,11 +14,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class ScriptService {
@@ -65,7 +72,77 @@ public class ScriptService {
         return blob.getMediaLink(); // Возвращает ссылку на загруженный файл
     }
 
+     //5. Добавление файла в выбранную папку
+    public String uploadFileInFolder(String folderName ,MultipartFile file ) throws IOException {
+        if(!folderName.endsWith("/")){
+            folderName += "/";
+        }
 
+        String filePath = folderName + file.getOriginalFilename();
+
+
+        BlobId blobId = BlobId.of(bucketName, filePath);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
+        storage.create(blobInfo,file.getBytes());
+        return "https://storage.googleapis.com/"+bucketName+"/"+filePath;
+
+    }
+
+    //2. Поиск файлов по префиксу (например, все файлы в определенной папке)
+    public List<String> searchListByPrefix(String prefix) {
+        Iterable<Blob> blobs = storage.list(bucketName,Storage.BlobListOption.prefix(prefix)).iterateAll();
+
+        return StreamSupport.stream(blobs.spliterator(),false).
+                map(Blob::getName).
+                collect(Collectors.toList());
+    }
+
+    //3. Копирование файла в другую папку
+    public boolean copyFile(String sourcePath, String targetPath) {
+        BlobId sourceBlobId = BlobId.of(bucketName, sourcePath);
+        BlobId targetBlobId = BlobId.of(bucketName, targetPath);
+        Blob sourceBlob = storage.get(sourceBlobId);
+        if(!sourceBlob.exists()) {
+            return false;
+        }
+        storage.copy(Storage.CopyRequest.of(sourceBlobId,targetBlobId));
+        return true;
+    }
+
+    //4. Перемещение файла в другую папку (копируем + удаляем)
+    public boolean moveFile(String sourcePath, String targetPath) {
+        boolean copied = copyFile(sourcePath, targetPath);
+        if(copied){
+            return storage.get(BlobId.of(bucketName,sourcePath)).delete();
+        }
+        return false;
+    }
+
+    public InputStream streamFile(String fileName) {
+        Blob blob = storage.get(BlobId.of(bucketName,fileName));
+        if(!blob.exists()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found");
+        }
+        return Channels.newInputStream(blob.reader());
+    }
+
+    public String readDocxFile(String fileName) throws IOException {
+        Blob blob = storage.get(bucketName, fileName);
+        if (blob == null) {
+            throw new RuntimeException("File not found: " + fileName);
+        }
+
+        // Преобразуем byte[] в InputStream
+        try (InputStream inputStream = new ByteArrayInputStream(blob.getContent())) {
+            XWPFDocument document = new XWPFDocument(inputStream);
+            List<String> paragraphs = document.getParagraphs()
+                    .stream()
+                    .map(XWPFParagraph::getText)
+                    .collect(Collectors.toList());
+
+            return String.join("\n", paragraphs);
+        }
+    }
    public boolean deleteFile(String fileName) {
         Blob blob = storage.get(BlobId.of(bucketName, fileName));
         if (blob != null) {
@@ -123,5 +200,7 @@ public class ScriptService {
         storage.create(blobInfo,file.getBytes());
         return "https://storage.googleapis.com/"+bucketName+"/"+fileName;
    }
+
+
 
 }

@@ -188,6 +188,65 @@ public class ScriptController {
             throw new RuntimeException(e);
         }
     }
+
+    @PostMapping("/upload/{folder}")
+    public ResponseEntity<String>uploadInFolder(@PathVariable String folder, @RequestParam("file") MultipartFile file){
+       try {
+           String url = service.uploadFileInFolder(folder, file);
+           return ResponseEntity.ok("File upload:" + url);
+       } catch (IOException e) {
+           throw new RuntimeException(e);
+       }
+    }
+
+    @GetMapping("/search/{prefix}")
+    public ResponseEntity<List<String>> searchFilesByPrefix(@PathVariable String prefix){
+        return ResponseEntity.ok(service.searchListByPrefix(prefix));
+    }
+
+    @PostMapping("/copy")
+    public ResponseEntity<String> copyFile(@RequestParam String source, @RequestParam String target){
+        boolean success = service.copyFile(source,target);
+        return success ? ResponseEntity.ok("File copied successfully") : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Failed to copy file.");
+    }
+
+    @PostMapping("/move")
+    public ResponseEntity<String> moveFile(@RequestParam String source, @RequestParam String target){
+        boolean success = service.moveFile(source,target);
+        return success? ResponseEntity.ok("File moved successfully") : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Failed to move file.");
+    }
+
+    @GetMapping("/stream/{fileName}")
+    public void streamFile(@PathVariable String fileName, HttpServletResponse response) {
+        try(InputStream inputStream = service.streamFile(fileName);
+        OutputStream outputStream = response.getOutputStream()) {
+
+            response.setContentType("application/octet-stream");
+            response.setHeader("Content-Disposition", "inline; filename=\"" + fileName + "\"");
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            outputStream.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping("/read-docx/{fileName}")
+    public ResponseEntity<String> readWordFile(@PathVariable String fileName) {
+        try {
+            String text = service.readDocxFile(fileName);
+            return ResponseEntity.ok(text);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error reading file: " + e.getMessage());
+        }
+    }
+
+
 }
 
 

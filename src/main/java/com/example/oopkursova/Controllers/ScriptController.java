@@ -47,7 +47,7 @@ public class ScriptController {
         this.usersRepo = usersRepo;
         this.storage = storage;
     }
-
+// ▶️старая часть проекта, смотреть ниже 👇
 //    @Loggable
 //    @PostMapping("/createScript/{filmId}")
 //    @PreAuthorize("hasAuthority('User_Role')")
@@ -62,37 +62,39 @@ public class ScriptController {
 //
 //        }
 //    }
-    @Loggable
-    @GetMapping("/CreatingScriptMovie")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String createScript(Model model){
-        model.addAttribute("script", new Script());
-        return "CreatingScriptMovie";
-    }
-    @Loggable
-    @PostMapping("addScriptToMovie")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String createScriptMovie(@Valid Script script){
-        scriptRepo.save(script);
-        return "MenuDirectors";
-    }
-    @Loggable
-    @GetMapping("/edit_script")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String showUpdateForm(Model model) {
-        model.addAttribute("script", new Script());
-        return "UpdateScriptFilms";
-    }
+//    @Loggable
+//    @GetMapping("/CreatingScriptMovie")
+//    @PreAuthorize("hasAuthority('ROLE_USER')")
+//    public String createScript(Model model){
+//        model.addAttribute("script", new Script());
+//        return "CreatingScriptMovie";
+//    }
+//    @Loggable
+//    @PostMapping("addScriptToMovie")
+//    @PreAuthorize("hasAuthority('ROLE_USER')")
+//    public String createScriptMovie(@Valid Script script){
+//        scriptRepo.save(script);
+//        return "MenuDirectors";
+//    }
+//    @Loggable
+//    @GetMapping("/edit_script")
+//    @PreAuthorize("hasAuthority('ROLE_USER')")
+//    public String showUpdateForm(Model model) {
+//        model.addAttribute("script", new Script());
+//        return "UpdateScriptFilms";
+//    }
+//
+//    @Loggable
+//    @PostMapping("/edit_script")
+//    @PreAuthorize("hasAuthority('ROLE_USER')")
+//    public String updateScript(@RequestParam("id") Long id ,
+//                               @ModelAttribute Script updatedScript) {
+//        service.update(id,updatedScript);
+//        return "MenuDirectors";
+//    }
 
+    // ▶️ Новая часть
     @Loggable
-    @PostMapping("/edit_script")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String updateScript(@RequestParam("id") Long id ,
-                               @ModelAttribute Script updatedScript) {
-        service.update(id,updatedScript);
-        return "MenuDirectors";
-    }
-
     @PostMapping("/upload")
     public ResponseEntity<String> uploadScript(@RequestParam("file") MultipartFile file) {
         try {
@@ -103,6 +105,7 @@ public class ScriptController {
         }
     }
 
+    @Loggable
     @GetMapping("/download/{fileName}")
     public void downloadFile(@PathVariable String fileName, HttpServletResponse response) {
         try (InputStream inputStream = downloadFileFromGCS(fileName);
@@ -147,6 +150,7 @@ public class ScriptController {
         return Channels.newInputStream(channel);
     }
 
+    @Loggable
     @DeleteMapping("/delete/{fileName}")
     public ResponseEntity<String> deleteScript(@PathVariable String fileName) {
         boolean deleted = service.deleteFile(fileName);
@@ -157,18 +161,21 @@ public class ScriptController {
         }
     }
 
+    @Loggable
     @GetMapping("/files")
     public ResponseEntity<List<String>> listFiles() {
         List<String> files = service.listFiles();
         return ResponseEntity.ok(files);
     }
 
+    @Loggable
     @GetMapping("/information/{fileName}")
     public ResponseEntity<Map<String,Object>> getFileInformation(@PathVariable String fileName) {
         Map<String,Object> fileInfo = service.getInfoFile(fileName);
         return ResponseEntity.ok(fileInfo);
     }
 
+    @Loggable
     @PostMapping("/create-folder/{folderName}")
     public ResponseEntity<String> createFolder(@PathVariable String folderName) {
         boolean created = service.createFolder(folderName);
@@ -179,6 +186,7 @@ public class ScriptController {
         }
     }
 
+    @Loggable
     @PostMapping("/update/{fileName}")
     public ResponseEntity<String> updateFile(@PathVariable String fileName, MultipartFile file){
         try {
@@ -189,6 +197,7 @@ public class ScriptController {
         }
     }
 
+    @Loggable
     @PostMapping("/upload/{folder}")
     public ResponseEntity<String>uploadInFolder(@PathVariable String folder, @RequestParam("file") MultipartFile file){
        try {
@@ -199,23 +208,27 @@ public class ScriptController {
        }
     }
 
+    @Loggable
     @GetMapping("/search/{prefix}")
     public ResponseEntity<List<String>> searchFilesByPrefix(@PathVariable String prefix){
         return ResponseEntity.ok(service.searchListByPrefix(prefix));
     }
 
+    @Loggable
     @PostMapping("/copy")
     public ResponseEntity<String> copyFile(@RequestParam String source, @RequestParam String target){
         boolean success = service.copyFile(source,target);
         return success ? ResponseEntity.ok("File copied successfully") : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Failed to copy file.");
     }
 
+    @Loggable
     @PostMapping("/move")
     public ResponseEntity<String> moveFile(@RequestParam String source, @RequestParam String target){
         boolean success = service.moveFile(source,target);
         return success? ResponseEntity.ok("File moved successfully") : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Failed to move file.");
     }
 
+    @Loggable
     @GetMapping("/stream/{fileName}")
     public void streamFile(@PathVariable String fileName, HttpServletResponse response) {
         try(InputStream inputStream = service.streamFile(fileName);
@@ -235,6 +248,7 @@ public class ScriptController {
         }
     }
 
+    @Loggable
     @GetMapping("/read-docx/{fileName}")
     public ResponseEntity<String> readWordFile(@PathVariable String fileName) {
         try {

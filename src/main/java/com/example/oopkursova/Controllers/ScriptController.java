@@ -1,20 +1,14 @@
 package com.example.oopkursova.Controllers;
 
-import com.example.oopkursova.DTO.DtoScript;
-import com.example.oopkursova.Entity.Script;
-import com.example.oopkursova.Entity.Users;
+
 import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.loger.Loggable;
-import com.example.oopkursova.Repository.ScriptRepo;
 import com.example.oopkursova.Service.ScriptService;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,8 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +24,6 @@ import java.util.Map;
 @RequestMapping("/Script")
 public class ScriptController {
 
-    private final ScriptRepo scriptRepo;
     private final ScriptService service;
     private final UsersRepo usersRepo;
     private final Storage storage;
@@ -41,8 +32,7 @@ public class ScriptController {
 
 
 
-    public ScriptController(ScriptRepo scriptRepo, ScriptService service, UsersRepo usersRepo, Storage storage) {
-        this.scriptRepo = scriptRepo;
+    public ScriptController(ScriptService service, UsersRepo usersRepo, Storage storage) {
         this.service = service;
         this.usersRepo = usersRepo;
         this.storage = storage;

@@ -37,51 +37,7 @@ public class ScriptController {
         this.usersRepo = usersRepo;
         this.storage = storage;
     }
-// ▶️старая часть проекта, смотреть ниже 👇
-//    @Loggable
-//    @PostMapping("/createScript/{filmId}")
-//    @PreAuthorize("hasAuthority('User_Role')")
-//    public ResponseEntity<?> createScript(@PathVariable("filmId") Long filmId,
-//                                          @Valid @RequestBody DtoScript dtoScript,
-//                                          Principal principal){
-//
-//        try {
-//            String username = principal.getName();
-//            Users users = usersRepo.findByName(username)
-//                    .orElseThrow(()-> new RuntimeException("User not found"));
-//
-//        }
-//    }
-//    @Loggable
-//    @GetMapping("/CreatingScriptMovie")
-//    @PreAuthorize("hasAuthority('ROLE_USER')")
-//    public String createScript(Model model){
-//        model.addAttribute("script", new Script());
-//        return "CreatingScriptMovie";
-//    }
-//    @Loggable
-//    @PostMapping("addScriptToMovie")
-//    @PreAuthorize("hasAuthority('ROLE_USER')")
-//    public String createScriptMovie(@Valid Script script){
-//        scriptRepo.save(script);
-//        return "MenuDirectors";
-//    }
-//    @Loggable
-//    @GetMapping("/edit_script")
-//    @PreAuthorize("hasAuthority('ROLE_USER')")
-//    public String showUpdateForm(Model model) {
-//        model.addAttribute("script", new Script());
-//        return "UpdateScriptFilms";
-//    }
-//
-//    @Loggable
-//    @PostMapping("/edit_script")
-//    @PreAuthorize("hasAuthority('ROLE_USER')")
-//    public String updateScript(@RequestParam("id") Long id ,
-//                               @ModelAttribute Script updatedScript) {
-//        service.update(id,updatedScript);
-//        return "MenuDirectors";
-//    }
+
 
     // ▶️ Новая часть
     @Loggable

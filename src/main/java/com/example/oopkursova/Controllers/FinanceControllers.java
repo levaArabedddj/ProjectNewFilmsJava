@@ -32,17 +32,16 @@ import java.util.Map;
 public class FinanceControllers {
 
     private final FinanceRepo financeRepo;
-    private final FinanceService financeService;
 
-    private static final Logger logger = LoggerFactory.getLogger(FinanceControllers.class);
+
+
     private final UsersRepo usersRepo;
 
     private final MoviesRepo moviesRepo;
 
     @Autowired
-    public FinanceControllers(FinanceRepo financeRepo, FinanceService financeService, UsersRepo usersRepo, MoviesRepo moviesRepo) {
+    public FinanceControllers(FinanceRepo financeRepo, UsersRepo usersRepo, MoviesRepo moviesRepo) {
         this.financeRepo = financeRepo;
-        this.financeService = financeService;
         this.usersRepo = usersRepo;
         this.moviesRepo = moviesRepo;
     }

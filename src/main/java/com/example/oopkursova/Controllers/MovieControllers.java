@@ -35,11 +35,11 @@ public class MovieControllers {
 
     private static final Logger logger = LoggerFactory.getLogger(MovieControllers.class);
 
-
     public MovieControllers(MoviesRepo moviesRepo, MovieService movieService) {
         this.moviesRepo = moviesRepo;
         this.movieService = movieService;
     }
+
     @Loggable
     @PostMapping("/create_movie")
     @PreAuthorize("hasAuthority('User_Role')")
@@ -84,68 +84,7 @@ public class MovieControllers {
     }
 
 
-    @Loggable
-    @GetMapping("/create_movie")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String addMovie(Model model){
-        model.addAttribute("movies",new Movies());
-        return "/create_movie";
-    }
 
-
-//    @Loggable
-//    @GetMapping("/movie_details")
-//    public String GetFilms(Model model, Principal principal) {
-//        // Проверка на наличие авторизованного пользователя
-//        if (principal == null) {
-//            System.out.println("Вы не авторизованы. Пожалуйста, выполните вход.");
-//            return "redirect:/login";  // Перенаправление на страницу логина, если пользователь не авторизован
-//        }
-//
-//        // Получение имени пользователя (email) из Principal
-//        String currentUserName = principal.getName();
-//
-//        // Проверка на корректность email (например, пустая строка)
-//        if (currentUserName == null || currentUserName.isEmpty()) {
-//            System.out.println( "Ошибка получения информации о пользователе.");
-//            return "redirect:/login";  // Перенаправление на страницу ошибки, если email некорректный
-//        }
-//
-//        // Поиск пользователя в базе данных по его email
-//        Optional<Users> optionalUser = usersRepo.findByName(currentUserName);
-//
-//        // Проверка на существование пользователя
-//        if (optionalUser.isEmpty()) {
-//            System.out.println( "Пользователь не найден.");
-//            return "redirect:/login";  // Возвращаем страницу ошибки, если пользователь не найден
-//        }
-//
-//        // Если пользователь найден, получаем его
-//        Users user = optionalUser.get();
-//
-//        // Получение списка фильмов, которые были созданы этим пользователем
-//        List<Movies> films;
-//        try {
-//            films = moviesRepo.findByUser(user);
-//
-//            // Проверка на наличие фильмов у пользователя
-//            if (films == null || films.isEmpty()) {
-//                model.addAttribute("message", "У вас пока нет фильмов.");
-//                films = new ArrayList<>();  // Инициализируем пустой список, чтобы избежать ошибок в представлении
-//            }
-//        } catch (Exception e) {
-//            // Ловим возможные исключения при получении фильмов и логируем ошибку
-//            System.out.println( "Ошибка при получении фильмов пользователя.");
-//            e.printStackTrace();  // Логирование ошибки (можно заменить на логгер)
-//            return "redirect:/login";  // Возвращаем страницу ошибки в случае исключения
-//        }
-//
-//        // Добавление списка фильмов в модель для отображения на странице
-//        model.addAttribute("list", films);
-//
-//        // Возвращаем страницу для отображения фильмов
-//        return "movie_details";
-//    }
 
     @Loggable
     @GetMapping("/movie_details")
@@ -172,13 +111,6 @@ public class MovieControllers {
 
 
 
-    @Loggable
-    @GetMapping("/edit_movie_details")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String showEditForm( Model model) {
-        model.addAttribute("movie",new Movies());
-        return "edit_movie_details";
-    }
 
     @Loggable
     @PostMapping("/update_movie")
@@ -231,10 +163,7 @@ public class MovieControllers {
 
 
 
-    @GetMapping("/DeleteFilm")
-    public String showDeleteFilmForm() {
-        return "DeleteFilm";
-    }
+
 
     @Loggable
     @PostMapping("/DeleteFilm")

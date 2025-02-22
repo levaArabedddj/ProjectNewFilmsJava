@@ -21,7 +21,8 @@ public class Users {
     private String password;
     @Column(unique = true)
     private String name;
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY) // добавлено для связи с фильмами
     private List<Movies> moviesList;

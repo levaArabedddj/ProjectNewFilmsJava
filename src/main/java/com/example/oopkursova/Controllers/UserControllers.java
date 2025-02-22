@@ -31,28 +31,28 @@ public class UserControllers {
         this.userService = userService;
         this.usersRepo = usersRepo;
     }
-    @Loggable
-    @GetMapping("/add_users")
-    public String addStudent(Model model) {
-        model.addAttribute("users", new Users());
-        return "add_users";
-    }
+//    @Loggable
+//    @GetMapping("/add_users")
+//    public String addStudent(Model model) {
+//        model.addAttribute("users", new Users());
+//        return "add_users";
+//    }
 
-    @Loggable
-    @PostMapping("/add_users")
-    public String processForm(@Valid Users users, BindingResult bindingResult, Model model) {
-        if (bindingResult.hasErrors()) {
-            logger.error("Validation failed for user: {}", users);
-            return "/add_users";
-        }
-
-        String rawPassword = users.getPassword();
-        users.setRole("ROLE_USER");
-        users.setPassword(passwordEncoder.encode(rawPassword));
-        usersRepo.save(users);
-        logger.info("User saved successfully: {}", users);
-        return "Main";
-    }
+//    @Loggable
+//    @PostMapping("/add_users")
+//    public String processForm(@Valid Users users, BindingResult bindingResult, Model model) {
+//        if (bindingResult.hasErrors()) {
+//            logger.error("Validation failed for user: {}", users);
+//            return "/add_users";
+//        }
+//
+//        String rawPassword = users.getPassword();
+//        users.setRole("ROLE_USER");
+//        users.setPassword(passwordEncoder.encode(rawPassword));
+//        usersRepo.save(users);
+//        logger.info("User saved successfully: {}", users);
+//        return "Main";
+//    }
 
 
 }

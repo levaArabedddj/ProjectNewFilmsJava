@@ -1,4 +1,5 @@
 package com.example.oopkursova.config;
+import com.example.oopkursova.Entity.UserRole;
 import com.example.oopkursova.Entity.Users;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +16,7 @@ public class MyUserDetails implements UserDetails {
 
     private long user_id;
     private String name;
-    private String role;
+    private UserRole role;
     private String gmail;
     private String password;
 
@@ -31,7 +32,7 @@ public class MyUserDetails implements UserDetails {
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(role));
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
     @Override
     public String getPassword() {

@@ -59,7 +59,7 @@ public class SecurityController {
         user.setName(signupRequest.getName());
         user.setGmail(signupRequest.getGmail());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
-        user.setRole("User_Role");
+        user.setRole(signupRequest.getRole());
         usersRepo.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body("User created");
     }

@@ -6,6 +6,7 @@ import com.example.oopkursova.DTO.DtoStaff;
 import com.example.oopkursova.Entity.Actors;
 import com.example.oopkursova.Entity.FilmCrewMembers;
 import com.example.oopkursova.Entity.Users;
+import com.example.oopkursova.Exception.ApiException;
 import com.example.oopkursova.Repository.ActorRepo;
 import com.example.oopkursova.Repository.CrewMemberRepo;
 import com.example.oopkursova.Repository.StaffRepo;
@@ -242,5 +243,95 @@ public class StaffControllers {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting crew member");
         }
     }
+
+    @Loggable
+    @PutMapping("/updateActor/{ActorId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> updateActor(@PathVariable("ActorId") Long actorId,
+                                         @RequestBody Map<String,Object> update,
+                                         Principal principal) {
+
+
+        try {
+            String username = principal.getName();
+            Users users = usersRepo.findByName(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            Actors actors = actorRepo.findById(actorId)
+                    .orElseThrow(() -> new RuntimeException("Actor not found"));
+
+            update.forEach((key, value) -> {
+
+                switch (key){
+                    case "name":
+                        actors.setName(value.toString());
+                        break;
+                    case "surName":
+                        actors.setSurName(value.toString());
+                        break;
+                    case "rating":
+                        actors.setSalaryPerHour(Integer.parseInt(value.toString()));
+                        break;
+                    case "salaryPerHour":
+                        actors.setSalaryPerHour(Integer.parseInt(value.toString()));
+                        break;
+                    default:
+                        throw new RuntimeException("Invalid key");
+                }
+            });
+            actorRepo.save(actors);
+            return ResponseEntity.ok("Actor updated");
+        } catch (RuntimeException e) {
+            log.error("Error updating actor", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    @PutMapping("/updateСrewMember/{crewMemberId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> updateCrewMember(@PathVariable("crewMemberId") Long crewMemberId,
+                                              @RequestBody Map<String, Object> updates,
+                                              Principal principal) {
+        try {
+            // Получаем пользователя
+            String username = principal.getName();
+            Users user = usersRepo.findByName(username)
+                    .orElseThrow(() -> new ApiException("User not found"));
+
+            // Ищем члена съёмочной группы
+            FilmCrewMembers crewMember = crewMemberRepo.findById(crewMemberId)
+                    .orElseThrow(() -> new ApiException("Crew member not found"));
+
+            // Применяем обновления
+            updates.forEach((key, value) -> {
+                switch (key) {
+                    case "name":
+                        crewMember.setName(value.toString());
+                        break;
+                    case "surName":
+                        crewMember.setSurName(value.toString());
+                        break;
+                    case "salaryPerHours":
+                        crewMember.setSalaryPerHours(Integer.parseInt(value.toString()));
+                        break;
+                    default:
+                        throw new RuntimeException("Invalid field: " + key);
+                }
+            });
+
+            // Сохраняем изменения
+            crewMemberRepo.save(crewMember);
+            return ResponseEntity.ok("Crew member updated successfully");
+        } catch (ApiException e) {
+            log.error("Error updating crew member: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error updating crew member", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Some error while updating crew member");
+        }
+    }
+
+
 
 }

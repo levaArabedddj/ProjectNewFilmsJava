@@ -1,67 +1,102 @@
 package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.FilmCrewMembers;
+import com.example.oopkursova.Entity.Movies;
+import com.example.oopkursova.Repository.ActorRepo;
+import com.example.oopkursova.Repository.MoviesRepo;
 import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.CrewMemberRepo;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
-import java.util.List;
-
-@Controller
+@RestController
 @RequestMapping("/CrewMember")
 public class AddCrewMemberController {
 
+
     private final CrewMemberRepo crewMemberRepo;
 
-    @PersistenceContext
-    private EntityManager entityManager;
 
-    public AddCrewMemberController(CrewMemberRepo crewMemberRepo) {
+    private final MoviesRepo moviesRepo;
+
+    @Autowired
+    public AddCrewMemberController(CrewMemberRepo crewMemberRepo, MoviesRepo moviesRepo) {
         this.crewMemberRepo = crewMemberRepo;
+        this.moviesRepo = moviesRepo;
     }
 
     @Loggable
-    @GetMapping("/CrewMemberOnPlayFilm")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String GetFormFinance(Model model){
+    @PostMapping("/addCrewMemberToFilm/{filmId}")
+    public ResponseEntity<?> addCrewMemberToFilm(@PathVariable int filmId,
+                                      @RequestBody Map<String,Long> requestBody) {
 
-        List<FilmCrewMembers> crewMembers = crewMemberRepo.findAll();
-        model.addAttribute("crewMember", crewMembers);
-        return "CrewMemberOnPlayFilm";
-    }
-    @Loggable
-    @PostMapping("/CrewMemberOnPlayFilm")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Transactional
-    public ModelAndView addActorToMovie(
-            @RequestParam long crewMemberId,
-            @RequestParam long movieId) {
-        ModelAndView modelAndView = new ModelAndView();
-        try {
-            // Создаем запись в ассоциативной таблице actors_movies
-            String sql = "INSERT INTO public.film_crew_member_movies (film_crew_member_id, movie_id) VALUES (:crewMemberId, :movieId)";
-            entityManager.createNativeQuery(sql)
-                    .setParameter("crewMemberId", crewMemberId)
-                    .setParameter("movieId", movieId)
-                    .executeUpdate();
+        try{
+            Long crewMemberId = requestBody.get("crewMemberId");
 
-            modelAndView.setViewName("MenuDirectors"); // Перенаправляем на страницу успешного добавления
+            if (crewMemberId == null) {
+                return ResponseEntity.badRequest().body("Crew Member is required");
+            }
+
+            Movies film = moviesRepo.findById(filmId);
+
+            FilmCrewMembers crewMembers = crewMemberRepo.findById(crewMemberId)
+                    .orElseThrow(()-> new RuntimeException("Crew Member not found"));
+
+            if(film.getFilmCrewMembers().contains(crewMembers)){
+                return ResponseEntity.badRequest().body("Film already exists");
+            }
+
+            film.getFilmCrewMembers().add(crewMembers);
+            crewMembers.getMovies().add(film);
+
+            moviesRepo.save(film);
+            crewMemberRepo.save(crewMembers);
+
+            return ResponseEntity.ok("Crew Member added to film successfully");
         } catch (Exception e) {
-            e.printStackTrace();
-            modelAndView.setViewName("MenuDirectors"); // Перенаправляем на страницу ошибки
+            throw new RuntimeException(e);
         }
-        return modelAndView;
     }
+
+
+    @Loggable
+    @DeleteMapping("/deleteCrewMemberToFilm/{filmId}")
+    public ResponseEntity<?>  removeCrewMemberFromFilm(@PathVariable Long filmId,
+                                                       @RequestBody Map<String,Long> requestBody) {
+
+        try {
+            Long crewMemberId = requestBody.get("crewMemberId");
+            if (crewMemberId == null) {
+                return ResponseEntity.badRequest().body("Crew Member is required");
+            }
+
+            Movies film = moviesRepo.findById(filmId)
+                    .orElseThrow(()-> new RuntimeException("Film not found"));
+
+            FilmCrewMembers crewMembers = crewMemberRepo.findById(crewMemberId)
+                    .orElseThrow(()-> new RuntimeException("Crew Member not found"));
+
+            if(!film.getFilmCrewMembers().contains(crewMembers)){
+                return ResponseEntity.badRequest().body("Crew Member is not in the film");
+            }
+
+            film.getFilmCrewMembers().remove(crewMembers);
+            crewMembers.getMovies().remove(film);
+
+            moviesRepo.save(film);
+            crewMemberRepo.save(crewMembers);
+
+            return ResponseEntity.ok("Crew Member removed from film successfully");
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+
 
 
 }

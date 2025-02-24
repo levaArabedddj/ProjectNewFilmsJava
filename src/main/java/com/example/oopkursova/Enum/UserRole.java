@@ -1,4 +1,4 @@
-package com.example.oopkursova.Entity;
+package com.example.oopkursova.Enum;
 
 public enum UserRole {
     ACTOR,

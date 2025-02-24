@@ -1,5 +1,10 @@
 package com.example.oopkursova.Controllers;
 
+import com.example.oopkursova.Entity.ActorProfiles;
+import com.example.oopkursova.Entity.Actors;
+import com.example.oopkursova.Enum.UserRole;
+import com.example.oopkursova.Repository.ActorProfilesRepository;
+import com.example.oopkursova.Repository.ActorRepo;
 import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.config.JwtCore;
 import com.example.oopkursova.config.SigninRequest;
@@ -28,6 +33,10 @@ public class SecurityController {
     private PasswordEncoder passwordEncoder;
     private AuthenticationManager authenticationManager;
     private JwtCore jwtCore;
+    @Autowired
+    private ActorRepo actorRepo;
+    @Autowired
+    private ActorProfilesRepository actorProfilesRepository;
 
     @Autowired
     public void setUsersRepo(UsersRepo usersRepo) {
@@ -55,12 +64,28 @@ public class SecurityController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose defferent email");
         }
 
+        // Створюємо користувача
         Users user = new Users();
         user.setName(signupRequest.getName());
         user.setGmail(signupRequest.getGmail());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         user.setRole(signupRequest.getRole());
+
         usersRepo.save(user);
+
+        // Якщо роль "АКТОР" – створюємо акторський профіль
+        if (signupRequest.getRole() == UserRole.ACTOR) {
+            Actors actor = new Actors();
+            actor.setUser(user);
+            actor.setName(signupRequest.getName());
+            actor.setSurName(signupRequest.getSurName());
+            actorRepo.save(actor);
+
+            ActorProfiles actorProfile = new ActorProfiles();
+            actorProfile.setGmail(signupRequest.getGmail());
+            actorProfile.setActors(actor);
+            actorProfilesRepository.save(actorProfile);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body("User created");
     }
     @PostMapping("/signin")

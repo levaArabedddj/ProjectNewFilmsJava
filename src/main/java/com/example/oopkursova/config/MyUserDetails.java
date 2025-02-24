@@ -1,5 +1,5 @@
 package com.example.oopkursova.config;
-import com.example.oopkursova.Entity.UserRole;
+import com.example.oopkursova.Enum.UserRole;
 import com.example.oopkursova.Entity.Users;
 import lombok.AllArgsConstructor;
 import lombok.Data;

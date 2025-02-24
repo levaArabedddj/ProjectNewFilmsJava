@@ -1,6 +1,7 @@
 package com.example.oopkursova.Entity;
 
 
+import com.example.oopkursova.Enum.UserRole;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -24,8 +25,15 @@ public class Users {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Actors actor;
+
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY) // добавлено для связи с фильмами
     private List<Movies> moviesList;
+
+    @OneToMany(mappedBy = "actors", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TrialParticipants> trialParticipants;
 
 
     @Override

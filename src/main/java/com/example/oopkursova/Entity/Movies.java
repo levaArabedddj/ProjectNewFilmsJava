@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -41,6 +42,12 @@ public class Movies {
 
     @OneToOne(mappedBy = "movie", cascade = CascadeType.ALL)
     private Finance filmFinance;
+
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true )
+    private List<Castings> castings;
+    @OneToMany(mappedBy = "movies", cascade = CascadeType.ALL, orphanRemoval = true )
+    private List<Trial_Shootings> trial_Shootings;
+
     @PrePersist
     private void init(){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");

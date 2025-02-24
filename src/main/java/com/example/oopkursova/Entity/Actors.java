@@ -23,6 +23,10 @@ public class Actors {
     private int salaryPerHour;
     private int rating;
 
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    private Users user;
+
 
     @ManyToMany(fetch = FetchType.EAGER,
             cascade = CascadeType.MERGE)

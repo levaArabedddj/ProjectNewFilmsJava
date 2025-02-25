@@ -32,6 +32,10 @@ public class FilmCrewMembers {
     )
     private Set<Movies> movies;
 
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    private Users user;
+
     @Override
     public int hashCode() {
         final int prime = 31;

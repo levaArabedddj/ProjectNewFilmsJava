@@ -2,7 +2,9 @@ package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.Actors;
 import com.example.oopkursova.Entity.Movies;
+import com.example.oopkursova.Repository.ActorProfilesRepository;
 import com.example.oopkursova.Repository.MoviesRepo;
+import com.example.oopkursova.Service.ActorsService;
 import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.ActorRepo;
 import jakarta.persistence.EntityManager;
@@ -13,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -22,21 +26,20 @@ import java.util.Map;
 public class AddActorsControllers {
 
     private final ActorRepo actorRepo;
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final ActorProfilesRepository actorProfilesRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(AddActorsControllers.class);
-
 
     @Autowired
     private MoviesRepo moviesRepo ;
 
-    public AddActorsControllers(ActorRepo actorRepo, EntityManager entityManager) {
+    @Autowired
+    private ActorsService actorsService;
+
+    public AddActorsControllers(ActorRepo actorRepo, ActorProfilesRepository actorProfilesRepo) {
         this.actorRepo = actorRepo;
-        this.entityManager = entityManager;
+        this.actorProfilesRepo = actorProfilesRepo;
     }
-
-
 
     @Loggable
     @PostMapping("/addActorToFilm/{filmId}")
@@ -107,9 +110,40 @@ public class AddActorsControllers {
     }
 
 
+    @PutMapping("/{actorId}/profile")
+    public ResponseEntity<?> updateActorProfile(@PathVariable Long actorId,
+                                                @RequestBody Map<String, String> request) {
+
+        if(!request.containsKey("fieldName") || !request.containsKey("newValue")) {
+            return ResponseEntity.badRequest().body("FieldName and NewValue are required");
+        }
+
+        String fieldName = request.get("fieldName");
+        String newValue = request.get("newValue");
+
+        boolean update = actorsService.updateActorProfile(actorId, fieldName, newValue);
+
+        if(update) {
+            return ResponseEntity.ok("Actor profile updated successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating actor profile");
+        }
+    }
 
 
 
+    @PostMapping("/{actorId}/profile/photo")
+    public ResponseEntity<?> uploadPhotoActor(
+            @PathVariable Long actorId,
+            @RequestParam MultipartFile file) {
+        try {
+            String photoUrl = actorsService.uploadProfilePhoto(actorId, file);
+            return ResponseEntity.ok(photoUrl);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
 
 }

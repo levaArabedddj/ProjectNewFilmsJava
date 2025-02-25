@@ -2,9 +2,11 @@ package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.ActorProfiles;
 import com.example.oopkursova.Entity.Actors;
+import com.example.oopkursova.Entity.FilmCrewMembers;
 import com.example.oopkursova.Enum.UserRole;
 import com.example.oopkursova.Repository.ActorProfilesRepository;
 import com.example.oopkursova.Repository.ActorRepo;
+import com.example.oopkursova.Repository.CrewMemberRepo;
 import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.config.JwtCore;
 import com.example.oopkursova.config.SigninRequest;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 public class SecurityController {
@@ -37,6 +41,8 @@ public class SecurityController {
     private ActorRepo actorRepo;
     @Autowired
     private ActorProfilesRepository actorProfilesRepository;
+    @Autowired
+    private CrewMemberRepo crewMemberRepo;
 
     @Autowired
     public void setUsersRepo(UsersRepo usersRepo) {
@@ -73,6 +79,31 @@ public class SecurityController {
 
         usersRepo.save(user);
 
+
+            switch(signupRequest.getRole()){
+
+                case ACTOR:
+                    Actors actor = new Actors();
+                    actor.setUser(user);
+                    actor.setName(signupRequest.getName());
+                    actor.setSurName(signupRequest.getSurName());
+                    actorRepo.save(actor);
+
+                    ActorProfiles actorProfile = new ActorProfiles();
+                    actorProfile.setGmail(signupRequest.getGmail());
+                    actorProfile.setActors(actor);
+                    actorProfilesRepository.save(actorProfile);
+                    break;
+                case CREW_MEMBER:
+                    FilmCrewMembers crewMembers = new FilmCrewMembers();
+                    crewMembers.setUser(user);
+                    crewMembers.setName(signupRequest.getName());
+                    crewMembers.setSurName(signupRequest.getSurName());
+                    crewMemberRepo.save(crewMembers);
+                    break;
+            }
+
+
         // Якщо роль "АКТОР" – створюємо акторський профіль
         if (signupRequest.getRole() == UserRole.ACTOR) {
             Actors actor = new Actors();
@@ -88,6 +119,8 @@ public class SecurityController {
         }
         return ResponseEntity.status(HttpStatus.CREATED).body("User created");
     }
+
+
     @PostMapping("/signin")
     ResponseEntity<?> signup(@RequestBody SigninRequest signinRequest) {
         Authentication authentication = null;

@@ -1,17 +1,10 @@
 package com.example.oopkursova.Controllers;
 
-import com.example.oopkursova.Entity.ActorProfiles;
-import com.example.oopkursova.Entity.Actors;
-import com.example.oopkursova.Entity.FilmCrewMembers;
-import com.example.oopkursova.Enum.UserRole;
-import com.example.oopkursova.Repository.ActorProfilesRepository;
-import com.example.oopkursova.Repository.ActorRepo;
-import com.example.oopkursova.Repository.CrewMemberRepo;
-import com.example.oopkursova.Repository.UsersRepo;
+import com.example.oopkursova.Entity.*;
+import com.example.oopkursova.Repository.*;
 import com.example.oopkursova.config.JwtCore;
 import com.example.oopkursova.config.SigninRequest;
 import com.example.oopkursova.config.SignupRequest;
-import com.example.oopkursova.Entity.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -43,6 +34,8 @@ public class SecurityController {
     private ActorProfilesRepository actorProfilesRepository;
     @Autowired
     private CrewMemberRepo crewMemberRepo;
+    @Autowired
+    private CrewMemberProfilesRepo crewMemberProfilesRepo;
 
     @Autowired
     public void setUsersRepo(UsersRepo usersRepo) {
@@ -90,8 +83,11 @@ public class SecurityController {
                     actorRepo.save(actor);
 
                     ActorProfiles actorProfile = new ActorProfiles();
+                    actorProfile.setGender(signupRequest.getGender());
                     actorProfile.setGmail(signupRequest.getGmail());
+                    actorProfile.setNumberPhone(signupRequest.getPhone());
                     actorProfile.setActors(actor);
+
                     actorProfilesRepository.save(actorProfile);
                     break;
                 case CREW_MEMBER:
@@ -100,23 +96,15 @@ public class SecurityController {
                     crewMembers.setName(signupRequest.getName());
                     crewMembers.setSurName(signupRequest.getSurName());
                     crewMemberRepo.save(crewMembers);
+
+                    CrewMemberProfiles crewMemberProfiles = new CrewMemberProfiles();
+                    crewMemberProfiles.setGender(signupRequest.getGender());
+                    crewMemberProfiles.setGmail(signupRequest.getGmail());
+                    crewMemberProfiles.setNumberPhone(signupRequest.getPhone());
+                    crewMemberProfiles.setCrewMembers(crewMembers);
+                    crewMemberProfilesRepo.save(crewMemberProfiles);
                     break;
             }
-
-
-        // Якщо роль "АКТОР" – створюємо акторський профіль
-        if (signupRequest.getRole() == UserRole.ACTOR) {
-            Actors actor = new Actors();
-            actor.setUser(user);
-            actor.setName(signupRequest.getName());
-            actor.setSurName(signupRequest.getSurName());
-            actorRepo.save(actor);
-
-            ActorProfiles actorProfile = new ActorProfiles();
-            actorProfile.setGmail(signupRequest.getGmail());
-            actorProfile.setActors(actor);
-            actorProfilesRepository.save(actorProfile);
-        }
         return ResponseEntity.status(HttpStatus.CREATED).body("User created");
     }
 

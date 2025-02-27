@@ -1,5 +1,6 @@
 package com.example.oopkursova.Service;
 
+import com.example.oopkursova.DTO.DtoActorProfile;
 import com.example.oopkursova.Entity.ActorProfiles;
 import com.example.oopkursova.Entity.Actors;
 import com.example.oopkursova.Repository.ActorProfilesRepository;
@@ -60,6 +61,7 @@ public class ActorsService {
                 case "skills"-> actorProfiles.setSkills(newValue);
                 case "experience"->actorProfiles.setExperience(newValue);
                 case "numberPhone"->actorProfiles.setNumberPhone(newValue);
+                case "languages" -> actorProfiles.setLanguages(newValue);
                 default -> throw new IllegalStateException("Unexpected value: " + fieldName);
 
             }
@@ -91,6 +93,33 @@ public class ActorsService {
         return "https://storage.googleapis.com/"+ bucketName+"/"+fileName;
     }
 
+    public Optional<DtoActorProfile> getInformationActor(Long actorId){
+
+        Optional<Actors> actors = actorRepo.findById(actorId);
+        Optional<ActorProfiles> actorProfileOpt = actorProfilRepo.findByActorId(actorId);
+
+        if(actors.isPresent() && actorProfileOpt.isPresent()){
+            return Optional.of(convertToDto(actorProfileOpt.get(), actors.get()));
+        }
+
+
+        return Optional.empty();
+    }
+
+    private DtoActorProfile convertToDto(ActorProfiles actorProfiles , Actors actor) {
+        return new DtoActorProfile(
+                actor.getName(),
+                actor.getSurName(),
+                actor.getSalaryPerHour(),
+                actorProfiles.getBiography(),
+                actorProfiles.getSkills(),
+                actorProfiles.getExperience(),
+                actorProfiles.getProfile_photo_url(),
+                actorProfiles.getGmail(),
+                actorProfiles.getNumberPhone()
+        );
+
+    }
 
 
 }

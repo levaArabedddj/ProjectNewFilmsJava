@@ -146,4 +146,11 @@ public class AddActorsControllers {
     }
 
 
+    @GetMapping("/{actorId}/profile")
+    public ResponseEntity<?> getActorProfile(@PathVariable Long actorId) {
+        return actorsService.getInformationActor(actorId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
 }

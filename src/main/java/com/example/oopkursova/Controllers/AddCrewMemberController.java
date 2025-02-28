@@ -4,11 +4,16 @@ import com.example.oopkursova.Entity.FilmCrewMembers;
 import com.example.oopkursova.Entity.Movies;
 import com.example.oopkursova.Repository.ActorRepo;
 import com.example.oopkursova.Repository.MoviesRepo;
+import com.example.oopkursova.Service.CrewMemberService;
 import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.CrewMemberRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -18,12 +23,14 @@ public class AddCrewMemberController {
 
     private final CrewMemberRepo crewMemberRepo;
 
+    private final CrewMemberService crewMemberService;
 
     private final MoviesRepo moviesRepo;
 
     @Autowired
-    public AddCrewMemberController(CrewMemberRepo crewMemberRepo, MoviesRepo moviesRepo) {
+    public AddCrewMemberController(CrewMemberRepo crewMemberRepo, CrewMemberService crewMemberService, MoviesRepo moviesRepo) {
         this.crewMemberRepo = crewMemberRepo;
+        this.crewMemberService = crewMemberService;
         this.moviesRepo = moviesRepo;
     }
 
@@ -95,6 +102,49 @@ public class AddCrewMemberController {
     }
 
 
+
+    @PutMapping("/{crewMemberId}/profile")
+    public ResponseEntity<?> updateCrewMemberProfile(@PathVariable Long crewMemberId,
+                                                     @RequestBody Map<String,String> request) {
+
+        if (!request.containsKey("fieldName") || !request.containsKey("newValue")) {
+            return ResponseEntity.badRequest().body("Missing required fields");
+        }
+
+        String fieldName = request.get("fieldName");
+        String newValue = request.get("newValue");
+
+        boolean update = crewMemberService.updateCrewMemberProfile(crewMemberId, fieldName, newValue);
+
+        if (update) {
+            return ResponseEntity.ok("Crew Member profile updated successfully");
+        } else {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error while updating profile");
+        }
+        return ResponseEntity.ok("Crew Member profile updated successfully");
+    }
+
+
+    @PostMapping("/{crewMemberId}/profile/photo")
+    public ResponseEntity<?> uploadPhotoProfileCrewMember(
+            @PathVariable Long crewMemberId,
+            @RequestParam MultipartFile file) {
+
+        try {
+            String url = crewMemberService.uploadProfilePhoto(crewMemberId,file);
+            return ResponseEntity.ok(url);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping("/{crewMemberId}/profile")
+    public ResponseEntity<?> getCrewMemberProfile(@PathVariable Long crewMemberId) {
+
+        return crewMemberService.getCrewMemberProfile(crewMemberId)
+                .map(ResponseEntity::ok)
+                .orElseGet( () -> ResponseEntity.notFound().build());
+    }
 
 
 

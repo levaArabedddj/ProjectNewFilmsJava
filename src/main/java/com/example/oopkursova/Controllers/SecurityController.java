@@ -54,59 +54,59 @@ public class SecurityController {
         this.jwtCore = jwtCore;
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> signin(@RequestBody SignupRequest signupRequest) {
-        if(usersRepo.existsUsersByName(signupRequest.getName())){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose defferent name");
-        }
-        if(usersRepo.existsUsersByGmail(signupRequest.getGmail())){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose defferent email");
-        }
-
-        // Створюємо користувача
-        Users user = new Users();
-        user.setName(signupRequest.getName());
-        user.setGmail(signupRequest.getGmail());
-        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
-        user.setRole(signupRequest.getRole());
-
-        usersRepo.save(user);
-
-
-            switch(signupRequest.getRole()){
-
-                case ACTOR:
-                    Actors actor = new Actors();
-                    actor.setUser(user);
-                    actor.setName(signupRequest.getName());
-                    actor.setSurName(signupRequest.getSurName());
-                    actorRepo.save(actor);
-
-                    ActorProfiles actorProfile = new ActorProfiles();
-                    actorProfile.setGender(signupRequest.getGender());
-                    actorProfile.setGmail(signupRequest.getGmail());
-                    actorProfile.setNumberPhone(signupRequest.getPhone());
-                    actorProfile.setActors(actor);
-
-                    actorProfilesRepository.save(actorProfile);
-                    break;
-                case CREW_MEMBER:
-                    FilmCrewMembers crewMembers = new FilmCrewMembers();
-                    crewMembers.setUser(user);
-                    crewMembers.setName(signupRequest.getName());
-                    crewMembers.setSurName(signupRequest.getSurName());
-                    crewMemberRepo.save(crewMembers);
-
-                    CrewMemberProfiles crewMemberProfiles = new CrewMemberProfiles();
-                    crewMemberProfiles.setGender(signupRequest.getGender());
-                    crewMemberProfiles.setGmail(signupRequest.getGmail());
-                    crewMemberProfiles.setNumberPhone(signupRequest.getPhone());
-                    crewMemberProfiles.setCrewMembers(crewMembers);
-                    crewMemberProfilesRepo.save(crewMemberProfiles);
-                    break;
-            }
-        return ResponseEntity.status(HttpStatus.CREATED).body("User created");
-    }
+//    @PostMapping("/signup")
+//    public ResponseEntity<?> signin(@RequestBody SignupRequest signupRequest) {
+//        if(usersRepo.existsUsersByName(signupRequest.getName())){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose defferent name");
+//        }
+//        if(usersRepo.existsUsersByGmail(signupRequest.getGmail())){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose defferent email");
+//        }
+//
+//        // Створюємо користувача
+//        Users user = new Users();
+//        user.setName(signupRequest.getName());
+//        user.setGmail(signupRequest.getGmail());
+//        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+//        user.setRole(signupRequest.getRole());
+//
+//        usersRepo.save(user);
+//
+//
+//            switch(signupRequest.getRole()){
+//
+//                case ACTOR:
+//                    Actors actor = new Actors();
+//                    actor.setUser(user);
+//                    actor.setName(signupRequest.getName());
+//                    actor.setSurName(signupRequest.getSurName());
+//                    actorRepo.save(actor);
+//
+//                    ActorProfiles actorProfile = new ActorProfiles();
+//                    actorProfile.setGender(signupRequest.getGender());
+//                    actorProfile.setGmail(signupRequest.getGmail());
+//                    actorProfile.setNumberPhone(signupRequest.getPhone());
+//                    actorProfile.setActors(actor);
+//
+//                    actorProfilesRepository.save(actorProfile);
+//                    break;
+//                case CREW_MEMBER:
+//                    FilmCrewMembers crewMembers = new FilmCrewMembers();
+//                    crewMembers.setUser(user);
+//                    crewMembers.setName(signupRequest.getName());
+//                    crewMembers.setSurName(signupRequest.getSurName());
+//                    crewMemberRepo.save(crewMembers);
+//
+//                    CrewMemberProfiles crewMemberProfiles = new CrewMemberProfiles();
+//                    crewMemberProfiles.setGender(signupRequest.getGender());
+//                    crewMemberProfiles.setGmail(signupRequest.getGmail());
+//                    crewMemberProfiles.setNumberPhone(signupRequest.getPhone());
+//                    crewMemberProfiles.setCrewMembers(crewMembers);
+//                    crewMemberProfilesRepo.save(crewMemberProfiles);
+//                    break;
+//            }
+//        return ResponseEntity.status(HttpStatus.CREATED).body("User created");
+//    }
 
 
     @PostMapping("/signin")
@@ -122,4 +122,62 @@ public class SecurityController {
         String jwt = jwtCore.generateToken(authentication);
         return ResponseEntity.ok(jwt);
     }
+
+    @PostMapping("/signup-Login")
+    public ResponseEntity<?> signInAuth(@RequestBody SignupRequest signupRequest){
+        if (usersRepo.existsUsersByName(signupRequest.getName())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose different name");
+        }
+        if (usersRepo.existsUsersByGmail(signupRequest.getGmail())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose different email");
+        }
+
+        // Створення користувача
+        Users user = new Users();
+        user.setName(signupRequest.getName());
+        user.setGmail(signupRequest.getGmail());
+        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        user.setRole(signupRequest.getRole());
+        usersRepo.save(user);
+
+        switch (signupRequest.getRole()) {
+            case ACTOR:
+                Actors actor = new Actors();
+                actor.setUser(user);
+                actor.setName(signupRequest.getName());
+                actor.setSurName(signupRequest.getSurName());
+                actorRepo.save(actor);
+
+                ActorProfiles actorProfile = new ActorProfiles();
+                actorProfile.setGender(signupRequest.getGender());
+                actorProfile.setGmail(signupRequest.getGmail());
+                actorProfile.setNumberPhone(signupRequest.getPhone());
+                actorProfile.setActors(actor);
+                actorProfilesRepository.save(actorProfile);
+                break;
+            case CREW_MEMBER:
+                FilmCrewMembers crewMembers = new FilmCrewMembers();
+                crewMembers.setUser(user);
+                crewMembers.setName(signupRequest.getName());
+                crewMembers.setSurName(signupRequest.getSurName());
+                crewMemberRepo.save(crewMembers);
+
+                CrewMemberProfiles crewMemberProfiles = new CrewMemberProfiles();
+                crewMemberProfiles.setGender(signupRequest.getGender());
+                crewMemberProfiles.setGmail(signupRequest.getGmail());
+                crewMemberProfiles.setNumberPhone(signupRequest.getPhone());
+                crewMemberProfiles.setCrewMembers(crewMembers);
+                crewMemberProfilesRepo.save(crewMemberProfiles);
+                break;
+        }
+
+        // Автоматична авторизація
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(signupRequest.getName(), signupRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtCore.generateToken(authentication);
+
+        return ResponseEntity.ok(jwt);
+    }
+
 }

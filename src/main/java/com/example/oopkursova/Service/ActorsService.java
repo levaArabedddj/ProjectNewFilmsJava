@@ -62,6 +62,7 @@ public class ActorsService {
                 case "experience"->actorProfiles.setExperience(newValue);
                 case "numberPhone"->actorProfiles.setNumberPhone(newValue);
                 case "languages" -> actorProfiles.setLanguages(newValue);
+                case "gmail"-> actorProfiles.setGmail(newValue);
                 default -> throw new IllegalStateException("Unexpected value: " + fieldName);
 
             }

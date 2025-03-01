@@ -59,7 +59,7 @@ public class TokenFilter extends OncePerRequestFilter {
 
 
                 try {
-                    name = jwtCore.getNameFromToken(jwt); // Вызов через экземпляр
+                    name = jwtCore.getUserNameFromToken(jwt); // Вызов через экземпляр
                 } catch (ExpiredJwtException e) {
                     System.out.println(e.getMessage());
                 }

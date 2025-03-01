@@ -17,8 +17,8 @@ public class DtoMovie {
     private String title;
     private String description ;
     private String genre;
-    private Set<DtoActor> actors;
-    private Set<DtoCrewMember> crewMembers;
+//    private Set<DtoActor> actors;
+//    private Set<DtoCrewMember> crewMembers;
     private LocalDateTime dateTimeCreated;
     private Set<DtoShootingDay> shootingDays;
     private DtoScript script;

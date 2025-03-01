@@ -15,7 +15,7 @@ import java.util.Collections;
 public class MyUserDetails implements UserDetails {
 
     private long user_id;
-    private String name;
+    private String userName;
     private UserRole role;
     private String gmail;
     private String password;
@@ -25,7 +25,7 @@ public class MyUserDetails implements UserDetails {
 
         return new MyUserDetails(
                 user.getUser_id(),
-                user.getName(),
+                user.getUserName(),
                 user.getRole(),
                 user.getGmail(),
                 user.getPassword());
@@ -41,7 +41,7 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return name;
+        return userName;
     }
 
     @Override

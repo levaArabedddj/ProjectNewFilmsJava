@@ -18,7 +18,7 @@ public class MyUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = usersRepo.findByName(username)
+        Users user = usersRepo.findByUserName(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return MyUserDetails.build(user); // Используем  кастомный метод build

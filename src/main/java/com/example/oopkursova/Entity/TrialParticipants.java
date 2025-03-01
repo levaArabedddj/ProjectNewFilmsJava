@@ -9,6 +9,9 @@ import lombok.Data;
 @Table(name = "Trial_Participants")
 public class TrialParticipants {
 
+    // тут исправить связь с актера на юзера
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

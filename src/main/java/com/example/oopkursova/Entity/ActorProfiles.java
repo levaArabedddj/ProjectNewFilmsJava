@@ -23,6 +23,7 @@ public class ActorProfiles {
     @JoinColumn(name = "actor_id", nullable = false, unique = true)
     private Actors actors;
 
+    @Enumerated(EnumType.STRING)
     private Gender gender;
     @Column(columnDefinition = "TEXT")
     private String biography;

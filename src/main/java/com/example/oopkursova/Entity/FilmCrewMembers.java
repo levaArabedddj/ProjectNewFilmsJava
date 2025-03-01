@@ -15,22 +15,26 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FilmCrewMembers {
+
+
+    // убрать связь с фильмом , и настроить связь с командой фильма
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long crewMember_id;
     private String name;
     private String surName;
     private int salaryPerHours;
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinTable(
-            name = "filmCrewMember_movies",
-            joinColumns = {@JoinColumn(name = "filmCrewMember_id",
-                    referencedColumnName ="crewMember_id",
-                    nullable = false, updatable = false, insertable = false)},
-            inverseJoinColumns = {@JoinColumn(name = "movie_id",referencedColumnName = "id",
-                    nullable = false, updatable = false, insertable = false)}
-    )
-    private Set<Movies> movies;
+//    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+//    @JoinTable(
+//            name = "filmCrewMember_movies",
+//            joinColumns = {@JoinColumn(name = "filmCrewMember_id",
+//                    referencedColumnName ="crewMember_id",
+//                    nullable = false, updatable = false, insertable = false)},
+//            inverseJoinColumns = {@JoinColumn(name = "movie_id",referencedColumnName = "id",
+//                    nullable = false, updatable = false, insertable = false)}
+//    )
+//    private Set<Movies> movies;
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")

@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class SignupRequest {
+    private String userName;
     private String name;
     private String surName;
     private String gmail;

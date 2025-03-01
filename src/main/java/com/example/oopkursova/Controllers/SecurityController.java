@@ -2,6 +2,7 @@ package com.example.oopkursova.Controllers;
 
 import com.example.oopkursova.Entity.*;
 import com.example.oopkursova.Repository.*;
+import com.example.oopkursova.Service.SenderService;
 import com.example.oopkursova.config.JwtCore;
 import com.example.oopkursova.config.SigninRequest;
 import com.example.oopkursova.config.SignupRequest;
@@ -28,14 +29,25 @@ public class SecurityController {
     private PasswordEncoder passwordEncoder;
     private AuthenticationManager authenticationManager;
     private JwtCore jwtCore;
+
+    private final ActorRepo actorRepo;
+    private final ActorProfilesRepository actorProfilesRepository;
+    private final CrewMemberRepo crewMemberRepo;
+    private  final CrewMemberProfilesRepo crewMemberProfilesRepo;
+    private final SenderService emailService;
+    private final DirectorRepo directorRepo;
+    private final DirectorProfilesRepo directorProfilesRepo;
+
     @Autowired
-    private ActorRepo actorRepo;
-    @Autowired
-    private ActorProfilesRepository actorProfilesRepository;
-    @Autowired
-    private CrewMemberRepo crewMemberRepo;
-    @Autowired
-    private CrewMemberProfilesRepo crewMemberProfilesRepo;
+    public SecurityController(ActorRepo actorRepo, ActorProfilesRepository actorProfilesRepository, CrewMemberRepo crewMemberRepo, CrewMemberProfilesRepo crewMemberProfilesRepo, SenderService emailService, DirectorRepo directorRepo, DirectorProfilesRepo directorProfilesRepo) {
+        this.actorRepo = actorRepo;
+        this.actorProfilesRepository = actorProfilesRepository;
+        this.crewMemberRepo = crewMemberRepo;
+        this.crewMemberProfilesRepo = crewMemberProfilesRepo;
+        this.emailService = emailService;
+        this.directorRepo = directorRepo;
+        this.directorProfilesRepo = directorProfilesRepo;
+    }
 
     @Autowired
     public void setUsersRepo(UsersRepo usersRepo) {
@@ -113,7 +125,7 @@ public class SecurityController {
     ResponseEntity<?> signup(@RequestBody SigninRequest signinRequest) {
         Authentication authentication = null;
         try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signinRequest.getName(), signinRequest.getPassword()));
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signinRequest.getUserName(), signinRequest.getPassword()));
         } catch (BadCredentialsException e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
@@ -125,7 +137,7 @@ public class SecurityController {
 
     @PostMapping("/signup-Login")
     public ResponseEntity<?> signInAuth(@RequestBody SignupRequest signupRequest){
-        if (usersRepo.existsUsersByName(signupRequest.getName())) {
+        if (usersRepo.existsUsersByUserName(signupRequest.getUserName())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose different name");
         }
         if (usersRepo.existsUsersByGmail(signupRequest.getGmail())) {
@@ -134,7 +146,7 @@ public class SecurityController {
 
         // Створення користувача
         Users user = new Users();
-        user.setName(signupRequest.getName());
+        user.setUserName(signupRequest.getUserName());
         user.setGmail(signupRequest.getGmail());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         user.setRole(signupRequest.getRole());
@@ -169,11 +181,26 @@ public class SecurityController {
                 crewMemberProfiles.setCrewMembers(crewMembers);
                 crewMemberProfilesRepo.save(crewMemberProfiles);
                 break;
+            case DIRECTOR:
+                Director director = new Director();
+                director.setUsers(user);
+                director.setName(signupRequest.getName());
+                director.setSurName(signupRequest.getSurName());
+                directorRepo.save(director);
+
+                DirectorProfiles profiles = new DirectorProfiles();
+                profiles.setLastName(signupRequest.getName());
+                profiles.setFirstName(signupRequest.getSurName());
+                profiles.setGender(signupRequest.getGender());
+                profiles.setPhoneNumber(signupRequest.getPhone());
+                directorProfilesRepo.save(profiles);
         }
+
+        emailService.sendRegistrationEmail(user.getGmail(), user.getUserName());
 
         // Автоматична авторизація
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(signupRequest.getName(), signupRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(signupRequest.getUserName(), signupRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtCore.generateToken(authentication);
 

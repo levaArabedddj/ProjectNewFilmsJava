@@ -14,6 +14,9 @@ import java.util.Set;
 @Entity
 @Table(name = "Actors")
 public class Actors {
+
+    // убрать связь с фильмом , и настроить связь с командой фильма
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -28,17 +31,17 @@ public class Actors {
     private Users user;
 
 
-    @ManyToMany(fetch = FetchType.EAGER,
-            cascade = CascadeType.MERGE)
-    @JoinTable(
-            name = "actors_movies",
-            joinColumns = {@JoinColumn(name = "actors_id",
-                    referencedColumnName = "id",
-                    nullable = false, updatable = false,
-                    insertable = false)},
-            inverseJoinColumns = {@JoinColumn(name = "movie_id",
-                    referencedColumnName = "id",
-                    nullable = false, updatable = false, insertable = false)}
-    )
-    private Set<Movies> movies;
+//    @ManyToMany(fetch = FetchType.EAGER,
+//            cascade = CascadeType.MERGE)
+//    @JoinTable(
+//            name = "actors_movies",
+//            joinColumns = {@JoinColumn(name = "actors_id",
+//                    referencedColumnName = "id",
+//                    nullable = false, updatable = false,
+//                    insertable = false)},
+//            inverseJoinColumns = {@JoinColumn(name = "movie_id",
+//                    referencedColumnName = "id",
+//                    nullable = false, updatable = false, insertable = false)}
+//    )
+//    private Set<Movies> movies;
 }

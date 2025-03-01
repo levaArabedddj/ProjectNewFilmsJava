@@ -21,7 +21,7 @@ public class Users {
 
     private String password;
     @Column(unique = true)
-    private String name;
+    private String userName;
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
@@ -32,8 +32,8 @@ public class Users {
     private FilmCrewMembers filmCrewMembers;
 
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY) // добавлено для связи с фильмами
-    private List<Movies> moviesList;
+//    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY) // добавлено для связи с фильмами
+//    private List<Movies> moviesList;
 
     @OneToMany(mappedBy = "actors", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TrialParticipants> trialParticipants;
@@ -44,7 +44,7 @@ public class Users {
         return "Users{" +
                 "id=" + user_id +
                 ", gmail='" + gmail + '\'' +
-                ", name='" + name + '\'' +
+                ", name='" + userName + '\'' +
                 ", password='" + password + '\'' +
                 ", role='" + role + '\'' +
                 '}';

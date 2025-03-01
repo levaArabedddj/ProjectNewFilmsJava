@@ -1,7 +1,9 @@
 package com.example.oopkursova.Service;
 
 import com.example.oopkursova.DTO.*;
+import com.example.oopkursova.Entity.Director;
 import com.example.oopkursova.Entity.Movies;
+import com.example.oopkursova.Repository.DirectorRepo;
 import com.example.oopkursova.Repository.MoviesRepo;
 import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.Entity.Users;
@@ -19,13 +21,21 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@AllArgsConstructor
 public class MovieService {
 
-    @Autowired
+
     private final MoviesRepo moviesRepo;
-    @Autowired
+
     private final UsersRepo usersRepo;
+
+    private final DirectorRepo directorRepo;
+
+    @Autowired
+    public MovieService(MoviesRepo moviesRepo, UsersRepo usersRepo, DirectorRepo directorRepo) {
+        this.moviesRepo = moviesRepo;
+        this.usersRepo = usersRepo;
+        this.directorRepo = directorRepo;
+    }
 
     @Loggable
     public Movies findById(long id) {
@@ -54,7 +64,7 @@ public class MovieService {
     @Loggable
     public List<DtoMovie> getMoviesByUser(String userEmail) {
         // Проверяем, существует ли пользователь
-        Optional<Users> optionalUser = usersRepo.findByName(userEmail);
+        Optional<Users> optionalUser = usersRepo.findByUserName(userEmail);
 
         if (optionalUser.isEmpty()) {
             log.warn("Пользователь с email {} не найден", userEmail);
@@ -63,8 +73,18 @@ public class MovieService {
 
         Users user = optionalUser.get();
 
-        // Получаем список фильмов пользователя
-        List<Movies> movies = moviesRepo.findByUser(user);
+        // Проверяем, является ли пользователь режиссером
+        Optional<Director> optionalDirector = directorRepo.findByUsers(user);
+
+        if (optionalDirector.isEmpty()) {
+            log.warn("Пользователь {} не является режиссером", userEmail);
+            return Collections.emptyList();
+        }
+
+        Director director = optionalDirector.get();
+
+        // Получаем список фильмов режиссера
+        List<Movies> movies = moviesRepo.findByDirector(director);
 
         if (movies == null || movies.isEmpty()) {
             log.info("Фильмы для пользователя {} не найдены", userEmail);
@@ -78,13 +98,13 @@ public class MovieService {
 
 
     private DtoMovie convertToMovieDto(Movies movie){
-        Set<DtoActor> dtoActors = movie.getActors().stream()
-                .map(actors -> new DtoActor(actors.getId(), actors.getName(), actors.getSurName(),actors.getSalaryPerHour(), actors.getRating()))
-                .collect(Collectors.toSet());
-
-        Set<DtoCrewMember> dtoCrewMembers = movie.getFilmCrewMembers().stream()
-                .map(crewMember -> new DtoCrewMember(crewMember.getCrewMember_id(), crewMember.getName(), crewMember.getSurName(), crewMember.getSalaryPerHours()))
-                .collect(Collectors.toSet());
+//        Set<DtoActor> dtoActors = movie.getActors().stream()
+//                .map(actors -> new DtoActor(actors.getId(), actors.getName(), actors.getSurName(),actors.getSalaryPerHour(), actors.getRating()))
+//                .collect(Collectors.toSet());
+//
+//        Set<DtoCrewMember> dtoCrewMembers = movie.getFilmCrewMembers().stream()
+//                .map(crewMember -> new DtoCrewMember(crewMember.getCrewMember_id(), crewMember.getName(), crewMember.getSurName(), crewMember.getSalaryPerHours()))
+//                .collect(Collectors.toSet());
 
         Set<DtoShootingDay> dtoShootingDays = movie.getShootingDays().stream()
                 .map(shootingDay -> new DtoShootingDay( shootingDay.getShootingDate(), shootingDay.getShootingTime(), shootingDay.getShootingLocation(), shootingDay.getEstimatedDurationHours()))
@@ -105,7 +125,7 @@ public class MovieService {
         }
 
         return new DtoMovie(movie.getId(), movie.getTitle(), movie.getDescription(),
-                movie.getGenre(), dtoActors, dtoCrewMembers,
+                movie.getGenre(),
                 movie.getDateTimeCreated(), dtoShootingDays, dtoScript, dtoFinance);
     }
 

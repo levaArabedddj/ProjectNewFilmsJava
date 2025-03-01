@@ -15,10 +15,10 @@ public interface UsersRepo extends JpaRepository<Users, Long> {
      Optional<Users> findByGmail(String email);
 
      @Loggable
-     Optional<Users> findByName(String username);
+     Optional<Users> findByUserName(String username);
 
      Boolean existsUsersByGmail(String gmail);
-     Boolean existsUsersByName(String name);
+     Boolean existsUsersByUserName(String name);
 
 
 

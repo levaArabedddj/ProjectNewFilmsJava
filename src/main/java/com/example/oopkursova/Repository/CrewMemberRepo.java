@@ -12,9 +12,9 @@ import java.util.List;
 
 @Repository
 public interface CrewMemberRepo extends JpaRepository<FilmCrewMembers, Long> {
-    @Loggable
-    @Query("SELECT fcm FROM FilmCrewMembers fcm JOIN FETCH fcm.movies")
-    List<FilmCrewMembers> findAllWithMovies();
+//    @Loggable
+//    @Query("SELECT fcm FROM FilmCrewMembers fcm JOIN FETCH fcm.movies")
+//    List<FilmCrewMembers> findAllWithMovies();
 
     @Loggable
     @Query(value = "SELECT f.* FROM public.film_crew_member f INNER JOIN public.film_crew_member_movies fm " +

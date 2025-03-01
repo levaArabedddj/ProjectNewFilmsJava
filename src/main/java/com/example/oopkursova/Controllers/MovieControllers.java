@@ -2,9 +2,11 @@ package com.example.oopkursova.Controllers;
 
 
 import com.example.oopkursova.DTO.DtoMovie;
+import com.example.oopkursova.Entity.Director;
 import com.example.oopkursova.Entity.Movies;
 import com.example.oopkursova.Entity.Users;
 import com.example.oopkursova.Exception.ApiException;
+import com.example.oopkursova.Repository.DirectorRepo;
 import com.example.oopkursova.Repository.UsersRepo;
 import com.example.oopkursova.loger.Loggable;
 import com.example.oopkursova.Repository.MoviesRepo;
@@ -25,30 +27,39 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/Film")
 public class MovieControllers {
 
     private final MoviesRepo moviesRepo;
     private final MovieService movieService;
 
+    private final DirectorRepo directorRepo;
     @Autowired
     private UsersRepo usersRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(MovieControllers.class);
 
-    public MovieControllers(MoviesRepo moviesRepo, MovieService movieService) {
+    @Autowired
+    public MovieControllers(MoviesRepo moviesRepo, MovieService movieService, DirectorRepo directorRepo) {
         this.moviesRepo = moviesRepo;
         this.movieService = movieService;
+        this.directorRepo = directorRepo;
     }
 
     @Loggable
     @PostMapping("/create_movie")
-    @PreAuthorize("hasAuthority('User_Role')")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<?> createFilm(@Valid @RequestBody Movies movies, Principal principal) {
         try {
             // Извлечение текущего пользователя из контекста
             String username = principal.getName();
-            Users user = usersRepo.findByName(username)
+            Users user = usersRepo.findByUserName(username)
                     .orElseThrow(() -> new ApiException("User not found"));
+
+            // Проверяем, есть ли профиль режиссёра у пользователя
+            Director director = directorRepo.findByUsers(user)
+                    .orElseThrow(() -> new ApiException("You are not a director"));
+
 
             // Проверка, существует ли фильм с таким названием
             Optional<Movies> existingMovie = moviesRepo.findByTitle(movies.getTitle());
@@ -61,7 +72,7 @@ public class MovieControllers {
             newMovie.setTitle(movies.getTitle());
             newMovie.setDescription(movies.getDescription());
             newMovie.setGenre(movies.getGenre());
-            newMovie.setUser(user);
+            newMovie.setDirector(director);
 
             moviesRepo.save(newMovie);
             logger.info("New movie created: {}", newMovie);
@@ -88,6 +99,7 @@ public class MovieControllers {
 
     @Loggable
     @GetMapping("/movie_details")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<?> getFilms(Principal principal) {
         // Проверка на наличие авторизованного пользователя
         if (principal == null) {
@@ -113,10 +125,10 @@ public class MovieControllers {
 
 
     @Loggable
-    @PostMapping("/update_movie")
-    @PreAuthorize("hasAuthority('User_Role')")
+    @PostMapping("/update_movie/{filmId}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<?> updateMovie(
-            @RequestParam("filmId") Long filmId,
+            @PathVariable("filmId") Long filmId,
             @Valid @RequestBody Movies updatedData,
             Principal principal) {
         try {
@@ -124,14 +136,15 @@ public class MovieControllers {
             String username = principal.getName();
 
             // Поиск пользователя по имени
-            Users user = usersRepo.findByName(username)
+            Users user = usersRepo.findByUserName(username)
                     .orElseThrow(() -> new ApiException("User not found"));
 
             // Проверка, существует ли фильм и принадлежит ли он текущему пользователю
             Movies existingMovie = moviesRepo.findById(filmId)
                     .orElseThrow(() -> new ApiException("Film not found"));
 
-            if (existingMovie.getUser().getUser_id() != user.getUser_id()) {
+            // Проверка, принадлежит ли фильм текущему пользователю
+            if (existingMovie.getDirector().getUsers().getUser_id() != user.getUser_id()) {
                 throw new ApiException("Ви не маєте дозволу редагувати цей фільм");
             }
 
@@ -166,23 +179,23 @@ public class MovieControllers {
 
 
     @Loggable
-    @PostMapping("/DeleteFilm")
-    @PreAuthorize("hasAuthority('User_Role')")
-    public ResponseEntity<?> deleteMovie(@RequestParam("filmId") Long filmId,
+    @DeleteMapping("/DeleteFilm/{filmId}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<?> deleteMovie(@PathVariable("filmId") Long filmId,
                                          Principal principal) {
         try {
             // Получение имени текущего пользователя
             String username = principal.getName();
 
             // Поиск пользователя по имени
-            Users user = usersRepo.findByName(username)
+            Users user = usersRepo.findByUserName(username)
                     .orElseThrow(() -> new ApiException("User not found"));
 
             // Проверка, существует ли фильм и принадлежит ли он текущему пользователю
             Movies deleteMovie = moviesRepo.findById(filmId)
                     .orElseThrow(() -> new ApiException("Film not found"));
 
-            if (deleteMovie.getUser().getUser_id() != user.getUser_id()) {
+            if (deleteMovie.getDirector().getUsers().getUser_id() != user.getUser_id()) {
                 throw new ApiException("You don't have permission to edit this film");
             }
             moviesRepo.delete(deleteMovie);

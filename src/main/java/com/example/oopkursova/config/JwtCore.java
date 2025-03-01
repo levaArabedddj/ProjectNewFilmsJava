@@ -72,7 +72,7 @@ public class JwtCore {
                 .compact();
     }
 
-    public String getNameFromToken(String token) {
+    public String getUserNameFromToken(String token) {
         if (SECRET_KEY == null) {
             init();
         }
@@ -99,9 +99,9 @@ public class JwtCore {
 
     public boolean isValidUserToken(String token) {
         if (isValidToken(token)) {
-            String username = getNameFromToken(token);
+            String username = getUserNameFromToken(token);
             if (username != null) {
-                return userRepository.existsUsersByName(username);
+                return userRepository.existsUsersByUserName(username);
             }
         }
         return false;

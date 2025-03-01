@@ -13,6 +13,10 @@ import java.util.Set;
 @Entity
 @Table
 public class Movies {
+
+    //убрать связь с актерами и членами сьемочной группы , и настроить связь с юзерами и командами
+    // убрать связь с юзером и настроить связь с режиссером , так как только режиссер может создавать фильмы
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -20,16 +24,20 @@ public class Movies {
     private String description ;
     private String genre;
 
-    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id") // добавлено для связи с пользователем
-    private Users user;
+//    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
+//    @JoinColumn(name = "user_id") // добавлено для связи с пользователем
+//    private Users user;
 
-    @ManyToMany(mappedBy = "movies",fetch = FetchType.EAGER)
-    private Set<Actors> actors;
+//    @ManyToMany(mappedBy = "movies",fetch = FetchType.EAGER)
+//    private Set<Actors> actors;
 
 
-    @ManyToMany(mappedBy = "movies",fetch = FetchType.EAGER)
-    private Set<FilmCrewMembers> filmCrewMembers;
+//    @ManyToMany(mappedBy = "movies",fetch = FetchType.EAGER)
+//    private Set<FilmCrewMembers> filmCrewMembers;
+
+    @ManyToOne
+    @JoinColumn(name = "director_id", nullable = false)
+    private Director director;
 
     private LocalDateTime dateTimeCreated;
 

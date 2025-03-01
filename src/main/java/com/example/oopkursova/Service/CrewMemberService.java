@@ -42,9 +42,9 @@ public class CrewMemberService {
     @Value("${google.cloud.storage.bucket.name1}")
     private String bucketName;
 
-    public List<FilmCrewMembers> allGetCrewMember(){
-        return crewMemberRepo.findAllWithMovies();
-    }
+//    public List<FilmCrewMembers> allGetCrewMember(){
+//        return crewMemberRepo.findAllWithMovies();
+//    }
     @Transactional
     @Loggable
     public FilmCrewMembers createdCrewMember(FilmCrewMembers filmCrewMembers){

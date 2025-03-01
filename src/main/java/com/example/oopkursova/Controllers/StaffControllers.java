@@ -60,7 +60,7 @@ public class StaffControllers {
 
         try {
             String username = principal.getName();
-            Users users = usersRepo.findByName(username)
+            Users users = usersRepo.findByUserName(username)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             Actors newActor = new Actors();
@@ -86,7 +86,7 @@ public class StaffControllers {
 
         try {
             String username = principal.getName();
-            Users users = usersRepo.findByName(username)
+            Users users = usersRepo.findByUserName(username)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             FilmCrewMembers crewMembers = new FilmCrewMembers();
@@ -110,7 +110,7 @@ public class StaffControllers {
 
         try {
             String username = principal.getName();
-            Users users = usersRepo.findByName(username).
+            Users users = usersRepo.findByUserName(username).
                     orElseThrow(() -> new RuntimeException("User not found"));
 
             List<FilmCrewMembers> filmCrewMembers = crewMemberRepo.findAll();
@@ -137,7 +137,7 @@ public class StaffControllers {
 
         try {
             String username = principal.getName();
-            Users users = usersRepo.findByName(username).
+            Users users = usersRepo.findByUserName(username).
                     orElseThrow(() -> new RuntimeException("User not found"));
 
             List<Actors> allActors = actorRepo.findAll();
@@ -165,7 +165,7 @@ public class StaffControllers {
         try {
 
             String username = principal.getName();
-            Users users = usersRepo.findByName(username).
+            Users users = usersRepo.findByUserName(username).
                     orElseThrow(() -> new RuntimeException("User not found"));
 
             CompletableFuture<List<Actors>> actors = CompletableFuture.supplyAsync(()-> actorRepo.findAll());
@@ -254,7 +254,7 @@ public class StaffControllers {
 
         try {
             String username = principal.getName();
-            Users users = usersRepo.findByName(username)
+            Users users = usersRepo.findByUserName(username)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             Actors actors = actorRepo.findById(actorId)
@@ -296,7 +296,7 @@ public class StaffControllers {
         try {
             // Получаем пользователя
             String username = principal.getName();
-            Users user = usersRepo.findByName(username)
+            Users user = usersRepo.findByUserName(username)
                     .orElseThrow(() -> new ApiException("User not found"));
 
             // Ищем члена съёмочной группы

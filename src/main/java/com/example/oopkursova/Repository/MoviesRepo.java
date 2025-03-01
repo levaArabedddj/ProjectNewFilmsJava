@@ -15,6 +15,8 @@ public interface MoviesRepo extends JpaRepository<Movies, Long> {
     @Loggable
     Movies findById(long id);
 
+    Optional<Movies> findById(Long id);
+
    // List<Movies> findByUserName(String currentUsername);
 
 //    List<Movies> findAllByUser(Users currentUser);
@@ -25,7 +27,8 @@ public interface MoviesRepo extends JpaRepository<Movies, Long> {
 
     List<Movies> findByDirector(Director director);
 
-//    @Query("SELECT COUNT(m) > 0 FROM Movies m WHERE m.id = :id AND m.user.name = :name")
-//    boolean existsByIdAndUsername(@Param("id") Long id, @Param("name") String username);
+    @Query("SELECT COUNT(m) > 0 FROM Movies m WHERE m.id = :id AND m.director.users.userName = :name")
+    boolean existsByIdAndUsername(@Param("id") Long id, @Param("name") String username);
+
 
 }

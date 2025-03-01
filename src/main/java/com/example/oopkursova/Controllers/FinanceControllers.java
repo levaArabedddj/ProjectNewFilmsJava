@@ -49,7 +49,7 @@ public class FinanceControllers {
 
     @Loggable
     @PostMapping("/createFinance/{filmId}")
-    @PreAuthorize("hasAuthority('User_Role')")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<?> createFinance(@PathVariable("filmId") Long filmId, Principal principal,
                                            @Valid @RequestBody DtoFinance dtoFinance){
         try {
@@ -93,152 +93,152 @@ public class FinanceControllers {
 
     }
 
-//    @SneakyThrows
-//    @Loggable
-//    @GetMapping("/getFinance/{filmId}")
-//    @PreAuthorize("hasAuthority('User_Role')")
-//    public ResponseEntity<?> getFinance(@PathVariable("filmId") Long filmId,
-//                                        Principal principal){
-//
-//        try {
-//            String username = principal.getName();
-//            Users user = usersRepo.findByName(username)
-//                    .orElseThrow(() -> new ApiException("User not found"));
-//
-//            // Проверяем, что фильм существует и принадлежит текущему пользователю
-//            Movies movie = moviesRepo.findById(filmId)
-//                    .orElseThrow(() -> new ApiException("Movie not found"));
-//            // Проверка, что у нас есть доступ к информации
-//            if (!moviesRepo.existsByIdAndUsername(filmId, username)) {
-//                throw new ApiException("Access denied: You are not the owner of this movie");
-//            }
-//
-//            List<Finance> finance = financeRepo.findByMovieId(filmId);
-//            List<DtoFinance> dtoFinances = finance.stream()
-//                    .map(finance1 -> {
-//                        DtoFinance dtoFinance = new DtoFinance();
-//                        dtoFinance.setBudget(finance1.getBudget());
-//                        dtoFinance.setActorsSalary(finance1.getActorsSalary());
-//                        dtoFinance.setCrewSalary(finance1.getCrewSalary());
-//                        dtoFinance.setEquipmentCost(finance1.getEquipmentCost());
-//                        dtoFinance.setEditingCost(finance1.getEditingCost());
-//                        dtoFinance.setAdvertisingCost(finance1.getAdvertisingCost());
-//                        return dtoFinance;
-//                    }).toList();
-//
-//            return ResponseEntity.ok(dtoFinances);
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//    }
+    @SneakyThrows
+    @Loggable
+    @GetMapping("/getFinance/{filmId}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<?> getFinance(@PathVariable("filmId") Long filmId,
+                                        Principal principal){
 
-//    @Loggable
-//    @PutMapping("/updateFinance/{filmId}/{finID}")
-//    @PreAuthorize("hasAuthority('User_Role')")
-//    public ResponseEntity<?> updateFinance(@PathVariable("filmId") Long filmId,
-//                                           @PathVariable("finID") Long financeId,
-//                                           Principal principal,
-//                                           @RequestBody Map<String,Object> updates){
-//        try {
-//            String username = principal.getName();
-//            Users users = usersRepo.findByName(username)
-//                    .orElseThrow(()->new ApiException("User not found"));
-//
-//            Movies movie = moviesRepo.findById(filmId)
-//                    .orElseThrow(() -> new ApiException("Film not found"));
-//
-//            Finance existingFinance = financeRepo.findById(financeId)
-//                    .orElseThrow(() -> new ApiException("Finance not found"));
-//
-//            // Проверяем, что фильм принадлежит пользователю
-//            if (movie.getUser().getUser_id() != users.getUser_id()) {
-//                throw new ApiException("You don't have permission to update shooting days for this film");
-//            }
-//            // Проверяем, существует ли фильм с указанным id, принадлежащий пользователю с заданным именем
-//            if (!moviesRepo.existsByIdAndUsername(filmId, username)) {
-//                throw new ApiException("Access denied: You are not the owner of this movie");
-//            }
-//
-//            updates.forEach((key, value) -> {
-//
-//                switch (key) {
-//                    case "budget":
-//                        existingFinance.setBudget(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-//                        break;
-//                    case "actorsSalary":
-//                        existingFinance.setActorsSalary(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-//                        break;
-//                    case "crewSalary":
-//                        existingFinance.setCrewSalary(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-//                        break;
-//                    case "equipmentCost":
-//                        existingFinance.setEquipmentCost(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-//                        break;
-//                    case "editingCost":
-//                        existingFinance.setEditingCost(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-//                        break;
-//                    case "advertisingCost":
-//                        existingFinance.setAdvertisingCost(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-//                        break;
-//                    default:
-//                        try {
-//                            throw new ApiException("Invalid field: " + key);
-//                        }catch (ApiException e){
-//                            throw new RuntimeException(e);
-//                        }
-//                }
-//
-//
-//
-//            });
-//
-//            financeRepo.save(existingFinance);
-//            return ResponseEntity.ok("Finance updated successfully");
-//        }catch (ApiException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//    }
+        try {
+            String username = principal.getName();
+            Users user = usersRepo.findByUserName(username)
+                    .orElseThrow(() -> new ApiException("User not found"));
+
+            // Проверяем, что фильм существует и принадлежит текущему пользователю
+            Movies movie = moviesRepo.findById(filmId)
+                    .orElseThrow(() -> new ApiException("Movie not found"));
+            // Проверка, что у нас есть доступ к информации
+            if (!moviesRepo.existsByIdAndUsername(filmId, username)) {
+                throw new ApiException("Access denied: You are not the owner of this movie");
+            }
+
+            List<Finance> finance = financeRepo.findByMovieId(filmId);
+            List<DtoFinance> dtoFinances = finance.stream()
+                    .map(finance1 -> {
+                        DtoFinance dtoFinance = new DtoFinance();
+                        dtoFinance.setBudget(finance1.getBudget());
+                        dtoFinance.setActorsSalary(finance1.getActorsSalary());
+                        dtoFinance.setCrewSalary(finance1.getCrewSalary());
+                        dtoFinance.setEquipmentCost(finance1.getEquipmentCost());
+                        dtoFinance.setEditingCost(finance1.getEditingCost());
+                        dtoFinance.setAdvertisingCost(finance1.getAdvertisingCost());
+                        return dtoFinance;
+                    }).toList();
+
+            return ResponseEntity.ok(dtoFinances);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Loggable
+    @PutMapping("/updateFinance/{filmId}/{finID}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<?> updateFinance(@PathVariable("filmId") Long filmId,
+                                           @PathVariable("finID") Long financeId,
+                                           Principal principal,
+                                           @RequestBody Map<String,Object> updates){
+        try {
+            String username = principal.getName();
+            Users users = usersRepo.findByUserName(username)
+                    .orElseThrow(()->new ApiException("User not found"));
+
+            Movies movie = moviesRepo.findById(filmId)
+                    .orElseThrow(() -> new ApiException("Film not found"));
+
+            Finance existingFinance = financeRepo.findById(financeId)
+                    .orElseThrow(() -> new ApiException("Finance not found"));
+
+            // Проверяем, что фильм принадлежит пользователю
+            if (movie.getDirector().getUsers().getUser_id() != users.getUser_id()) {
+                throw new ApiException("You don't have permission to update shooting days for this film");
+            }
+            // Проверяем, существует ли фильм с указанным id, принадлежащий пользователю с заданным именем
+            if (!moviesRepo.existsByIdAndUsername(filmId, username)) {
+                throw new ApiException("Access denied: You are not the owner of this movie");
+            }
+
+            updates.forEach((key, value) -> {
+
+                switch (key) {
+                    case "budget":
+                        existingFinance.setBudget(BigDecimal.valueOf(Integer.parseInt(value.toString())));
+                        break;
+                    case "actorsSalary":
+                        existingFinance.setActorsSalary(BigDecimal.valueOf(Integer.parseInt(value.toString())));
+                        break;
+                    case "crewSalary":
+                        existingFinance.setCrewSalary(BigDecimal.valueOf(Integer.parseInt(value.toString())));
+                        break;
+                    case "equipmentCost":
+                        existingFinance.setEquipmentCost(BigDecimal.valueOf(Integer.parseInt(value.toString())));
+                        break;
+                    case "editingCost":
+                        existingFinance.setEditingCost(BigDecimal.valueOf(Integer.parseInt(value.toString())));
+                        break;
+                    case "advertisingCost":
+                        existingFinance.setAdvertisingCost(BigDecimal.valueOf(Integer.parseInt(value.toString())));
+                        break;
+                    default:
+                        try {
+                            throw new ApiException("Invalid field: " + key);
+                        }catch (ApiException e){
+                            throw new RuntimeException(e);
+                        }
+                }
 
 
-//    @Loggable
-//    @DeleteMapping("/deleteFinance/{filmId}/{finID}")
-//    @PreAuthorize("hasAuthority('User_Role')")
-//    @Transactional
-//    public ResponseEntity<?> deleteFinance(@PathVariable("filmId") Long filmId,
-//                                           @PathVariable("finID") Long financeId,
-//                                           Principal principal){
-//        try{
-//            String username = principal.getName();
-//            Users users = usersRepo.findByName(username)
-//                    .orElseThrow(()->new  ApiException("User not found "));
-//
-//            Movies movie = moviesRepo.findById(filmId).
-//                    orElseThrow(()->new  ApiException("Movie not found"));
-//
-//            Finance finance = financeRepo.findById(financeId).
-//                    orElseThrow(()->new  ApiException("Finance not found"));
-//
-//            // Проверяем, что фильм принадлежит пользователю
-//            if (movie.getUser().getUser_id() != users.getUser_id()) {
-//                throw new ApiException("You don't have permission to update shooting days for this film");
-//            }
-//
-//            // Проверяем, существует ли фильм с указанным id, принадлежащий пользователю с заданным именем
-//            if (!moviesRepo.existsByIdAndUsername(filmId, username)) {
-//                throw new ApiException("Access denied: You are not the owner of this movie");
-//            }
-//
-//            // Удаление связи между фильмом и финансами
-//            movie.setFilmFinance(null);
-//            moviesRepo.save(movie);
-//            financeRepo.delete(finance);
-//            return ResponseEntity.ok("Finance deleted successfully");
-//        } catch (ApiException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//    }
+
+            });
+
+            financeRepo.save(existingFinance);
+            return ResponseEntity.ok("Finance updated successfully");
+        }catch (ApiException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
+    @Loggable
+    @DeleteMapping("/deleteFinance/{filmId}/{finID}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    @Transactional
+    public ResponseEntity<?> deleteFinance(@PathVariable("filmId") Long filmId,
+                                           @PathVariable("finID") Long financeId,
+                                           Principal principal){
+        try{
+            String username = principal.getName();
+            Users users = usersRepo.findByUserName(username)
+                    .orElseThrow(()->new  ApiException("User not found "));
+
+            Movies movie = moviesRepo.findById(filmId).
+                    orElseThrow(()->new  ApiException("Movie not found"));
+
+            Finance finance = financeRepo.findById(financeId).
+                    orElseThrow(()->new  ApiException("Finance not found"));
+
+            // Проверяем, что фильм принадлежит пользователю
+            if (movie.getDirector().getUsers().getUser_id() != users.getUser_id()) {
+                throw new ApiException("You don't have permission to update shooting days for this film");
+            }
+
+            // Проверяем, существует ли фильм с указанным id, принадлежащий пользователю с заданным именем
+            if (!moviesRepo.existsByIdAndUsername(filmId, username)) {
+                throw new ApiException("Access denied: You are not the owner of this movie");
+            }
+
+            // Удаление связи между фильмом и финансами
+            movie.setFilmFinance(null);
+            moviesRepo.save(movie);
+            financeRepo.delete(finance);
+            return ResponseEntity.ok("Finance deleted successfully");
+        } catch (ApiException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 }

@@ -1,9 +1,12 @@
 package com.example.Entity;
 
+import com.example.Enum.FilmRole;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "filmTeamUser")
+@Table(name = "film_team_user", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "movie_id"}) // Запрещает дубликаты
+})
 public class filmTeamUser {
 
     @Id
@@ -18,4 +21,7 @@ public class filmTeamUser {
     @JoinColumn(name = "movie_id")
     private Movies movies;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private FilmRole role; // Роль человека в фильме
 }

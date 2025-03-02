@@ -197,6 +197,8 @@ public class SecurityController {
                 profiles.setGender(signupRequest.getGender());
                 profiles.setPhoneNumber(signupRequest.getPhone());
                 directorProfilesRepo.save(profiles);
+
+                // прописать условие когда будет создаваться админ
         }
 
         emailService.sendRegistrationEmail(user.getGmail(), user.getUserName());

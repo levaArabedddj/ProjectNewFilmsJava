@@ -3,11 +3,13 @@ package com.example.Entity;
 
 import com.example.Enum.ApplicationStatus;
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.List;
 
 @Entity
 @Table(name = "Casting_Applications")
+@Data
 public class CastingApplications {
 
     // исправить связь на юзера , а не актера

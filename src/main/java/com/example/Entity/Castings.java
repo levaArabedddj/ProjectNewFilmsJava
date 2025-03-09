@@ -17,8 +17,10 @@ public class Castings {
     @JoinColumn(name = "movie_id", nullable = false)
     private Movies movie;
 
-    @Column(name = "role_name", length = 100)
-    private String RoleName;
+    @ElementCollection
+    @CollectionTable(name = "casting_roles", joinColumns = @JoinColumn(name = "casting_id"))
+    @Column(name = "role_name")
+    private List<String> roleName;
 
     @Column(columnDefinition = "TEXT")
     private String description;

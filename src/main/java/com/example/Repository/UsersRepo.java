@@ -21,6 +21,7 @@ public interface UsersRepo extends JpaRepository<Users, Long> {
      Boolean existsUsersByGmail(String gmail);
      Boolean existsUsersByUserName(String name);
 
+     Optional<Users> findByActor_Id(Long id);
 
 
 }

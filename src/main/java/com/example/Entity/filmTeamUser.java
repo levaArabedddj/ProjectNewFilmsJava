@@ -2,11 +2,13 @@ package com.example.Entity;
 
 import com.example.Enum.FilmRole;
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "film_team_user", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "movie_id"}) // Запрещает дубликаты
 })
+@Data
 public class filmTeamUser {
 
     @Id

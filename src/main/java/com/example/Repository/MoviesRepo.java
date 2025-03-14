@@ -15,6 +15,7 @@ public interface MoviesRepo extends JpaRepository<Movies, Long> {
     @Loggable
     Movies findById(long id);
 
+    @Loggable
     Optional<Movies> findById(Long id);
 
    // List<Movies> findByUserName(String currentUsername);

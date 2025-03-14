@@ -1,6 +1,7 @@
 package com.example.Repository;
 
 
+import com.example.Entity.Director;
 import com.example.Entity.Users;
 import com.example.loger.Loggable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,5 +24,6 @@ public interface UsersRepo extends JpaRepository<Users, Long> {
 
      Optional<Users> findByActor_Id(Long id);
 
+    // Director findByDirector_Id(Long id);
 
 }

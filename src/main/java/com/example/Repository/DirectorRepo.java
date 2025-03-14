@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface DirectorRepo extends JpaRepository<Director, Long> {
 
     Optional<Director> findByUsers(Users user);
+
+
 }

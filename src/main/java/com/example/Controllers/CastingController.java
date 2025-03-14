@@ -1,5 +1,6 @@
 package com.example.Controllers;
 
+import com.example.DTO.CastingApplicationDto;
 import com.example.DTO.ReviewRequest;
 import com.example.Entity.CastingApplications;
 import com.example.Entity.Castings;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -54,6 +56,18 @@ public class CastingController {
         CastingApplications application = castingService.applyForCasting(actorId, castingId, message);
         return ResponseEntity.ok("Заявка подана");
     }
+
+
+    @GetMapping("/applications/{filmId}/{castingId}/{directorId}")
+    public ResponseEntity<List<CastingApplicationDto>> getAllCastingApplications(
+            @PathVariable int castingId,
+            @PathVariable long filmId,
+            @PathVariable long directorId,
+            Principal principal) {
+        List<CastingApplicationDto> applications = castingService.getAllCastingApplications(castingId, filmId, directorId, principal);
+        return ResponseEntity.ok(applications);
+    }
+
 
     /**
      * Режиссер рассматривает заявку актера

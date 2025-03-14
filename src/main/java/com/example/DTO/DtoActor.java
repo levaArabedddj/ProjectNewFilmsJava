@@ -16,6 +16,13 @@ public class DtoActor {
     private String surName;
     private int salaryPerHour;
     private int rating;
+    private ActorProfileDto actorProfileDto;
 
-
+    public DtoActor(Long id, String name, String surName, int rating, ActorProfileDto actorProfileDto) {
+        this.id = id;
+        this.name = name;
+        this.surName = surName;
+        this.rating = rating;
+        this.actorProfileDto = actorProfileDto;
+    }
 }

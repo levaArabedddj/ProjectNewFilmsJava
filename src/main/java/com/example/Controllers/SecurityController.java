@@ -7,9 +7,11 @@ import com.example.Service.SenderService;
 import com.example.config.JwtCore;
 import com.example.config.SigninRequest;
 import com.example.config.SignupRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -138,6 +140,7 @@ public class SecurityController {
         return ResponseEntity.ok(jwt);
     }
 
+    @Transactional
     @PostMapping("/signup-Login")
     public ResponseEntity<?> signInAuth(@RequestBody SignupRequest signupRequest){
         if (usersRepo.existsUsersByUserName(signupRequest.getUserName())) {

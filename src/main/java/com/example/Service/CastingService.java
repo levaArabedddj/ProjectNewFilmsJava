@@ -1,10 +1,14 @@
 package com.example.Service;
 
+import com.example.DTO.ActorProfileDto;
+import com.example.DTO.CastingApplicationDto;
+import com.example.DTO.DtoActor;
 import com.example.Entity.*;
 import com.example.Enum.ApplicationStatus;
 import com.example.Enum.FilmRole;
 import com.example.Enum.TrialResult;
 import com.example.Enum.UserRole;
+import com.example.Exception.ApiException;
 import com.example.Repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,6 +17,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,11 +32,12 @@ public class CastingService {
     private final CastingApplicationsRepo castingApplicationsRepo;
     private final Trial_ShootingsRepo trialShootingsRepo;
     private final TrialParticipantsRepo trialParticipantsRepo;
+    private final SenderService service;
     @PersistenceContext
     private EntityManager entityManager;
 
     @Autowired
-    public CastingService(MoviesRepo moviesRepo, ActorRepo actorRepo, UsersRepo usersRepo, CastingsRepo castingsRepo, DirectorRepo directorRepo, CastingApplicationsRepo castingApplicationsRepo, Trial_ShootingsRepo trialShootingsRepo, TrialParticipantsRepo trialParticipantsRepo) {
+    public CastingService(MoviesRepo moviesRepo, ActorRepo actorRepo, UsersRepo usersRepo, CastingsRepo castingsRepo, DirectorRepo directorRepo, CastingApplicationsRepo castingApplicationsRepo, Trial_ShootingsRepo trialShootingsRepo, TrialParticipantsRepo trialParticipantsRepo, SenderService service) {
         this.moviesRepo = moviesRepo;
         this.actorRepo = actorRepo;
         this.usersRepo = usersRepo;
@@ -41,6 +47,7 @@ public class CastingService {
         this.trialShootingsRepo = trialShootingsRepo;
         this.trialParticipantsRepo = trialParticipantsRepo;
 
+        this.service = service;
     }
 
 
@@ -94,6 +101,82 @@ public class CastingService {
         return castingApplicationsRepo.save(applications);
     }
 
+
+
+    public List<CastingApplicationDto> getAllCastingApplications(int castingId, Long filmId, long directorId, Principal principal){
+
+        try {
+            String username = principal.getName();
+            Users director = usersRepo.findByUserName(username)
+                    .orElseThrow(() -> new ApiException("User not found"));
+
+            if(director.getRole()!= UserRole.DIRECTOR){
+                throw new RuntimeException("Only directors can get casting applications");
+            }
+
+            Movies movie = moviesRepo.findById(filmId)
+                    .orElseThrow(() -> new ApiException("Movie not found"));
+
+            if (!(movie.getDirector().getId() ==directorId)) {
+                throw new ApiException("Access denied: You are not the owner of this movie");
+            }
+//
+//
+//            if(!moviesRepo.existsByIdAndUsername(filmId, username)){
+//                throw new ApiException("Access denied: You are not the owner of thus movie");
+//            }
+            List<Castings> castings = castingsRepo.findByMovieId(filmId);
+
+            List<CastingApplicationDto> applicationDTOs = new ArrayList<>();
+
+            for (Castings casting : castings) {
+                List<CastingApplications> applications = castingApplicationsRepo.findByCastings(casting);
+
+                for (CastingApplications application : applications) {
+                    Users user = application.getActor();
+                    Actors actor = user.getActor();  // Получаем актёра
+                    ActorProfiles profile = actor != null ? actor.getActorProfile() : null;
+
+                    // Преобразуем профиль актёра в DTO
+                    ActorProfileDto profileDTO = (profile != null) ? new ActorProfileDto(
+                            profile.getBiography(),
+                            profile.getSkills(),
+                            profile.getLanguages(),
+                            profile.getExperience(),
+                            profile.getProfile_photo_url()
+                    ) : null;
+
+                    // Преобразуем актёра в DTO
+                    DtoActor actorDTO = (actor != null) ? new DtoActor(
+                            actor.getId(),
+                            actor.getName(),
+                            actor.getSurName(),
+                            actor.getRating(),
+                            profileDTO
+                    ) : null;
+
+                    // Преобразуем заявку в DTO
+                    applicationDTOs.add(new CastingApplicationDto(
+                            application.getId(),
+                            application.getMessage(),
+                            application.getStatus(),
+                            casting.getRoleName().toString(),
+                            actorDTO
+                    ));
+                }
+            }
+
+            return applicationDTOs;
+        }catch (Exception e){
+            e.printStackTrace();
+        } catch (ApiException e) {
+            throw new RuntimeException(e);
+        }
+
+        return List.of();
+    }
+
+    @Transactional
     public CastingApplications reviewApplication(Long applicationId, ApplicationStatus status, String feedback){
         CastingApplications applications = castingApplicationsRepo.findById(applicationId)
                 .orElseThrow(()-> new EntityNotFoundException("Application not found") );
@@ -103,8 +186,20 @@ public class CastingService {
         }
         applications.setStatus(status);
         applications.setMessage(feedback);
+
+        Actors actor = applications.getActor().getActor();
+        if(actor == null || actor.getUser() == null){
+            throw new RuntimeException("Actor not found");
+        }
+        String email = actor.getUser().getGmail();
+        String username  = actor.getUser().getUserName();
+
+        service.sendAssignApplication(email,username,status);
         return castingApplicationsRepo.save(applications);
     }
+
+
+
 
     public void assignToTrial(Long applicationId, Long trialId){
 
@@ -129,6 +224,7 @@ public class CastingService {
 
         trialShootingsRepo.save(trial);
     }
+
 
 
     @Transactional
@@ -159,6 +255,7 @@ public class CastingService {
         filmTeamUser.setRole(role);
 
         entityManager.persist(filmTeamUser);
+        service.sendMsgForActorInTeam(participants.getActors().getActor(), role);
     }
 
 }

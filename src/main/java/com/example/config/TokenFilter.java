@@ -53,28 +53,28 @@ public class TokenFilter extends OncePerRequestFilter {
 
 
             if(jwt == null || !jwtCore.isValidToken(jwt)){
-                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
-                 return;
-             }
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
+                return;
+            }
 
 
-                try {
-                    name = jwtCore.getUserNameFromToken(jwt); // Вызов через экземпляр
-                } catch (ExpiredJwtException e) {
-                    System.out.println(e.getMessage());
-                }
-                if (name != null) {
-                    userDetails = myUserDetailsService.loadUserByUsername(name);
-                    if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                        authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                    } else {
-                        if (!userDetails.isAccountNonLocked()) {
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Account is locked");
-                            return;
-                        }
+            try {
+                name = jwtCore.getUserNameFromToken(jwt); // Вызов через экземпляр
+            } catch (ExpiredJwtException e) {
+                System.out.println(e.getMessage());
+            }
+            if (name != null) {
+                userDetails = myUserDetailsService.loadUserByUsername(name);
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                    authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                } else {
+                    if (!userDetails.isAccountNonLocked()) {
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Account is locked");
+                        return;
                     }
                 }
+            }
 
         } catch (Exception e) {
             System.out.println(e.getMessage());

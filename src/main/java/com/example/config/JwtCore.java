@@ -67,6 +67,7 @@ public class JwtCore {
                 .claim("roles", user.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toSet()))
+                .claim("userId", user.getUser_id())
                 .issuedAt(new Date())
                 .expiration(expireDate)
                 .signWith(SECRET_KEY)
@@ -109,4 +110,6 @@ public class JwtCore {
     }
 
 }
+
+
 

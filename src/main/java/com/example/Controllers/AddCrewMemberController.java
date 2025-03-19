@@ -135,13 +135,13 @@ public class AddCrewMemberController {
         }
     }
 
-    @GetMapping("/{crewMemberId}/profile")
-    public ResponseEntity<?> getCrewMemberProfile(@PathVariable Long crewMemberId) {
-
-        return crewMemberService.getCrewMemberProfile(crewMemberId)
+    @GetMapping("/{userId}/profile")
+    public ResponseEntity<?> getCrewMemberProfile(@PathVariable Long userId) {
+        return crewMemberService.getCrewMemberProfile(userId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
 
 
 

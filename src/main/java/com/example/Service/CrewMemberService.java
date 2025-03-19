@@ -109,17 +109,28 @@ public class CrewMemberService {
     }
 
 
-    public Optional<DtoCrewMemberProfile> getCrewMemberProfile(Long crewMemberId){
+    public Optional<DtoCrewMemberProfile> getCrewMemberProfile(Long userId) {
+        // Получаем FilmCrewMembers по userId
+        Optional<FilmCrewMembers> crewMemberOpt = crewMemberRepo.findByUserUserId(userId);
 
-        Optional<FilmCrewMembers> crewMembers = crewMemberRepo.findById(crewMemberId);
-        Optional<CrewMemberProfiles> crewMemberProfiles = crewMemberProfilesRepo.findByCrewMemberId(crewMemberId);
+        if (crewMemberOpt.isPresent()) {
+            FilmCrewMembers crewMember = crewMemberOpt.get();
+            System.out.println("Found crewMember: " + crewMember.getCrewMember_id());
 
-        if(crewMembers.isPresent() && crewMemberProfiles.isPresent()){
-            return Optional.of( convertToDto(crewMemberProfiles.get() , crewMembers.get() ));
+            // Получаем профиль члена съемочной группы по crewMemberId
+            Optional<CrewMemberProfiles> crewMemberProfilesOpt = crewMemberProfilesRepo.findByCrewMemberId(crewMember.getCrewMember_id());
+
+            if (crewMemberProfilesOpt.isPresent()) {
+                return Optional.of(convertToDto(crewMemberProfilesOpt.get(), crewMember));
+            }
         }
-        return Optional.empty();
 
+        return Optional.empty();
     }
+
+
+
+
 
     private DtoCrewMemberProfile convertToDto(CrewMemberProfiles crewProfiles, FilmCrewMembers crewMembers) {
         return new DtoCrewMemberProfile(

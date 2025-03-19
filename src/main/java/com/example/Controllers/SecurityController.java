@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.example.Enum.UserRole.*;
 
 @RestController
@@ -130,7 +133,10 @@ public class SecurityController {
     ResponseEntity<?> signup(@RequestBody SigninRequest signinRequest) {
         Authentication authentication = null;
         try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signinRequest.getUserName(), signinRequest.getPassword()));
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(signinRequest.getUserName(), signinRequest.getPassword())
+            );
+
         } catch (BadCredentialsException e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
@@ -139,6 +145,31 @@ public class SecurityController {
         String jwt = jwtCore.generateToken(authentication);
         return ResponseEntity.ok(jwt);
     }
+
+    //Метод логина для андроид приложения , вместо строки возвращаем json
+    @PostMapping("/signinn")
+    public ResponseEntity<?> signinn(@RequestBody SigninRequest signinRequest) {
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            signinRequest.getUserName(),
+                            signinRequest.getPassword()
+                    )
+            );
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"error\": \"" + e.getMessage() + "\"}");
+        }
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtCore.generateToken(authentication);
+
+        // Оборачиваем токен в JSON-объект
+        Map<String, String> response = new HashMap<>();
+        response.put("token", jwt);
+        return ResponseEntity.ok(response);
+    }
+
 
     @Transactional
     @PostMapping("/signup-Login")

@@ -1,6 +1,8 @@
 package com.example.Enum;
 
 public enum FilmRole {
+    // проработать все возможные варианты
+    //какие есть роли в сьемке фильма
     ACTOR,          // Актер
     DIRECTOR,       // Режиссер
     PRODUCER,       // Продюсер

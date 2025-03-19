@@ -5,9 +5,11 @@ import com.example.Entity.FilmCrewMembers;
 import com.example.loger.Loggable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CrewMemberRepo extends JpaRepository<FilmCrewMembers, Long> {
@@ -21,6 +23,8 @@ public interface CrewMemberRepo extends JpaRepository<FilmCrewMembers, Long> {
     List<FilmCrewMembers> findCrewMembersByMovieId(Long id);
 
 
+    @Query("SELECT fm FROM FilmCrewMembers fm WHERE fm.user.user_id = :userId")
+    Optional<FilmCrewMembers> findByUserUserId(@Param("userId") Long userId);
 
 
 }

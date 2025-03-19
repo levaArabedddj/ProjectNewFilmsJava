@@ -226,6 +226,10 @@ public class CastingService {
     }
 
 
+// более детально расмотреть эти методы и при возможности упростить работу с ними
+// как минимум , рассмотреть принятия актера после его заявки , создание пробных сьемочных дней
+    // также упростить работу с принятием актера в команду , слишком сложно
+
 
     @Transactional
     public void approveActorForMovie(Long trialParticipantsId, Long movieId, FilmRole role){

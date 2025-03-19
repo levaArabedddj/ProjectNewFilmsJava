@@ -21,6 +21,11 @@ public class CastingController {
 
     private final CastingService castingService;
 
+
+    // тут проработать кто какие ендпоинты может использовать
+    // и какие не может , желательно для всех контроллеров осмотреть по логике
+
+
     @Autowired
     public CastingController(CastingService castingService) {
         this.castingService = castingService;

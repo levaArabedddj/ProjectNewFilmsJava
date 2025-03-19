@@ -16,5 +16,12 @@ public interface CrewMemberProfilesRepo extends JpaRepository<CrewMemberProfiles
     Optional<CrewMemberProfiles> findByCrewMemberId(@Param("crewMemberId") Long crewMemberId);
 
 
+    @Query("SELECT cm.user.user_id FROM CrewMemberProfiles ap JOIN ap.crewMembers cm WHERE ap.crewMembers.crewMember_id = :crewMemberId")
+    Optional<Long> findUserIdByCrewMemberId(@Param("crewMemberId") Long crewMemberId);
+
+
+    @Query("SELECT cm FROM CrewMemberProfiles cm WHERE cm.crewMembers.user.user_id = :userId")
+    Optional<CrewMemberProfiles> findByUserId(@Param("userId") Long userId);
+
 
 }

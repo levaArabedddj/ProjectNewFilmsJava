@@ -7,16 +7,23 @@ import com.example.Service.CrewMemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/CrewMember")
 public class AddCrewMemberController {
 
+    /*
+        Поправить что бы айди юзера передавался через токен,
+        точно так же как и в класе кастинг контроллер
+         */
 
     private final CrewMemberRepo crewMemberRepo;
 
@@ -100,9 +107,10 @@ public class AddCrewMemberController {
 
 
 
-    @PutMapping("/{crewMemberId}/profile")
-    public ResponseEntity<?> updateCrewMemberProfile(@PathVariable Long crewMemberId,
-                                                     @RequestBody Map<String,String> request) {
+    @PutMapping("/{userId}/profile")
+    @PreAuthorize("hasAuthority('ROLE_CREW_MEMBER')")
+    public ResponseEntity<?> updateCrewMemberProfile(@PathVariable Long userId,
+                                                     @RequestBody Map<String,String> request) throws AccessDeniedException {
 
         if (!request.containsKey("fieldName") || !request.containsKey("newValue")) {
             return ResponseEntity.badRequest().body("Missing required fields");
@@ -111,7 +119,7 @@ public class AddCrewMemberController {
         String fieldName = request.get("fieldName");
         String newValue = request.get("newValue");
 
-        boolean update = crewMemberService.updateCrewMemberProfile(crewMemberId, fieldName, newValue);
+        boolean update = crewMemberService.updateCrewMemberProfile(userId, fieldName, newValue);
 
         if (update) {
             return ResponseEntity.ok("Crew Member profile updated successfully");
@@ -122,13 +130,14 @@ public class AddCrewMemberController {
     }
 
 
-    @PostMapping("/{crewMemberId}/profile/photo")
+    @PostMapping("/{userId}/profile/photo")
+    @PreAuthorize("hasAuthority('ROLE_CREW_MEMBER')")
     public ResponseEntity<?> uploadPhotoProfileCrewMember(
-            @PathVariable Long crewMemberId,
+            @PathVariable Long userId,
             @RequestParam MultipartFile file) {
 
         try {
-            String url = crewMemberService.uploadProfilePhoto(crewMemberId,file);
+            String url = crewMemberService.uploadProfilePhoto(userId,file);
             return ResponseEntity.ok(url);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -136,10 +145,11 @@ public class AddCrewMemberController {
     }
 
     @GetMapping("/{userId}/profile")
-    public ResponseEntity<?> getCrewMemberProfile(@PathVariable Long userId) {
+    public CompletableFuture<ResponseEntity<?>> getCrewMemberProfile(@PathVariable Long userId) {
         return crewMemberService.getCrewMemberProfile(userId)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .thenApply( profileOpt ->
+                        profileOpt.map(ResponseEntity::ok)
+                                .orElseThrow(() -> new RuntimeException("Crew Member profile not found")));
     }
 
 

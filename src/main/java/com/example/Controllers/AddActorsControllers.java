@@ -13,16 +13,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/Actors")
 public class AddActorsControllers {
+
+     /*
+    Поправить что бы айди юзера передавался через токен,
+    точно так же как и в класе кастинг контроллер
+     */
+
 
     private final ActorRepo actorRepo;
     private final ActorProfilesRepository actorProfilesRepo;
@@ -109,9 +117,10 @@ public class AddActorsControllers {
 //    }
 
 
-    @PutMapping("/{actorId}/profile")
-    public ResponseEntity<?> updateActorProfile(@PathVariable Long actorId,
-                                                @RequestBody Map<String, String> request) {
+    @PutMapping("/{userId}/profile")
+    @PreAuthorize("hasAuthority('ROLE_ACTOR')")
+    public ResponseEntity<?> updateActorProfile(@PathVariable Long userId,
+                                                @RequestBody Map<String, String> request) throws AccessDeniedException {
 
         if(!request.containsKey("fieldName") || !request.containsKey("newValue")) {
             return ResponseEntity.badRequest().body("FieldName and NewValue are required");
@@ -120,7 +129,7 @@ public class AddActorsControllers {
         String fieldName = request.get("fieldName");
         String newValue = request.get("newValue");
 
-        boolean update = actorsService.updateActorProfile(actorId, fieldName, newValue);
+        boolean update = actorsService.updateActorProfile(userId, fieldName, newValue);
 
         if(update) {
             return ResponseEntity.ok("Actor profile updated successfully");
@@ -131,12 +140,13 @@ public class AddActorsControllers {
 
 
 
-    @PostMapping("/{actorId}/profile/photo")
+    @PostMapping("/{userId}/profile/photo")
+    @PreAuthorize("hasAuthority('ROLE_ACTOR')")
     public ResponseEntity<?> uploadPhotoActor(
-            @PathVariable Long actorId,
+            @PathVariable Long userId,
             @RequestParam MultipartFile file) {
         try {
-            String photoUrl = actorsService.uploadProfilePhoto(actorId, file);
+            String photoUrl = actorsService.uploadProfilePhoto(userId, file);
             return ResponseEntity.ok(photoUrl);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -145,9 +155,9 @@ public class AddActorsControllers {
     }
 
 
-    @GetMapping("/{actorId}/profile")
-    public ResponseEntity<?> getActorProfile(@PathVariable Long actorId) {
-        return actorsService.getInformationActor(actorId)
+    @GetMapping("/{userId}/profile")
+    public ResponseEntity<?> getActorProfile(@PathVariable Long userId) {
+        return actorsService.getInformationActor(userId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

@@ -8,8 +8,11 @@ import com.example.Entity.RoleRequest;
 import com.example.Enum.ApplicationStatus;
 import com.example.Enum.FilmRole;
 import com.example.Service.CastingService;
+import com.example.config.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -34,17 +37,20 @@ public class CastingController {
      * Создание кастинга для фильма
      */
 
-    @PostMapping("/create/{directorId}/{movieId}")
+    @PostMapping("/create/{movieId}")
     public ResponseEntity<?> createCasting(
-            @PathVariable Long directorId,
             @PathVariable Long movieId,
             @RequestBody Castings castingsBody) {
+
+        // Получаем ID текущего пользователя из токена
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
 
         if (castingsBody.getRoleName() == null || castingsBody.getRoleName().isEmpty()) {
             return ResponseEntity.badRequest().body("Role names cannot be null or empty");
         }
 
-        Castings castings = castingService.createCastings(directorId, movieId, castingsBody );
+        Castings castings = castingService.createCastings(userId, movieId, castingsBody );
         return ResponseEntity.ok("castings created");
     }
 

@@ -6,6 +6,7 @@ import com.example.Entity.CrewMemberProfiles;
 import com.example.Entity.FilmCrewMembers;
 import com.example.Repository.CrewMemberProfilesRepo;
 import com.example.Repository.CrewMemberRepo;
+import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
@@ -15,13 +16,17 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -46,16 +51,30 @@ public class CrewMemberService {
 //    public List<FilmCrewMembers> allGetCrewMember(){
 //        return crewMemberRepo.findAllWithMovies();
 //    }
-    @Transactional
-    @Loggable
-    public FilmCrewMembers createdCrewMember(FilmCrewMembers filmCrewMembers){
-        return crewMemberRepo.save(filmCrewMembers);
-    }
+//    @Transactional
+//    @Loggable
+//    public FilmCrewMembers createdCrewMember(FilmCrewMembers filmCrewMembers){
+//        return crewMemberRepo.save(filmCrewMembers);
+//    }
 
     @Transactional
-    public boolean updateCrewMemberProfile(Long crewMemberId, String fieldName, String newValue){
+    public boolean updateCrewMemberProfile(Long userId, String fieldName, String newValue) throws AccessDeniedException {
 
-        Optional<CrewMemberProfiles> crewMemberProfiles = crewMemberProfilesRepo.findByCrewMemberId(crewMemberId);
+        // Получаем текущего аутентифицированного пользователя
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+
+        // Проверяем, что переданный ID совпадает с ID аутентифицированного пользователя
+        if (!authenticatedUserId.equals(userId)) {
+            throw new AccessDeniedException("You are not authorized to update this profile photo");
+        }
+        Optional<FilmCrewMembers> crewMembersOpt = crewMemberRepo.findByUserUserId(userId);
+
+        if(crewMembersOpt.isPresent()){
+            FilmCrewMembers crewMembers = crewMembersOpt.get();
+            System.out.println("Found crewMember: " + crewMembers.getCrewMember_id());
+
+        Optional<CrewMemberProfiles> crewMemberProfiles = crewMemberProfilesRepo.findByCrewMemberId(crewMembers.getCrewMember_id());
 
         if(crewMemberProfiles.isPresent() && newValue != null){
 
@@ -78,20 +97,37 @@ public class CrewMemberService {
             crewMemberProfilesRepo.save(crewMemberProfile);
             return true;
         }
+    }
         return false;
     }
 
 
-    public String uploadProfilePhoto(Long crewMemberId, MultipartFile file) throws IOException {
+    public String uploadProfilePhoto(Long userId, MultipartFile file) throws IOException {
 
-        Optional<CrewMemberProfiles> crewMemberProfiles = crewMemberProfilesRepo.findByCrewMemberId(crewMemberId);
+        // Получаем текущего аутентифицированного пользователя
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
 
-        if(crewMemberProfiles.isPresent()){
-            CrewMemberProfiles crewMemberProfile = crewMemberProfiles.get();
+        // Проверяем, что переданный ID совпадает с ID аутентифицированного пользователя
+        if (!authenticatedUserId.equals(userId)) {
+            throw new AccessDeniedException("You are not authorized to update this profile photo");
+        }
+        Optional<FilmCrewMembers> crewMembersOpt = crewMemberRepo.findByUserUserId(userId);
+
+        if(crewMembersOpt.isPresent()){
+            FilmCrewMembers crewMembers = crewMembersOpt.get();
+            System.out.println("Found crewMember: " + crewMembers.getCrewMember_id());
             String fileUrl = uploadPhotoCrewMember(file);
-            crewMemberProfile.setProfile_photo_url(fileUrl);
-            crewMemberProfilesRepo.save(crewMemberProfile);
-            return fileUrl;
+            Optional<CrewMemberProfiles> crewMemberProfile = crewMemberProfilesRepo.findByCrewMemberId(crewMembers.getCrewMember_id());
+
+            if (crewMemberProfile.isPresent()){
+                CrewMemberProfiles profiles = crewMemberProfile.get();
+                profiles.setProfile_photo_url(fileUrl);
+                crewMemberProfilesRepo.save(profiles);
+                return fileUrl;
+            }
+            return null;
+
         }
 
         throw new IllegalArgumentException("CrewMemberProfile not found");
@@ -109,7 +145,7 @@ public class CrewMemberService {
     }
 
 
-    public Optional<DtoCrewMemberProfile> getCrewMemberProfile(Long userId) {
+    public CompletableFuture<Optional<DtoCrewMemberProfile>> getCrewMemberProfile(Long userId) {
         // Получаем FilmCrewMembers по userId
         Optional<FilmCrewMembers> crewMemberOpt = crewMemberRepo.findByUserUserId(userId);
 
@@ -121,11 +157,13 @@ public class CrewMemberService {
             Optional<CrewMemberProfiles> crewMemberProfilesOpt = crewMemberProfilesRepo.findByCrewMemberId(crewMember.getCrewMember_id());
 
             if (crewMemberProfilesOpt.isPresent()) {
-                return Optional.of(convertToDto(crewMemberProfilesOpt.get(), crewMember));
+                DtoCrewMemberProfile profile = convertToDto(crewMemberProfilesOpt.get(), crewMember);
+
+                return CompletableFuture.completedFuture(Optional.of(profile));
             }
         }
 
-        return Optional.empty();
+        return CompletableFuture.completedFuture(Optional.empty());
     }
 
 

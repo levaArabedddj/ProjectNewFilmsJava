@@ -28,19 +28,6 @@ public class MyUserDetailsService implements UserDetailsService {
     }
 
 
-
-//    @Transactional
-//    public UserDetails loadUserByUsernameAndId(String username, Long userId) throws UsernameNotFoundException {
-//        Users user = usersRepo.findByUserName(username)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//
-//        // Если userId не передан (например, вызов из стандартного метода), берем из user
-//        if (userId == null) {
-//            userId = user.getUser_id();
-//        }
-//
-//        return MyUserDetails.build(user, userId); // Передаем userId
-//    }
 }
 
 

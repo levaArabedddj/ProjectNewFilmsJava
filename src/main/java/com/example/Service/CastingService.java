@@ -51,8 +51,8 @@ public class CastingService {
     }
 
 
-    public Castings createCastings(Long directorId, Long movieId, Castings castingsBody){
-        Director director = directorRepo.findById(directorId)
+    public Castings createCastings(Long userId, Long movieId, Castings castingsBody){
+        Director director = directorRepo.findByUserUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Director not found"));
 
         Movies movies = moviesRepo.findById(movieId)

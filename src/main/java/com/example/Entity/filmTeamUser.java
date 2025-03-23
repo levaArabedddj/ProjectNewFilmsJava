@@ -1,6 +1,6 @@
 package com.example.Entity;
 
-import com.example.Enum.FilmRole;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,7 +23,6 @@ public class filmTeamUser {
     @JoinColumn(name = "movie_id")
     private Movies movies;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private FilmRole role; // Роль человека в фильме
+    private String role; // Роль человека в фильме
 }

@@ -4,10 +4,13 @@ package com.example.Controllers;
 import com.example.Repository.CrewMemberRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Service.CrewMemberService;
+import com.example.config.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -107,11 +110,13 @@ public class AddCrewMemberController {
 
 
 
-    @PutMapping("/{userId}/profile")
+    @PutMapping("/profile")
     @PreAuthorize("hasAuthority('ROLE_CREW_MEMBER')")
-    public ResponseEntity<?> updateCrewMemberProfile(@PathVariable Long userId,
-                                                     @RequestBody Map<String,String> request) throws AccessDeniedException {
+    public ResponseEntity<?> updateCrewMemberProfile(@RequestBody Map<String,String> request) throws AccessDeniedException {
 
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
         if (!request.containsKey("fieldName") || !request.containsKey("newValue")) {
             return ResponseEntity.badRequest().body("Missing required fields");
         }
@@ -130,12 +135,13 @@ public class AddCrewMemberController {
     }
 
 
-    @PostMapping("/{userId}/profile/photo")
+    @PostMapping("/profile/photo")
     @PreAuthorize("hasAuthority('ROLE_CREW_MEMBER')")
     public ResponseEntity<?> uploadPhotoProfileCrewMember(
-            @PathVariable Long userId,
             @RequestParam MultipartFile file) {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
         try {
             String url = crewMemberService.uploadProfilePhoto(userId,file);
             return ResponseEntity.ok(url);

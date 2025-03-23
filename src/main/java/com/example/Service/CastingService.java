@@ -3,9 +3,9 @@ package com.example.Service;
 import com.example.DTO.ActorProfileDto;
 import com.example.DTO.CastingApplicationDto;
 import com.example.DTO.DtoActor;
+import com.example.DTO.TrialShootingDto;
 import com.example.Entity.*;
 import com.example.Enum.ApplicationStatus;
-import com.example.Enum.FilmRole;
 import com.example.Enum.TrialResult;
 import com.example.Enum.UserRole;
 import com.example.Exception.ApiException;
@@ -15,6 +15,8 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
@@ -75,9 +77,9 @@ public class CastingService {
         return castingsRepo.save(castings);
     }
 
-    public CastingApplications applyForCasting(Long actorId, int castingId, String message ){
+    public CastingApplications applyForCasting(Long userId, int castingId, String message ){
 
-        Users actors = usersRepo.findByActor_Id(actorId)
+        Users actors = usersRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Actor not found"));
 
         if(actors.getRole()!= UserRole.ACTOR){
@@ -181,6 +183,13 @@ public class CastingService {
         CastingApplications applications = castingApplicationsRepo.findById(applicationId)
                 .orElseThrow(()-> new EntityNotFoundException("Application not found") );
 
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Users director = applications.getCastings().getMovie().getDirector().getUsers();
+
+        if(director == null || !director.getUserName().equals(currentUsername)){
+            throw new AccessDeniedException("У вас нет прав изменять заявку в этом кастинге!");
+        }
         if(status != ApplicationStatus.Approved && status != ApplicationStatus.Rejected){
             throw new RuntimeException("Application is not approved");
         }
@@ -232,7 +241,7 @@ public class CastingService {
 
 
     @Transactional
-    public void approveActorForMovie(Long trialParticipantsId, Long movieId, FilmRole role){
+    public void approveActorForMovie(Long trialParticipantsId, Long movieId, String role){
 
         TrialParticipants participants =  trialParticipantsRepo.findById(trialParticipantsId)
                 .orElseThrow(() -> new EntityNotFoundException("Trial participants not found"));
@@ -262,4 +271,23 @@ public class CastingService {
         service.sendMsgForActorInTeam(participants.getActors().getActor(), role);
     }
 
+    public Trial_Shootings createTrialShooting(Long userId, Long movieId, TrialShootingDto trialDto) {
+
+        Movies movie = moviesRepo.findById(movieId)
+                .orElseThrow(() -> new EntityNotFoundException("Movies not found"));
+
+        if(!(movie.getDirector().getUsers().getUser_id() == userId)){
+            throw new AccessDeniedException("Only the film's director can create a trial shooting day!");
+        }
+
+        // Конвертируем DTO в сущность
+        Trial_Shootings trialShooting = new Trial_Shootings();
+        trialShooting.setMovies(movie);
+        trialShooting.setDate(trialDto.getDate());
+        trialShooting.setStartTime(trialDto.getStartTime());
+        trialShooting.setLocation(trialDto.getLocation());
+        trialShooting.setDescription(trialDto.getDescription());
+
+        return trialShootingsRepo.save(trialShooting);
+    }
 }

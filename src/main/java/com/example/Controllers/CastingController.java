@@ -1,22 +1,23 @@
 package com.example.Controllers;
 
 import com.example.DTO.CastingApplicationDto;
-import com.example.DTO.ReviewRequest;
+import com.example.DTO.TrialShootingDto;
 import com.example.Entity.CastingApplications;
 import com.example.Entity.Castings;
-import com.example.Entity.RoleRequest;
+import com.example.Entity.Trial_Shootings;
 import com.example.Enum.ApplicationStatus;
-import com.example.Enum.FilmRole;
 import com.example.Service.CastingService;
 import com.example.config.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/casting")
@@ -38,6 +39,7 @@ public class CastingController {
      */
 
     @PostMapping("/create/{movieId}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<?> createCasting(
             @PathVariable Long movieId,
             @RequestBody Castings castingsBody) {
@@ -57,19 +59,20 @@ public class CastingController {
     /**
      * Актер подает заявку на кастинг
      */
-    @PostMapping("/apply/{actorId}/{castingId}")
+    @PostMapping("/apply/{castingId}")
+    @PreAuthorize("hasAuthority('ROLE_ACTOR')")
     public ResponseEntity<?> applyForCasting(
-            @PathVariable Long actorId,
             @PathVariable int castingId,
             @RequestBody String message) {
-
-
-        CastingApplications application = castingService.applyForCasting(actorId, castingId, message);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+        CastingApplications application = castingService.applyForCasting(userId, castingId, message);
         return ResponseEntity.ok("Заявка подана");
     }
 
 
     @GetMapping("/applications/{filmId}/{castingId}/{directorId}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<List<CastingApplicationDto>> getAllCastingApplications(
             @PathVariable int castingId,
             @PathVariable long filmId,
@@ -84,12 +87,35 @@ public class CastingController {
      * Режиссер рассматривает заявку актера
      */
     @PutMapping("/review/{applicationId}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<?> reviewApplication(
             @PathVariable Long applicationId,
-            @RequestBody ReviewRequest request) { // єтот момент исправить
+            @RequestBody Map<String, Object> requestBody) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Current user: " + authentication.getName());
+        System.out.println("Roles: " + authentication.getAuthorities());
 
-        CastingApplications updatedApplication = castingService.reviewApplication(applicationId, request.getStatus(),request.getFeedback());
+        ApplicationStatus status = ApplicationStatus.valueOf(requestBody.get("status").toString());
+        String feedback = requestBody.get("feedback").toString();
+        CastingApplications updatedApplication = castingService.reviewApplication(applicationId, status,feedback);
         return ResponseEntity.ok("заявка принята");
+    }
+    /**
+     Режиссер создает день пробных сьемок
+     **/
+
+    @PostMapping("/trialShooting/create/{movieId}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<?> createTrialShooting(
+            @PathVariable Long movieId,
+            @RequestBody TrialShootingDto trialDto
+            ){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+
+        Trial_Shootings createdTrialShooting = castingService.createTrialShooting(userId,movieId,trialDto);
+        return ResponseEntity.ok("Пробный день съемки  создано!");
+
     }
 
     /**
@@ -111,10 +137,10 @@ public class CastingController {
     public ResponseEntity<String> approveActorForMovie(
             @PathVariable Long trialParticipantId,
             @PathVariable Long movieId,
-            @RequestBody RoleRequest roleRequest) { // єтот момент исправить
+            @RequestBody String roleRequest) { // єтот момент исправить
 
-        FilmRole filmRole = FilmRole.valueOf(roleRequest.getRole().toUpperCase());  // Обработка регистра
-        castingService.approveActorForMovie(trialParticipantId, movieId, filmRole);
+         // Обработка регистра
+        castingService.approveActorForMovie(trialParticipantId, movieId, roleRequest);
         return ResponseEntity.ok("Actor successfully added to the film team");
     }
 

@@ -2,8 +2,6 @@ package com.example.Service;
 
 import com.example.Entity.Actors;
 import com.example.Enum.ApplicationStatus;
-import com.example.Enum.FilmRole;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -47,7 +45,7 @@ public class SenderService {
     }
 
     @Async
-    public void sendMsgForActorInTeam(Actors actor , FilmRole role) {
+    public void sendMsgForActorInTeam(Actors actor , String role) {
 
         if(actor.getUser() == null|| actor.getUser().getGmail() == null) {
             throw new RuntimeException("No email found actor");
@@ -56,7 +54,7 @@ public class SenderService {
         String email = actor.getUser().getGmail();
         String username = actor.getUser().getUserName();
         String subject = "Вы приняты в фильм";
-        String msg = String.format("Поздравляем , Вы были приняти в фильм на роль " +role);
+        String msg = String.format("Поздравляем , Вы были приняти в фильм на роль " + role);
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);

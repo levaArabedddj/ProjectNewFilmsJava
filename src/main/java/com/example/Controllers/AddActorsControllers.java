@@ -4,6 +4,7 @@ package com.example.Controllers;
 import com.example.Repository.ActorProfilesRepository;
 import com.example.Repository.ActorRepo;
 import com.example.Repository.MoviesRepo;
+import com.example.config.MyUserDetails;
 import org.springframework.http.ResponseEntity;
 import com.example.Service.ActorsService;
 
@@ -14,6 +15,8 @@ import org.springframework.http.HttpStatus;
 
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -117,11 +120,12 @@ public class AddActorsControllers {
 //    }
 
 
-    @PutMapping("/{userId}/profile")
+    @PutMapping("/profile")
     @PreAuthorize("hasAuthority('ROLE_ACTOR')")
-    public ResponseEntity<?> updateActorProfile(@PathVariable Long userId,
-                                                @RequestBody Map<String, String> request) throws AccessDeniedException {
+    public ResponseEntity<?> updateActorProfile(@RequestBody Map<String, String> request) throws AccessDeniedException {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
         if(!request.containsKey("fieldName") || !request.containsKey("newValue")) {
             return ResponseEntity.badRequest().body("FieldName and NewValue are required");
         }
@@ -140,11 +144,11 @@ public class AddActorsControllers {
 
 
 
-    @PostMapping("/{userId}/profile/photo")
+    @PostMapping("/profile/photo")
     @PreAuthorize("hasAuthority('ROLE_ACTOR')")
-    public ResponseEntity<?> uploadPhotoActor(
-            @PathVariable Long userId,
-            @RequestParam MultipartFile file) {
+    public ResponseEntity<?> uploadPhotoActor(@RequestParam MultipartFile file) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
         try {
             String photoUrl = actorsService.uploadProfilePhoto(userId, file);
             return ResponseEntity.ok(photoUrl);

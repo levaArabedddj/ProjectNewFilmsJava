@@ -18,10 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +27,7 @@ import static com.example.Enum.UserRole.*;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "http://localhost:5173")
 public class SecurityController {
 
 
@@ -189,6 +187,7 @@ public class SecurityController {
         user.setRole(signupRequest.getRole());
         usersRepo.save(user);
 
+        System.out.println(user);
         switch (signupRequest.getRole()) {
             case ACTOR:
                 Actors actor = new Actors();
@@ -203,6 +202,7 @@ public class SecurityController {
                 actorProfile.setNumberPhone(signupRequest.getPhone());
                 actorProfile.setActors(actor);
                 actorProfilesRepository.save(actorProfile);
+                System.out.println(user);
                 break;
             case CREW_MEMBER:
                 FilmCrewMembers crewMembers = new FilmCrewMembers();
@@ -235,6 +235,7 @@ public class SecurityController {
                 // прописать условие когда будет создаваться админ
         }
 
+        System.out.println(user);
         emailService.sendRegistrationEmail(user.getGmail(), user.getUserName());
 
         // Автоматична авторизація

@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "Finance")
 public class Finance {
+    // добавить логику проверки что бюджет не могут превышать поля затрат
+    // или вывести сообщения что бюджет будет исчерпан через время
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,7 +20,7 @@ public class Finance {
 
 
     @Column(name = "actors_salary", precision = 10, scale = 2)
-    private BigDecimal actorsSalary;
+    private BigDecimal actorsSalary; // прописать при добавлении актера в фильм плюсововать сюда данные
 
     @Column(name = "crew_salary", precision = 10, scale = 2)
     private BigDecimal crewSalary;

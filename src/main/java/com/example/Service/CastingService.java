@@ -269,7 +269,14 @@ public class CastingService {
 
         entityManager.persist(filmTeamUser);
         service.sendMsgForActorInTeam(participants.getActors().getActor(), role);
-    }
+    } // - создать новый метод , после того как актера приняли в комнаду сделать метод
+    // где будет выносится вопрос по условиям контракта с актером
+    // и его согласованости , типо режиссер кидает
+    // свою версию контракта , но актера что то не устраивает и он
+    // отправляет такой же контракт но со своими правками и такое может
+    // просиходить сколько угодно раз пока актер и режиссер не будут решатся и
+    // после этого , актер отправляет подпись и режиссер свое подпись и
+    // после этого конракт создается
 
     public Trial_Shootings createTrialShooting(Long userId, Long movieId, TrialShootingDto trialDto) {
 

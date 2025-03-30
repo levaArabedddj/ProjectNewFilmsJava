@@ -17,4 +17,8 @@ public class Director {
     @OneToOne
     @JoinColumn(name = "user_id", unique = true, nullable = false)
     private Users users;
+
+    @OneToOne
+    @JoinColumn(name = "profile_id", unique = true, nullable = false)
+    private DirectorProfiles directorProfiles;
 }

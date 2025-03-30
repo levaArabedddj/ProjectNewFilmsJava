@@ -35,7 +35,7 @@ public class DirectorProfiles {
     @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Некорректный формат номера телефона") // Валидация номера
     private String phoneNumber;
 
-    @Lob // Для хранения больших текстов
+
     private String biography;
 
 
@@ -70,6 +70,8 @@ public class DirectorProfiles {
     @Column(name = "profile_photo_url", length = 500)
     private String profilePhotoUrl;
 
+    @OneToOne(mappedBy = "directorProfiles")
+    private Director director;
 
 
 }

@@ -6,6 +6,7 @@ import com.example.Entity.Finance;
 import com.example.Entity.Movies;
 import com.example.Entity.Users;
 import com.example.Exception.ApiException;
+import com.example.Exception.FinanceException;
 import com.example.Repository.FinanceRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;
@@ -66,25 +67,29 @@ public class FinanceControllers {
             Movies movies = moviesRepo.findById(filmId)
                     .orElseThrow(()-> new ApiException("Movie not found"));
 
-            Finance newFinance = new Finance();
-            newFinance.setBudget(dtoFinance.getBudget());
-            newFinance.setActorsSalary(dtoFinance.getActorsSalary());
-            newFinance.setCrewSalary(dtoFinance.getCrewSalary());
-            newFinance.setEquipmentCost(dtoFinance.getEquipmentCost());
-            newFinance.setEditingCost(dtoFinance.getEditingCost());
-            newFinance.setAdvertisingCost(dtoFinance.getAdvertisingCost());
-            newFinance.setMovie(movies);
-            financeRepo.save(newFinance);
+            try {
+                Finance newFinance = new Finance();
+                newFinance.setBudget(dtoFinance.getBudget());
+                newFinance.setActorsSalary(dtoFinance.getActorsSalary());
+                newFinance.setCrewSalary(dtoFinance.getCrewSalary());
+                newFinance.setEquipmentCost(dtoFinance.getEquipmentCost());
+                newFinance.setEditingCost(dtoFinance.getEditingCost());
+                newFinance.setAdvertisingCost(dtoFinance.getAdvertisingCost());
+                newFinance.setMovie(movies);
+                financeRepo.save(newFinance);
 
-            DtoFinance dtoFinanceDto = new DtoFinance();
-            dtoFinanceDto.setBudget(dtoFinance.getBudget());
-            dtoFinanceDto.setActorsSalary(dtoFinance.getActorsSalary());
-            dtoFinanceDto.setCrewSalary(dtoFinance.getCrewSalary());
-            dtoFinanceDto.setEquipmentCost(dtoFinance.getEquipmentCost());
-            dtoFinanceDto.setEditingCost(dtoFinance.getEditingCost());
-            dtoFinanceDto.setAdvertisingCost(dtoFinance.getAdvertisingCost());
+                DtoFinance dtoFinanceDto = new DtoFinance();
+                dtoFinanceDto.setBudget(dtoFinance.getBudget());
+                dtoFinanceDto.setActorsSalary(dtoFinance.getActorsSalary());
+                dtoFinanceDto.setCrewSalary(dtoFinance.getCrewSalary());
+                dtoFinanceDto.setEquipmentCost(dtoFinance.getEquipmentCost());
+                dtoFinanceDto.setEditingCost(dtoFinance.getEditingCost());
+                dtoFinanceDto.setAdvertisingCost(dtoFinance.getAdvertisingCost());
 
-            return ResponseEntity.ok(dtoFinanceDto);
+                return ResponseEntity.ok(dtoFinanceDto);
+            } catch (Exception e){
+                throw new FinanceException("Ошибка при сохранение финансов "+ e.getMessage(), true);
+            }
         } catch (ApiException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {

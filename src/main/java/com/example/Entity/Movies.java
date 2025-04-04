@@ -2,7 +2,10 @@ package com.example.Entity;
 
 
 import com.example.Enum.DevelopmentStage;
+import com.example.Enum.Genre;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -21,9 +24,18 @@ public class Movies {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @NotBlank
+    @Size(max = 100)
     private String title;
-    private String description ;
-    private String genre;
+
+    @NotBlank
+    @Size(max = 1000)
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50, nullable = false)
+    private Genre genre_film;
 
 //    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
 //    @JoinColumn(name = "user_id") // добавлено для связи с пользователем
@@ -74,7 +86,7 @@ public class Movies {
         result = prime * result + (int) (id ^ (id >>> 32));
         result = prime * result + ((title == null) ? 0 : title.hashCode());
         result = prime * result + ((description == null) ? 0 : description.hashCode());
-        result = prime * result + ((genre == null) ? 0 : genre.hashCode());
+        result = prime * result + ((genre_film == null) ? 0 : genre_film.hashCode());
         return result;
     }
 
@@ -84,7 +96,7 @@ public class Movies {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", genre='" + genre + '\'' +
+                ", genre='" + genre_film + '\'' +
                 '}';
     }
 

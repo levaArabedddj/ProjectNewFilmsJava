@@ -38,6 +38,8 @@ public class Contract {
     @Column(name = "end_date")
     private LocalDate endDate; // Дата окончания контракта
 
+    private int timeWorkInWeek; //строка для определения сколько часов в неделю должен работать минимум актер
+
     @Column(name = "contract_type")
     private String contractType; // Тип контракта (Actor, Director, Crew)
 

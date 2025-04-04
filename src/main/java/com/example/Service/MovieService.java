@@ -129,7 +129,7 @@ public class MovieService {
         }
 
         return new DtoMovie(movie.getId(), movie.getTitle(), movie.getDescription(),
-                movie.getGenre(),
+                movie.getGenre_film(),
                 movie.getDateTimeCreated(), dtoShootingDays, dtoScript, dtoFinance);
     }
 

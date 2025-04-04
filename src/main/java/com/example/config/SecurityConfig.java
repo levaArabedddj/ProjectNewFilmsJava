@@ -119,7 +119,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->authorizeRequests
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/secured/user").fullyAuthenticated()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
 

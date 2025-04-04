@@ -20,7 +20,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.example.Enum.UserRole.*;
@@ -177,6 +179,20 @@ public class SecurityController {
         }
         if (usersRepo.existsUsersByGmail(signupRequest.getGmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose different email");
+        }
+
+        // Преобразование перечисления в строку и проверка на роль Admin
+        String role = signupRequest.getRole().name().toUpperCase();
+
+        //НИКТО НЕ МОЖЕТ СТАТЬ АДМИНОМ ЧЕРЕЗ РЕГИСТРАЦИЮ!!!
+        if (role.equals("ADMIN")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You cannot register as an Admin");
+        }
+
+        // Дополнительная валидация роли
+        List<String> allowedRoles = Arrays.asList("ACTOR", "CREW_MEMBER", "DIRECTOR", "VISITOR");
+        if (!allowedRoles.contains(role)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid role selected");
         }
 
         // Створення користувача

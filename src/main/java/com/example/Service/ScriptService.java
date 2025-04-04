@@ -2,16 +2,26 @@ package com.example.Service;
 
 
 
+import com.example.Controllers.AddActorsControllers;
+import com.example.Entity.Director;
+import com.example.Entity.Movies;
 import com.example.Entity.Script;
+import com.example.Repository.DirectorRepo;
+import com.example.Repository.MoviesRepo;
 import com.example.Repository.ScriptRepo;
 import com.example.loger.Loggable;
 import com.google.api.gax.paging.Page;
+import com.google.cloud.ReadChannel;
 import com.google.cloud.storage.*;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,6 +31,7 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.Channels;
 
 import java.util.*;
@@ -30,19 +41,21 @@ import java.util.stream.StreamSupport;
 @Service
 public class ScriptService {
 
+    private static final Logger log = LoggerFactory.getLogger(ScriptService.class);
 
 
-    @Value("${google.cloud.storage.bucket.name}")
+    @Value("${google.cloud.storage.bucket.name1}")
     private String bucketName;
 
-    @Autowired
     private final Storage storage;
-
-    @Autowired
+    private final MoviesRepo moviesRepo;
     private final ScriptRepo scriptRepo;
+    private final DirectorRepo directorRepo;
 
     @Autowired
-    public ScriptService(Storage storage, ScriptRepo scriptRepo) {
+    public ScriptService(Storage storage, MoviesRepo moviesRepo, ScriptRepo scriptRepo, DirectorRepo directorRepo) {
+        this.moviesRepo = moviesRepo;
+        this.directorRepo = directorRepo;
         this.storage = StorageOptions.getDefaultInstance().getService();
         this.scriptRepo = scriptRepo;
     }
@@ -54,7 +67,6 @@ public class ScriptService {
     }
 
     @Loggable
-
     public void update(Long id ,Script updatedScript) {
         Script script = scriptRepo.findById(id).
                 orElseThrow(() -> new RuntimeException("Script with id "+ id + "not found"));
@@ -63,15 +75,29 @@ public class ScriptService {
         scriptRepo.save(existingScript);
     }
 
-    public String uploadFile(MultipartFile file) throws IOException {
-        String fileName = file.getOriginalFilename();
-        InputStream inputStream = file.getInputStream();
+    public String uploadFile(Long userId, Long movieId, MultipartFile file) throws IOException {
+        Director director = directorRepo.findByUserUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Director with id " + userId + " not found"));
 
-        BlobId blobId = BlobId.of(bucketName, fileName);
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+        Movies movies = moviesRepo.findById(movieId)
+                .orElseThrow(() -> new RuntimeException("Movies with id " + movieId + " not found"));
 
-        Blob blob = storage.create(blobInfo, inputStream);
-        return blob.getMediaLink(); // Возвращает ссылку на загруженный файл
+        if(!movies.getDirector().equals(director)) {
+            throw new RuntimeException("Movie with id " + movieId + " is not a director");
+        }
+
+
+        String uniqueFileName = UUID.randomUUID() + file.getOriginalFilename();
+        String fullPath = "ScriptFilms/" + uniqueFileName;
+
+        Bucket bucket = storage.get(bucketName);
+         bucket.create(fullPath, file.getInputStream(),file.getContentType());
+
+        Script script = new Script();
+        script.setContent(fullPath);
+        script.setMovie(movies);
+        scriptRepo.save(script);
+        return fullPath; // Возвращает ссылку на загруженный файл
     }
 
      //5. Добавление файла в выбранную папку
@@ -204,5 +230,116 @@ public class ScriptService {
    }
 
 
+    public void downloadScript(Long movieId, Long userId, HttpServletResponse response) {
+        Director director = directorRepo.findByUserUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Director with id " + userId + " not found"));
 
-}
+        Movies movies = moviesRepo.findById(movieId)
+                .orElseThrow(() -> new RuntimeException("Movies with id " + movieId + " not found"));
+
+        if(!movies.getDirector().equals(director)) {
+            throw new RuntimeException("Movie with id " + movieId + " is not a director");
+        }
+
+        // Получаем путь к файлу из скрипта
+        Script script = scriptRepo.findByMovieId(movieId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Script not found"));
+
+        String filePath = script.getContent();
+
+        // Получаем blob из хранилища
+        Blob blob = storage.get(bucketName, filePath);
+        if (blob == null || !blob.exists()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found in storage");
+        }
+
+        // Настройка ответа
+        response.setContentType(blob.getContentType());
+        response.setHeader("Content-Disposition", "inline; filename=\"" + blob.getName() + "\"");
+
+        try (InputStream inputStream = Channels.newInputStream(blob.reader());
+             OutputStream outputStream = response.getOutputStream()) {
+
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, length);
+            }
+            outputStream.flush();
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while streaming file", e);
+        }
+    }
+
+    @Transactional
+    public void deleteScript(Long movieId, Long userId) {
+
+        // Проверка режиссера
+        Director director = directorRepo.findByUserUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Director not found"));
+
+        Movies movie = moviesRepo.findById(movieId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found"));
+
+        if (!movie.getDirector().equals(director)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied: Not your movie");
+        }
+
+        // Поиск скрипта
+        Script script = scriptRepo.findByMovieId(movieId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Script not found"));
+
+        String filePath = script.getContent(); // https://storage.googleapis.com/your-bucket/ScriptFilms/UUIDfilename.jpg
+
+
+        // Извлекаем путь относительно bucket
+        log.info("File path from DB: {}", filePath);
+        String objectName;
+        if (filePath.startsWith("https://storage.googleapis.com/")) {
+            objectName = filePath.replace("https://storage.googleapis.com/" + bucketName + "/", "");
+        } else {
+            objectName = filePath; // если уже относительный путь
+        }
+        log.debug("Final object name: {}", objectName);
+
+        Blob blob = storage.get(bucketName, objectName);
+
+        if (blob == null) {
+            log.error("Blob is null for objectName: {}", objectName);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found in Google Cloud Storage");
+        }
+
+        log.info("Bucket name: {}", bucketName);
+        log.info("Trying to delete from bucket: {}, object: {}", bucketName, objectName);
+
+
+
+        if (blob == null || !blob.exists()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found in storage");
+        }
+
+
+
+        boolean deleted = blob.delete();
+        if (deleted) {
+            log.info("Successfully deleted object: {}", objectName);
+        } else {
+            log.error("Failed to delete object: {}", objectName);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete file from storage");
+        }
+
+        if (!deleted) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete file from storage");
+        }
+
+        // Сброс связи у фильма
+        Movies moviee = script.getMovie();
+        if (moviee != null) {
+            moviee.setScript(null);
+        }
+
+        scriptRepo.delete(script); // Удаляем запись из базы (опционально)
+    }
+
+    }
+

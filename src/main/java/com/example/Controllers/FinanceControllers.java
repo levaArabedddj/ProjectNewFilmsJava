@@ -10,6 +10,7 @@ import com.example.Exception.FinanceException;
 import com.example.Repository.FinanceRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;
+import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -19,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -48,12 +51,19 @@ public class FinanceControllers {
     }
 
 
+    // Добавить в контролерры проверку что юзер может изменять текущие
+    // финансы и проверять что авторизованный юзер именно тот за кого себя выдает
+
+
     @Loggable
     @PostMapping("/createFinance/{filmId}")
     @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<?> createFinance(@PathVariable("filmId") Long filmId, Principal principal,
                                            @Valid @RequestBody DtoFinance dtoFinance){
         try {
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
 
             String username = principal.getName();
             Users users = usersRepo.findByUserName(username)
@@ -166,6 +176,8 @@ public class FinanceControllers {
                 throw new ApiException("Access denied: You are not the owner of this movie");
             }
 
+
+            // добавить и тут проверку что новые введеные данные будут коректны
             updates.forEach((key, value) -> {
 
                 switch (key) {

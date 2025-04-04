@@ -1,6 +1,7 @@
 package com.example.DTO;
 
 
+import com.example.Enum.Genre;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,7 @@ public class DtoMovie {
     private long id;
     private String title;
     private String description ;
-    private String genre;
+    private Genre genre_film;
 //    private Set<DtoActor> actors;
 //    private Set<DtoCrewMember> crewMembers;
     private LocalDateTime dateTimeCreated;

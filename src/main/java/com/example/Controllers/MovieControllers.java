@@ -5,6 +5,8 @@ import com.example.DTO.DtoMovie;
 import com.example.Entity.Director;
 import com.example.Entity.Movies;
 import com.example.Entity.Users;
+import com.example.Enum.DevelopmentStage;
+import com.example.Enum.Genre;
 import com.example.Exception.ApiException;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
@@ -39,6 +41,11 @@ public class MovieControllers {
 
     private static final Logger logger = LoggerFactory.getLogger(MovieControllers.class);
 
+
+    // Добавить в контролеры проверку что юзер может изменять текущие
+    // фильм и проверять что авторизованный юзер именно тот за кого себя выдает
+
+
     @Autowired
     public MovieControllers(MoviesRepo moviesRepo, MovieService movieService, DirectorRepo directorRepo) {
         this.moviesRepo = moviesRepo;
@@ -71,7 +78,8 @@ public class MovieControllers {
             Movies newMovie = new Movies();
             newMovie.setTitle(movies.getTitle());
             newMovie.setDescription(movies.getDescription());
-            newMovie.setGenre(movies.getGenre());
+            newMovie.setGenre_film(movies.getGenre_film());
+            newMovie.setDevelopmentStage(DevelopmentStage.CONCEPT);
             newMovie.setDirector(director);
 
             moviesRepo.save(newMovie);
@@ -80,7 +88,7 @@ public class MovieControllers {
             DtoMovie dtoMovie = new DtoMovie();
             dtoMovie.setTitle(newMovie.getTitle());
             dtoMovie.setDescription(newMovie.getDescription());
-            dtoMovie.setGenre(newMovie.getGenre());
+            dtoMovie.setGenre_film(Genre.valueOf(String.valueOf(newMovie.getGenre_film())));
             dtoMovie.setDateTimeCreated(newMovie.getDateTimeCreated());
 
             // Возврат DTO в ответе
@@ -151,7 +159,7 @@ public class MovieControllers {
             // Обновление данных фильма
             existingMovie.setTitle(updatedData.getTitle());
             existingMovie.setDescription(updatedData.getDescription());
-            existingMovie.setGenre(updatedData.getGenre());
+            existingMovie.setGenre_film(updatedData.getGenre_film());
 
             // Сохранение изменений
             moviesRepo.save(existingMovie);
@@ -159,7 +167,7 @@ public class MovieControllers {
             DtoMovie dtoMovie = new DtoMovie();
             dtoMovie.setTitle(existingMovie.getTitle());
             dtoMovie.setDescription(existingMovie.getDescription());
-            dtoMovie.setGenre(existingMovie.getGenre());
+            dtoMovie.setGenre_film(Genre.valueOf(String.valueOf(existingMovie.getGenre_film())));
             dtoMovie.setDateTimeCreated(existingMovie.getDateTimeCreated());
             // Возврат обновленного фильма
             return ResponseEntity.ok(dtoMovie);

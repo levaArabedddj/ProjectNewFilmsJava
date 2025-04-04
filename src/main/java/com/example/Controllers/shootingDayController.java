@@ -40,6 +40,11 @@ public class shootingDayController {
     @Autowired
     private MoviesRepo moviesRepo;
 
+    // Добавить в контролеры проверку что юзер может изменять текущие
+    // съемочные дни и проверять что авторизованный юзер именно тот за кого себя выдает
+
+
+
     public shootingDayController(ShootingDayRepo shootingDayRepo) {
         this.shootingDayRepo = shootingDayRepo;
     }

@@ -27,30 +27,30 @@ public class GetInformationController {
     private final ActorRepo actorRepo;
     private final CrewMemberRepo crewMemberRepo;
 
-    @Loggable
-    @GetMapping("/detalsForFilms/{id}")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String GetFilms(Model model,  @PathVariable Long id) {
-        Optional<Movies> optionalFilm = moviesRepo.findById(id);
-
-        optionalFilm.ifPresent(film -> model.addAttribute("film", film));
-
-     List<Finance> finances = financeRepo.findByMovieId(id);
-        model.addAttribute("finances", finances);
-
-        List<Script> script = scriptRepo.findByMovieId(id);
-        model.addAttribute("script", script);
-
-        List<ShootingDay> shootingDays = shootingDayRepo.findByMovieId(id);
-        model.addAttribute("shootingDays", shootingDays);
-
-        List<Actors> actors = actorRepo.findMovieWithActorsById(id);
-        model.addAttribute("actors", actors);
-
-        List<FilmCrewMembers> crewMembers = crewMemberRepo.findCrewMembersByMovieId(id);
-        model.addAttribute("crewMembers", crewMembers);
-        return "detalsForFilms";
-    }
+//    @Loggable
+//    @GetMapping("/detalsForFilms/{id}")
+//    @PreAuthorize("hasAuthority('ROLE_USER')")
+//    public String GetFilms(Model model,  @PathVariable Long id) {
+//        Optional<Movies> optionalFilm = moviesRepo.findById(id);
+//
+//        optionalFilm.ifPresent(film -> model.addAttribute("film", film));
+//
+//     List<Finance> finances = financeRepo.findByMovieId(id);
+//        model.addAttribute("finances", finances);
+//
+//        List<Script> script = scriptRepo.findByMovieId(id);
+//        model.addAttribute("script", script);
+//
+//        List<ShootingDay> shootingDays = shootingDayRepo.findByMovieId(id);
+//        model.addAttribute("shootingDays", shootingDays);
+//
+//        List<Actors> actors = actorRepo.findMovieWithActorsById(id);
+//        model.addAttribute("actors", actors);
+//
+//        List<FilmCrewMembers> crewMembers = crewMemberRepo.findCrewMembersByMovieId(id);
+//        model.addAttribute("crewMembers", crewMembers);
+//        return "detalsForFilms";
+//    }
 
     @Loggable
     @GetMapping("/GetInformation")

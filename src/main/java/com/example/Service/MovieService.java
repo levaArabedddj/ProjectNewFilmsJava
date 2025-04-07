@@ -1,13 +1,18 @@
 package com.example.Service;
 
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.example.DTO.DtoFinance;
 import com.example.DTO.DtoMovie;
 import com.example.DTO.DtoScript;
 import com.example.DTO.DtoShootingDay;
+import com.example.ElasticSearch.ClassDocuments.MovieDocument;
+
 import com.example.Entity.Director;
 import com.example.Entity.Movies;
 import com.example.Entity.Users;
+import com.example.Enum.Genre;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;
@@ -15,8 +20,14 @@ import com.example.loger.Loggable;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +39,7 @@ import java.util.stream.Collectors;
 public class MovieService {
 
 
+//    private final MovieElasticRepo movieElasticRepo;
     private final MoviesRepo moviesRepo;
 
     private final UsersRepo usersRepo;
@@ -35,7 +47,11 @@ public class MovieService {
     private final DirectorRepo directorRepo;
 
     @Autowired
-    public MovieService(MoviesRepo moviesRepo, UsersRepo usersRepo, DirectorRepo directorRepo) {
+    private ElasticsearchClient elasticsearchClient;
+
+
+    @Autowired
+    public MovieService( MoviesRepo moviesRepo, UsersRepo usersRepo, DirectorRepo directorRepo) {
         this.moviesRepo = moviesRepo;
         this.usersRepo = usersRepo;
         this.directorRepo = directorRepo;
@@ -102,13 +118,6 @@ public class MovieService {
 
 
     private DtoMovie convertToMovieDto(Movies movie){
-//        Set<DtoActor> dtoActors = movie.getActors().stream()
-//                .map(actors -> new DtoActor(actors.getId(), actors.getName(), actors.getSurName(),actors.getSalaryPerHour(), actors.getRating()))
-//                .collect(Collectors.toSet());
-//
-//        Set<DtoCrewMember> dtoCrewMembers = movie.getFilmCrewMembers().stream()
-//                .map(crewMember -> new DtoCrewMember(crewMember.getCrewMember_id(), crewMember.getName(), crewMember.getSurName(), crewMember.getSalaryPerHours()))
-//                .collect(Collectors.toSet());
 
         Set<DtoShootingDay> dtoShootingDays = movie.getShootingDays().stream()
                 .map(shootingDay -> new DtoShootingDay( shootingDay.getShootingDate(), shootingDay.getShootingTime(), shootingDay.getShootingLocation(), shootingDay.getEstimatedDurationHours()))
@@ -132,5 +141,47 @@ public class MovieService {
                 movie.getGenre_film(),
                 movie.getDateTimeCreated(), dtoShootingDays, dtoScript, dtoFinance);
     }
+
+
+    // для проверки
+    @Loggable
+    public List<DtoMovie> searchMovies(String keyword) {
+        List<Movies> foundMovies = moviesRepo.searchByTitleOrDescription(keyword);
+
+        if (foundMovies == null || foundMovies.isEmpty()) {
+            log.info("По ключевому слову '{}' фильмы не найдены", keyword);
+            return Collections.emptyList();
+        }
+
+        return foundMovies.stream()
+                .map(this::convertToMovieDto)
+                .collect(Collectors.toList());
+    }
+
+
+    public List<MovieDocument> searchByKeyword(String keyword) {
+        try {
+            SearchResponse<MovieDocument> response = elasticsearchClient.search(s -> s
+                            .index("movies")
+                            .query(q -> q
+                                    .multiMatch(m -> m
+                                            .fields("title^2", "description") // title важнее
+                                            .query(keyword)
+                                            .fuzziness("AUTO") // разрешаем опечатки
+                                    )
+                            ),
+                    MovieDocument.class
+            );
+
+            return response.hits().hits().stream()
+                    .map(Hit::source)
+                    .collect(Collectors.toList());
+
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при поиске в Elasticsearch", e);
+        }
+    }
+
+
 
 }

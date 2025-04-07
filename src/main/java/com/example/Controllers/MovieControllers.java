@@ -2,6 +2,10 @@ package com.example.Controllers;
 
 
 import com.example.DTO.DtoMovie;
+import com.example.ElasticSearch.ClassDocuments.MovieDocument;
+
+import com.example.ElasticSearch.ElasticConfiguration;
+import com.example.ElasticSearch.Service.MovieElasticService;
 import com.example.Entity.Director;
 import com.example.Entity.Movies;
 import com.example.Entity.Users;
@@ -22,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 
 import java.security.Principal;
@@ -46,11 +51,19 @@ public class MovieControllers {
     // фильм и проверять что авторизованный юзер именно тот за кого себя выдает
 
 
+    private final ElasticsearchClient elasticsearchClient;
+
+    private final MovieElasticService movieElasticService;
+
     @Autowired
-    public MovieControllers(MoviesRepo moviesRepo, MovieService movieService, DirectorRepo directorRepo) {
+    public MovieControllers(MoviesRepo moviesRepo, MovieService movieService, DirectorRepo directorRepo,  ElasticsearchClient elasticsearchClient, MovieElasticService movieElasticService) {
         this.moviesRepo = moviesRepo;
         this.movieService = movieService;
         this.directorRepo = directorRepo;
+        this.elasticsearchClient = elasticsearchClient;
+
+
+        this.movieElasticService = movieElasticService;
     }
 
     @Loggable
@@ -84,6 +97,16 @@ public class MovieControllers {
 
             moviesRepo.save(newMovie);
             logger.info("New movie created: {}", newMovie);
+
+            // Маппим фильм в документ для Elasticsearch
+            MovieDocument document = movieElasticService.mapToElastic(newMovie);
+
+            // Сохраняем фильм в Elasticsearch через внедрённый client
+            elasticsearchClient.index(i -> i
+                    .index("movies")  // Указываем индекс
+                    .id(String.valueOf(newMovie.getId()))  // Преобразуем ID в строку
+                    .document(document)  // Данные документа
+            );
 
             DtoMovie dtoMovie = new DtoMovie();
             dtoMovie.setTitle(newMovie.getTitle());
@@ -221,6 +244,23 @@ public class MovieControllers {
         }
 
     }
+
+
+
+
+    @GetMapping("/search")
+    public ResponseEntity<List<DtoMovie>> searchMovies(@RequestParam String keyword) {
+        List<DtoMovie> movies = movieService.searchMovies(keyword);
+        return ResponseEntity.ok(movies);
+    }
+
+
+    @GetMapping("/elastic-search")
+    public ResponseEntity<List<MovieDocument>> searchMoviesElastic(@RequestParam String keyword) {
+        List<MovieDocument> movies = movieService.searchByKeyword(keyword);
+        return ResponseEntity.ok(movies);
+    }
+
 
 
 

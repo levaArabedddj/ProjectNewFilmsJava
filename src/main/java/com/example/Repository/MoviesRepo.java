@@ -32,4 +32,9 @@ public interface MoviesRepo extends JpaRepository<Movies, Long> {
     boolean existsByIdAndUsername(@Param("id") Long id, @Param("name") String username);
 
 
+    @Query("SELECT m FROM Movies m WHERE LOWER(m.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(m.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<Movies> searchByTitleOrDescription(@Param("keyword") String keyword);
+
+
+
 }

@@ -12,22 +12,20 @@ import com.example.ElasticSearch.ClassDocuments.MovieDocument;
 import com.example.Entity.Director;
 import com.example.Entity.Movies;
 import com.example.Entity.Users;
-import com.example.Enum.Genre;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;
+import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -58,9 +56,21 @@ public class MovieService {
     }
 
     @Loggable
-    public Movies findById(long id) {
-        return moviesRepo.findById(id);
+    public List<DtoMovie> findById(Long id, Long userId) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+
+        if(!authenticatedUserId.equals(userId)) {
+            throw new AccessDeniedException("You are not authorized to access this resource");
+        }
+
+        return moviesRepo.findById(id).stream().
+                map(this::convertToMovieDto)
+                .collect(Collectors.toList());
+
     }
+
     @Loggable
     public void save(Movies movie) {
         moviesRepo.save(movie);
@@ -129,6 +139,7 @@ public class MovieService {
         }
         DtoFinance dtoFinance = new DtoFinance();
         if(movie.getFilmFinance() != null) {
+            dtoFinance.setId(movie.getFilmFinance().getId());
             dtoFinance.setBudget(movie.getFilmFinance().getBudget());
             dtoFinance.setActorsSalary(movie.getFilmFinance().getActorsSalary());
             dtoFinance.setCrewSalary(movie.getFilmFinance().getCrewSalary());
@@ -183,5 +194,38 @@ public class MovieService {
     }
 
 
+    public List<DtoMovie> getAllMovie(Long userId) {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+
+
+        if(!authenticatedUserId.equals(userId)) {
+            throw new AccessDeniedException("You are not authorized to access this resource");
+        }
+
+        Optional<Director> director = directorRepo.findByUserUserId(userId);
+
+            Director director1 = director.get();
+            System.out.println("Found director " + director1.getId());
+
+            List<Movies> movies = directorRepo.findMoviesByDirectorId(director1.getId());
+
+            if (movies == null || movies.isEmpty()) {
+                System.out.println("film not found");
+                return Collections.emptyList();
+            }
+
+            return movies.stream()
+                    .map(this::convertToDtoMovie)
+                    .collect(Collectors.toList());
+
+    }
+
+    private DtoMovie convertToDtoMovie(Movies movies) {
+
+        return new DtoMovie( movies.getId(),
+                movies.getTitle(),movies.getDescription(),
+                movies.getGenre_film());
+    }
 }

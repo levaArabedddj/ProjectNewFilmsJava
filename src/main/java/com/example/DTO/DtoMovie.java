@@ -24,4 +24,11 @@ public class DtoMovie {
     private Set<DtoShootingDay> shootingDays;
     private DtoScript script;
     private DtoFinance finance;
+
+    public DtoMovie(long id, String title, String description, Genre genre_film) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.genre_film = genre_film;
+    }
 }

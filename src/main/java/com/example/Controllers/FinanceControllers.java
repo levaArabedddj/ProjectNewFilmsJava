@@ -18,6 +18,7 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -175,48 +176,40 @@ public class FinanceControllers {
             if (!moviesRepo.existsByIdAndUsername(filmId, username)) {
                 throw new ApiException("Access denied: You are not the owner of this movie");
             }
-
-
-            // добавить и тут проверку что новые введеные данные будут коректны
+            // Выводим перед обновлением, какие данные пришли
             updates.forEach((key, value) -> {
-
-                switch (key) {
-                    case "budget":
-                        existingFinance.setBudget(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-                        break;
-                    case "actorsSalary":
-                        existingFinance.setActorsSalary(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-                        break;
-                    case "crewSalary":
-                        existingFinance.setCrewSalary(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-                        break;
-                    case "equipmentCost":
-                        existingFinance.setEquipmentCost(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-                        break;
-                    case "editingCost":
-                        existingFinance.setEditingCost(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-                        break;
-                    case "advertisingCost":
-                        existingFinance.setAdvertisingCost(BigDecimal.valueOf(Integer.parseInt(value.toString())));
-                        break;
-                    default:
-                        try {
-                            throw new ApiException("Invalid field: " + key);
-                        }catch (ApiException e){
-                            throw new RuntimeException(e);
-                        }
-                }
-
-
-
+                System.out.println("Key: " + key + " | Value: " + value);
             });
+
+            // Сначала обновляем поля расходов
+            if (updates.containsKey("actorsSalary")) {
+                existingFinance.setActorsSalary(BigDecimal.valueOf(Integer.parseInt(updates.get("actorsSalary").toString())));
+            }
+            if (updates.containsKey("crewSalary")) {
+                existingFinance.setCrewSalary(BigDecimal.valueOf(Integer.parseInt(updates.get("crewSalary").toString())));
+            }
+            if (updates.containsKey("advertisingCost")) {
+                existingFinance.setAdvertisingCost(BigDecimal.valueOf(Integer.parseInt(updates.get("advertisingCost").toString())));
+            }
+            if (updates.containsKey("editingCost")) {
+                existingFinance.setEditingCost(BigDecimal.valueOf(Integer.parseInt(updates.get("editingCost").toString())));
+            }
+            if (updates.containsKey("equipmentCost")) {
+                existingFinance.setEquipmentCost(BigDecimal.valueOf(Integer.parseInt(updates.get("equipmentCost").toString())));
+            }
+
+            // Затем обновляем бюджет — поле обновляем в последнюю очередь
+            if (updates.containsKey("budget")) {
+                existingFinance.setBudget(BigDecimal.valueOf(Integer.parseInt(updates.get("budget").toString())));
+            }
 
             financeRepo.save(existingFinance);
             return ResponseEntity.ok("Finance updated successfully");
-        }catch (ApiException e) {
-            throw new RuntimeException(e);
+        } catch (ApiException | IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
         }
-
     }
 
 

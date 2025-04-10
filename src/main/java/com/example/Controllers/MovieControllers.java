@@ -16,6 +16,7 @@ import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;
 import com.example.Service.MovieService;
+import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -24,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -153,6 +156,18 @@ public class MovieControllers {
     } // метод написан
 
 
+    @Loggable
+    @GetMapping("/getAllFilms")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<?> getAllFilmsDirector(
+            Principal principal) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+
+        List<DtoMovie> movies = movieService.getAllMovie(userId);
+        return ResponseEntity.ok(movies);
+    }
 
 
     @Loggable
@@ -261,7 +276,16 @@ public class MovieControllers {
         return ResponseEntity.ok(movies);
     }
 
+    @GetMapping("/getMovieById/{movieId}")
+    public ResponseEntity<?>getMovieById(@PathVariable Long movieId) {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+
+        List<DtoMovie> movies = movieService.findById(movieId,userId);
+        return ResponseEntity.ok(movies);
+
+    }
 
 
 

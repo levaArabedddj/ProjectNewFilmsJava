@@ -2,10 +2,12 @@ package com.example.Controllers;
 
 
 import com.example.DTO.DtoShootingDay;
+import com.example.Entity.Director;
 import com.example.Entity.Movies;
 import com.example.Entity.ShootingDay;
 import com.example.Entity.Users;
 import com.example.Exception.ApiException;
+import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.ShootingDayRepo;
 import com.example.Repository.UsersRepo;
@@ -25,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -40,13 +43,16 @@ public class shootingDayController {
     @Autowired
     private MoviesRepo moviesRepo;
 
+    private final DirectorRepo directorRepo;
+
     // Добавить в контролеры проверку что юзер может изменять текущие
     // съемочные дни и проверять что авторизованный юзер именно тот за кого себя выдает
 
 
-
-    public shootingDayController(ShootingDayRepo shootingDayRepo) {
+    @Autowired
+    public shootingDayController(ShootingDayRepo shootingDayRepo, DirectorRepo directorRepo) {
         this.shootingDayRepo = shootingDayRepo;
+        this.directorRepo = directorRepo;
     }
 
     @Loggable
@@ -105,20 +111,27 @@ public class shootingDayController {
     @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<?> GetShootingDays(@PathVariable("filmId") Long filmId,
                                              Principal principal) throws ApiException {
-        try{
-            String username = principal.getName();
 
             if (principal == null || principal.getName() == null) {
                 throw new ApiException("Unauthorized access: no user information found");
             }
-            Users users = usersRepo.findByUserName(username).
-                    orElseThrow(() -> new ApiException("User not found"));
-            Movies movies = moviesRepo.findById(filmId).
+
+            String username = principal.getName();
+              Movies movies = moviesRepo.findById(filmId).
                     orElseThrow(() -> new ApiException("Movie not found"));
+
             //проверяет, существует ли фильм с указанным id, принадлежащий пользователю с заданным именем
             if (!moviesRepo.existsByIdAndUsername(filmId, username)) {
                 throw new ApiException("Access denied: You are not the owner of this movie");
             }
+
+        if (movies.getDirector() == null ||
+                movies.getDirector().getUsers() == null ||
+                !movies.getDirector().getUsers().getUserName().equals(username)) {
+            throw new ApiException("Access denied: You are not the owner of this movie");
+        }
+
+
             List<ShootingDay> shootingDays = shootingDayRepo.findByMovieId(filmId);
 
             List<DtoShootingDay> dtoShootingDays = shootingDays.stream()
@@ -133,9 +146,7 @@ public class shootingDayController {
             }).toList();
 
             return ResponseEntity.ok(dtoShootingDays);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
 
     }
     @Loggable
@@ -247,4 +258,43 @@ public class shootingDayController {
     }
 
 
+    @Loggable
+    @GetMapping("/getAllShootingDayDirector")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<?> getAllShootingDayMovie(Principal principal) throws ApiException {
+
+        if (principal == null || principal.getName() == null) {
+            throw new ApiException("Unauthorized access: no user information found");
+        }
+
+        String username = principal.getName();
+
+        // Получаем текущего пользователя
+        Users user = usersRepo.findByUserName(username)
+                .orElseThrow(() -> new ApiException("User not found"));
+
+        // Получаем директора, связанного с пользователем
+        Director director = directorRepo.findByUsers(user)
+                .orElseThrow(() -> new ApiException("Director profile not found"));
+
+        // Получаем все фильмы, снятые этим директором
+        List<Movies> movies = moviesRepo.findByDirector(director);
+
+        // Из всех фильмов достаём съёмочные дни
+        List<DtoShootingDay> dtoShootingDays = movies.stream()
+                .flatMap(movie -> shootingDayRepo.findByMovieId(movie.getId()).stream())
+                .map(day -> {
+                    DtoShootingDay dto = new DtoShootingDay();
+                    dto.setShootingDate(day.getShootingDate());
+                    dto.setShootingTime(day.getShootingTime());
+                    dto.setShootingLocation(day.getShootingLocation());
+                    dto.setEstimatedDurationHours(day.getEstimatedDurationHours());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtoShootingDays);
+
+
+    }
 }

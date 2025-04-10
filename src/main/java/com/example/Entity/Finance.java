@@ -93,16 +93,17 @@ public class Finance {
 
     public void setBudget(BigDecimal budget) {
         if(budget == null || budget.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Budget cannot be null and salary cannot be negative");
+            throw new IllegalArgumentException("Budget cannot be null and cannot be negative");
         }
 
-        BigDecimal totalExpense = actorsSalary.add(crewSalary)
+        BigDecimal totalExpenses = actorsSalary.add(crewSalary)
                 .add(advertisingCost)
                 .add(editingCost)
                 .add(equipmentCost);
 
-        if(totalExpense.compareTo(BigDecimal.ZERO) > 0) {
-            throw new IllegalArgumentException("Total expense cannot be negative");
+        // Если сумма расходов больше нового бюджета — выбросить исключение
+        if(budget.compareTo(totalExpenses) < 0){
+            throw new IllegalArgumentException("Budget is not enough to cover total expenses");
         }
         this.budget = budget;
     }

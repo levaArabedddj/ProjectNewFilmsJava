@@ -202,6 +202,14 @@ public class MovieControllers {
             // Сохранение изменений
             moviesRepo.save(existingMovie);
 
+            MovieDocument document = movieElasticService.mapToElastic(existingMovie);
+
+            elasticsearchClient.index(i -> i
+                    .index("movies")
+                    .id(String.valueOf(existingMovie.getId()))
+                    .document(document)
+            );
+
             DtoMovie dtoMovie = new DtoMovie();
             dtoMovie.setTitle(existingMovie.getTitle());
             dtoMovie.setDescription(existingMovie.getDescription());
@@ -245,9 +253,13 @@ public class MovieControllers {
                 throw new ApiException("You don't have permission to edit this film");
             }
             moviesRepo.delete(deleteMovie);
+            elasticsearchClient.delete( i -> i
+                    .index("movies")
+                    .id(String.valueOf(deleteMovie.getId())
+                    ));
+
 
             return ResponseEntity.status(HttpStatus.OK).body("Film deleted successfully");
-
 
         } catch (ApiException e) {
             logger.error("Error updating movie: {}", e.getMessage());

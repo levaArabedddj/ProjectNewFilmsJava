@@ -12,6 +12,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DtoShootingDay {
+    private long id;
     private LocalDate shootingDate;
     private LocalTime shootingTime;
     private String shootingLocation;

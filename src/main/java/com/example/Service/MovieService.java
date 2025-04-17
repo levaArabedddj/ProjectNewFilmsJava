@@ -130,7 +130,7 @@ public class MovieService {
     private DtoMovie convertToMovieDto(Movies movie){
 
         Set<DtoShootingDay> dtoShootingDays = movie.getShootingDays().stream()
-                .map(shootingDay -> new DtoShootingDay( shootingDay.getShootingDate(), shootingDay.getShootingTime(), shootingDay.getShootingLocation(), shootingDay.getEstimatedDurationHours()))
+                .map(shootingDay -> new DtoShootingDay(shootingDay.getId(), shootingDay.getShootingDate(), shootingDay.getShootingTime(), shootingDay.getShootingLocation(), shootingDay.getEstimatedDurationHours()))
                 .collect(Collectors.toSet());
 
         DtoScript dtoScript = new DtoScript();
@@ -224,7 +224,7 @@ public class MovieService {
 
     private DtoMovie convertToDtoMovie(Movies movies) {
 
-        return new DtoMovie( movies.getId(),
+        return new DtoMovie(movies.getId(),
                 movies.getTitle(),movies.getDescription(),
                 movies.getGenre_film());
     }

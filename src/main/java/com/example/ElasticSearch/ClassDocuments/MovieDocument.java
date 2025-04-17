@@ -1,7 +1,7 @@
 package com.example.ElasticSearch.ClassDocuments;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.data.annotation.Id; // А не jakarta.persistence.Id
+import org.springframework.data.annotation.Id;
 import lombok.Data;
 
 

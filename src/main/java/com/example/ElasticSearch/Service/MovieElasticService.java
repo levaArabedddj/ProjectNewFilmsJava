@@ -11,8 +11,6 @@ import java.time.ZoneOffset;
 
 @Service
 public class MovieElasticService {
-
-
     public MovieDocument mapToElastic(Movies movie){
         MovieDocument document = new MovieDocument();
         document.setId(String.valueOf(movie.getId()));

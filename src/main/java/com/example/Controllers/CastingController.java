@@ -1,6 +1,7 @@
 package com.example.Controllers;
 
 import com.example.DTO.CastingApplicationDto;
+import com.example.DTO.CastingDto;
 import com.example.DTO.TrialShootingDto;
 import com.example.Entity.CastingApplications;
 import com.example.Entity.Castings;
@@ -9,6 +10,7 @@ import com.example.Enum.ApplicationStatus;
 import com.example.Service.CastingService;
 import com.example.config.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -26,14 +28,19 @@ public class CastingController {
     private final CastingService castingService;
 
 
-    // тут проработать кто какие ендпоинты может использовать
-    // и какие не может , желательно для всех контроллеров осмотреть по логике
-
 
     @Autowired
     public CastingController(CastingService castingService) {
         this.castingService = castingService;
     }
+
+
+    // тут проработать кто какие ендпоинты может использовать
+    // и какие не может , желательно для всех контроллеров осмотреть по логике
+
+
+
+
     /**
      * Создание кастинга для фильма
      */
@@ -42,7 +49,7 @@ public class CastingController {
     @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<?> createCasting(
             @PathVariable Long movieId,
-            @RequestBody Castings castingsBody) {
+            @RequestBody CastingDto castingsBody) {
 
         // Получаем ID текущего пользователя из токена
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -52,8 +59,10 @@ public class CastingController {
             return ResponseEntity.badRequest().body("Role names cannot be null or empty");
         }
 
-        Castings castings = castingService.createCastings(userId, movieId, castingsBody );
-        return ResponseEntity.ok("castings created");
+        castingService.createCastings(userId, movieId, castingsBody);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body("created");
     }
 
     /**
@@ -71,14 +80,34 @@ public class CastingController {
     }
 
 
-    @GetMapping("/applications/{filmId}/{castingId}/{directorId}")
+
+    /**
+     * получения всех кастингов директором
+    */
+    @GetMapping("/allCastingsMovie/{filmId}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<?> getAllCastingsMovie(@PathVariable long filmId, Principal principal) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+        List<CastingDto> castingMovie = castingService.getAllCastingForMovieId(userId,filmId,principal);
+        return ResponseEntity.ok(castingMovie);
+    }
+
+
+
+    /**
+     * Получения всех заявок поданные актерами для съемки в фильме
+    */
+    @GetMapping("/applications/{filmId}/{castingId}")
     @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<List<CastingApplicationDto>> getAllCastingApplications(
-            @PathVariable int castingId,
             @PathVariable long filmId,
-            @PathVariable long directorId,
+            @PathVariable int castingId,
             Principal principal) {
-        List<CastingApplicationDto> applications = castingService.getAllCastingApplications(castingId, filmId, directorId, principal);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+        List<CastingApplicationDto> applications = castingService.getAllCastingApplications(castingId,filmId, userId, principal);
         return ResponseEntity.ok(applications);
     }
 

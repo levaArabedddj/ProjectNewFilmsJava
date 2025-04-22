@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +36,7 @@ import java.io.OutputStream;
 import java.nio.channels.Channels;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -75,15 +77,17 @@ public class ScriptService {
         scriptRepo.save(existingScript);
     }
 
-    public String uploadFile(Long userId, Long movieId, MultipartFile file) throws IOException {
+    @Async("fileUploadExecutor")
+    public CompletableFuture<String> uploadFile(Long userId, Long movieId, MultipartFile file) throws IOException {
         Director director = directorRepo.findByUserUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Director with id " + userId + " not found"));
 
         Movies movies = moviesRepo.findById(movieId)
                 .orElseThrow(() -> new RuntimeException("Movies with id " + movieId + " not found"));
 
-        if(!movies.getDirector().equals(director)) {
-            throw new RuntimeException("Movie with id " + movieId + " is not a director");
+        Long directorUserId = movies.getDirector().getUsers().getUser_id();
+        if (!directorUserId.equals(userId)) {
+            throw new RuntimeException("User " + userId + " is not director of movie " + movieId);
         }
 
 
@@ -97,7 +101,7 @@ public class ScriptService {
         script.setContent(fullPath);
         script.setMovie(movies);
         scriptRepo.save(script);
-        return fullPath; // Возвращает ссылку на загруженный файл
+        return CompletableFuture.completedFuture(fullPath); // Возвращает ссылку на загруженный файл
     }
 
      //5. Добавление файла в выбранную папку
@@ -237,7 +241,8 @@ public class ScriptService {
         Movies movies = moviesRepo.findById(movieId)
                 .orElseThrow(() -> new RuntimeException("Movies with id " + movieId + " not found"));
 
-        if(!movies.getDirector().equals(director)) {
+        Long directorUserId = movies.getDirector().getUsers().getUser_id();
+        if(!directorUserId.equals(userId)) {
             throw new RuntimeException("Movie with id " + movieId + " is not a director");
         }
 

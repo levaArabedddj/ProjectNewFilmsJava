@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +28,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 
 @RestController
@@ -57,21 +59,26 @@ public class ScriptController {
     @Loggable
     @PostMapping("/uploadScriptMovie/{movieId}")
     @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
-    public ResponseEntity<String> uploadScript(@RequestParam("file") MultipartFile file,
-                                               Principal principal,
-                                               @PathVariable("movieId") Long movieId) {
+    public CompletableFuture<ResponseEntity<String>> uploadScript(@RequestParam("file") MultipartFile file,
+                                                  Principal principal,
+                                                  @PathVariable("movieId") Long movieId) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
         String username = authentication.getName(); // Получаем имя пользователя
 
         try {
-            String fileUrl = service.uploadFile(userId,movieId,file);
-            return ResponseEntity.ok(fileUrl);
+            return service.uploadFile(userId,movieId,file)
+                    .thenApply( path -> ResponseEntity.ok(path))
+                    .exceptionally( ex-> {
+                        String msg = ex.getCause() != null ? ex.getCause().getMessage(): ex.getMessage();
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed " + msg);
+                    });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
  // контроллер для скачивания сценария
     @Loggable
     @GetMapping("/downloadScript/{movieId}")

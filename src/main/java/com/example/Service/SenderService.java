@@ -35,7 +35,7 @@ public class SenderService {
     public void sendAssignApplication(String to , String username, ApplicationStatus status) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        message.setSubject("Вашу заявку на сьемки в фильме было" + status);
+        message.setSubject("Вашу заявку на сьемки в фильме было " + status);
         if(status.equals(Approved)) {
             message.setText("Приветствуем вас вы были приняты на сьемки в фильм и ваша заявка была одобрена ");
         } else {

@@ -235,19 +235,21 @@ public class SecurityController {
                 crewMemberProfilesRepo.save(crewMemberProfiles);
                 break;
             case DIRECTOR:
+                // 1️⃣ Сначала создаём и сохраняем профиль режиссёра
+                DirectorProfiles profiles = new DirectorProfiles();
+                profiles.setFirstName(signupRequest.getName());
+                profiles.setLastName(signupRequest.getSurName());
+                profiles.setGender(signupRequest.getGender());
+                profiles.setPhoneNumber(signupRequest.getPhone());
+                profiles = directorProfilesRepo.save(profiles);
+
+                // 2️⃣ Потом создаём и сохраняем самого Director, указывая уже существующий profile_id
                 Director director = new Director();
                 director.setUsers(user);
                 director.setName(signupRequest.getName());
                 director.setSurName(signupRequest.getSurName());
+                director.setDirectorProfiles(profiles);   // <-- важно!
                 directorRepo.save(director);
-
-                DirectorProfiles profiles = new DirectorProfiles();
-                profiles.setLastName(signupRequest.getName());
-                profiles.setFirstName(signupRequest.getSurName());
-                profiles.setGender(signupRequest.getGender());
-                profiles.setPhoneNumber(signupRequest.getPhone());
-                directorProfilesRepo.save(profiles);
-
                 // прописать условие когда будет создаваться админ
         }
 

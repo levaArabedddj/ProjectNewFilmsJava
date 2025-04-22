@@ -1,9 +1,6 @@
 package com.example.Service;
 
-import com.example.DTO.ActorProfileDto;
-import com.example.DTO.CastingApplicationDto;
-import com.example.DTO.DtoActor;
-import com.example.DTO.TrialShootingDto;
+import com.example.DTO.*;
 import com.example.Entity.*;
 import com.example.Enum.ApplicationStatus;
 import com.example.Enum.TrialResult;
@@ -14,6 +11,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CastingService {
@@ -53,7 +52,7 @@ public class CastingService {
     }
 
 
-    public Castings createCastings(Long userId, Long movieId, Castings castingsBody){
+    public void createCastings(Long userId, Long movieId, CastingDto castingsBody){
         Director director = directorRepo.findByUserUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Director not found"));
 
@@ -74,7 +73,7 @@ public class CastingService {
         castings.setRoleName(castingsBody.getRoleName());
         castings.setDescription(castingsBody.getDescription());
         castings.setRequirements(castingsBody.getRequirements());
-        return castingsRepo.save(castings);
+        castingsRepo.save(castings);
     }
 
     public CastingApplications applyForCasting(Long userId, int castingId, String message ){
@@ -105,7 +104,8 @@ public class CastingService {
 
 
 
-    public List<CastingApplicationDto> getAllCastingApplications(int castingId, Long filmId, long directorId, Principal principal){
+    @SneakyThrows
+    public List<CastingApplicationDto> getAllCastingApplications(int castingId,Long filmId, long directorId, Principal principal){
 
         try {
             String username = principal.getName();
@@ -119,7 +119,11 @@ public class CastingService {
             Movies movie = moviesRepo.findById(filmId)
                     .orElseThrow(() -> new ApiException("Movie not found"));
 
-            if (!(movie.getDirector().getId() ==directorId)) {
+//            if (!(movie.getDirector().getId() == directorId)) {
+//                throw new ApiException("Access denied: You are not the owner of this movie");
+//            }
+
+            if(!(movie.getDirector().getUsers().getUser_id()== directorId)){
                 throw new ApiException("Access denied: You are not the owner of this movie");
             }
 //
@@ -127,52 +131,56 @@ public class CastingService {
 //            if(!moviesRepo.existsByIdAndUsername(filmId, username)){
 //                throw new ApiException("Access denied: You are not the owner of thus movie");
 //            }
-            List<Castings> castings = castingsRepo.findByMovieId(filmId);
+            Castings castings = castingsRepo.findById(castingId).
+                    orElseThrow(()->new ApiException("Castings not found"));
 
-            List<CastingApplicationDto> applicationDTOs = new ArrayList<>();
-
-            for (Castings casting : castings) {
-                List<CastingApplications> applications = castingApplicationsRepo.findByCastings(casting);
-
-                for (CastingApplications application : applications) {
-                    Users user = application.getActor();
-                    Actors actor = user.getActor();  // Получаем актёра
-                    ActorProfiles profile = actor != null ? actor.getActorProfile() : null;
-
-                    // Преобразуем профиль актёра в DTO
-                    ActorProfileDto profileDTO = (profile != null) ? new ActorProfileDto(
-                            profile.getBiography(),
-                            profile.getSkills(),
-                            profile.getLanguages(),
-                            profile.getExperience(),
-                            profile.getProfile_photo_url()
-                    ) : null;
-
-                    // Преобразуем актёра в DTO
-                    DtoActor actorDTO = (actor != null) ? new DtoActor(
-                            actor.getId(),
-                            actor.getName(),
-                            actor.getSurName(),
-                            actor.getRating(),
-                            profileDTO
-                    ) : null;
-
-                    // Преобразуем заявку в DTO
-                    applicationDTOs.add(new CastingApplicationDto(
-                            application.getId(),
-                            application.getMessage(),
-                            application.getStatus(),
-                            casting.getRoleName().toString(),
-                            actorDTO
-                    ));
-                }
+            if(!(castings.getMovie().getId() == filmId)){
+                throw new ApiException("This casting does not belong to the specified movie");
             }
 
-            return applicationDTOs;
+            List<CastingApplications> applications = castingApplicationsRepo.findByCastings(castings);
+
+
+                // 5) Мапим их в DTO
+                return applications.stream()
+                        .map(application -> {
+                            Users user = application.getActor();
+                            Actors actor = user.getActor();
+                            ActorProfileDto profileDto = null;
+                            if (actor != null && actor.getActorProfile() != null) {
+                                ActorProfiles p = actor.getActorProfile();
+                                profileDto = new ActorProfileDto(
+                                        p.getBiography(),
+                                        p.getSkills(),
+                                        p.getLanguages(),
+                                        p.getExperience(),
+                                        p.getProfile_photo_url()
+                                );
+                            }
+
+                            DtoActor actorDto = null;
+                            if (actor != null) {
+                                actorDto = new DtoActor(
+                                        actor.getId(),
+                                        actor.getName(),
+                                        actor.getSurName(),
+                                        actor.getRating(),
+                                        profileDto
+                                );
+                            }
+
+                            return new CastingApplicationDto(
+                                    application.getId(),
+                                    application.getMessage(),
+                                    application.getStatus(),
+                                    castings.getRoleName(),
+                                    actorDto
+                            );
+                        })
+                        .collect(Collectors.toList());
+
         }catch (Exception e){
             e.printStackTrace();
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
         }
 
         return List.of();
@@ -296,5 +304,35 @@ public class CastingService {
         trialShooting.setDescription(trialDto.getDescription());
 
         return trialShootingsRepo.save(trialShooting);
+    }
+
+    @SneakyThrows
+    public List<CastingDto> getAllCastingForMovieId(Long userId, long filmId, Principal principal) {
+
+
+        String username = principal.getName();
+        Users director = usersRepo.findByUserName(username)
+                .orElseThrow(()-> new EntityNotFoundException("User not found"));
+
+        if(!(director.getRole() == UserRole.DIRECTOR)){
+            throw new RuntimeException("Only director can get casting");
+        }
+
+        Movies movie = moviesRepo.findById(filmId);
+
+        if(!(movie.getDirector().getUsers().getUser_id() == userId)){
+            throw new AccessDeniedException("Only the film's director can get casting");
+        }
+
+        List<Castings> castings = castingsRepo.findByMovieId(filmId);
+
+        return castings.stream().map(
+                casting1 -> {
+                    return new CastingDto(casting1.getId(),
+                            casting1.getRoleName(),
+                            casting1.getDescription(),
+                            casting1.getRequirements());
+                }
+        ).collect(Collectors.toList());
     }
 }

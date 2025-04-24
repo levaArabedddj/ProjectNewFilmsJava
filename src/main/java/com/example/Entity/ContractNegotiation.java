@@ -2,9 +2,11 @@ package com.example.Entity;
 
 import com.example.Enum.ContractStatus;
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "contract_negotiations")
+@Data
 public class ContractNegotiation { // переговорный процесс по контракту между актером и режиссером
 
     //Когда контракт одобрен обеими сторонами, создается финальный контракт в таблице Contract.

@@ -49,17 +49,25 @@ public class ScriptService {
     @Value("${google.cloud.storage.bucket.name1}")
     private String bucketName;
 
+    private final Bucket bucket;
     private final Storage storage;
     private final MoviesRepo moviesRepo;
     private final ScriptRepo scriptRepo;
     private final DirectorRepo directorRepo;
 
     @Autowired
-    public ScriptService(Storage storage, MoviesRepo moviesRepo, ScriptRepo scriptRepo, DirectorRepo directorRepo) {
+    public ScriptService(Storage storage, MoviesRepo moviesRepo, ScriptRepo scriptRepo, DirectorRepo directorRepo, @Value("${google.cloud.storage.bucket.name1}") String bucketName) {
+
         this.moviesRepo = moviesRepo;
         this.directorRepo = directorRepo;
         this.storage = StorageOptions.getDefaultInstance().getService();
         this.scriptRepo = scriptRepo;
+        this.bucketName = bucketName;
+        // Получаем Bucket один раз при создании бина
+        this.bucket = storage.get(bucketName);
+        if (this.bucket == null) {
+            throw new IllegalStateException("GCS bucket not found: " + bucketName);
+        }
     }
 
     @Loggable
@@ -94,7 +102,7 @@ public class ScriptService {
         String uniqueFileName = UUID.randomUUID() + file.getOriginalFilename();
         String fullPath = "ScriptFilms/" + uniqueFileName;
 
-        Bucket bucket = storage.get(bucketName);
+
          bucket.create(fullPath, file.getInputStream(),file.getContentType());
 
         Script script = new Script();

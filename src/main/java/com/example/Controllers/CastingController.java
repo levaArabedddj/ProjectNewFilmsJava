@@ -166,7 +166,7 @@ public class CastingController {
     public ResponseEntity<String> approveActorForMovie(
             @PathVariable Long trialParticipantId,
             @PathVariable Long movieId,
-            @RequestBody String roleRequest) { // єтот момент исправить
+            @RequestBody String roleRequest) {
 
          // Обработка регистра
         castingService.approveActorForMovie(trialParticipantId, movieId, roleRequest);

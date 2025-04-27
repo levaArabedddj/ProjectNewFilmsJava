@@ -31,7 +31,10 @@ public class TokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        if (request.getRequestURI().startsWith("/auth/")) {
+        String path = request.getRequestURI();
+
+        // Пропускаем без проверки токена запросы на OAuth2 авторизацию и на аутентификацию
+        if (path.startsWith("/auth/") || path.startsWith("/oauth2/") || path.startsWith("/login/oauth2/")) {
             filterChain.doFilter(request, response);
             return;
         }

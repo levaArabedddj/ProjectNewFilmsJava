@@ -74,6 +74,22 @@ public class JwtCore {
                 .compact();
     }
 
+    // В JwtCore:
+    public String generateToken(MyUserDetails user) {
+        Date now = new Date();
+        Date exp = new Date(now.getTime() + lifeTime);
+        return Jwts.builder()
+                .subject(user.getUsername())
+                .claim("roles", user.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority).collect(Collectors.toSet()))
+                .claim("userId", user.getUser_id())
+                .issuedAt(now)
+                .expiration(exp)
+                .signWith(SECRET_KEY)  // ваш HS-256 ключ
+                .compact();
+    }
+
+
     public String getUserNameFromToken(String token) {
         if (SECRET_KEY == null) {
             init();

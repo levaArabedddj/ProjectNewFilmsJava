@@ -18,6 +18,7 @@ import com.example.Repository.UsersRepo;
 import com.example.Service.MovieService;
 import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -72,61 +74,81 @@ public class MovieControllers {
     @Loggable
     @PostMapping("/create_movie")
     @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
-    public ResponseEntity<?> createFilm(@Valid @RequestBody Movies movies, Principal principal) {
-        try {
-            // Извлечение текущего пользователя из контекста
-            String username = principal.getName();
-            Users user = usersRepo.findByUserName(username)
-                    .orElseThrow(() -> new ApiException("User not found"));
+    public ResponseEntity<?> createFilm(
+            @Valid @RequestBody Movies movies,
+            @AuthenticationPrincipal MyUserDetails currentUser
+    ) {
+        logger.debug(">> enter createFilm, payload movies={}, currentUser={}", movies, currentUser);
 
-            // Проверяем, есть ли профиль режиссёра у пользователя
+        try {
+            // 1) Получаем userId
+            Long userId = currentUser.getUser_id();
+            logger.debug("1) extracted userId from token: {}", userId);
+
+            // 2) Загружаем юзера из БД
+            Users user = usersRepo.findById(userId)
+                    .orElseThrow(() -> new ApiException("User not found"));
+            logger.debug("2) loaded Users entity: {}", user);
+
+            // 3) Ищем профиль режиссёра
             Director director = directorRepo.findByUsers(user)
                     .orElseThrow(() -> new ApiException("You are not a director"));
+            logger.debug("3) found Director profile: {}", director);
 
-
-            // Проверка, существует ли фильм с таким названием
+            // 4) Проверяем, не существует ли фильм с таким же названием
             Optional<Movies> existingMovie = moviesRepo.findByTitle(movies.getTitle());
+            logger.debug("4) check existingMovie by title '{}': present={}", movies.getTitle(), existingMovie.isPresent());
             if (existingMovie.isPresent()) {
-                throw new ApiException("Film is already exist");
+                throw new ApiException("Film already exists");
             }
 
-            // Создание нового фильма
+            // 5) Создаём новую сущность фильма
             Movies newMovie = new Movies();
             newMovie.setTitle(movies.getTitle());
             newMovie.setDescription(movies.getDescription());
             newMovie.setGenre_film(movies.getGenre_film());
             newMovie.setDevelopmentStage(DevelopmentStage.CONCEPT);
             newMovie.setDirector(director);
+            logger.debug("5) new Movie object prepared: {}", newMovie);
 
+            // 6) Сохраняем в БД
             moviesRepo.save(newMovie);
-            logger.info("New movie created: {}", newMovie);
+            logger.debug("6) Movie saved to DB, id={}", newMovie.getId());
 
-            // Маппим фильм в документ для Elasticsearch
+            // 7) Индексируем в Elasticsearch
             MovieDocument document = movieElasticService.mapToElastic(newMovie);
-
-            // Сохраняем фильм в Elasticsearch через внедрённый client
+            logger.debug("7) mapped Movie to MovieDocument: {}", document);
             elasticsearchClient.index(i -> i
-                    .index("movies")  // Указываем индекс
-                    .id(String.valueOf(newMovie.getId()))  // Преобразуем ID в строку
-                    .document(document)  // Данные документа
+                    .index("movies")
+                    .id(String.valueOf(newMovie.getId()))
+                    .document(document)
             );
+            logger.debug("7) indexed MovieDocument in Elasticsearch, id={}", newMovie.getId());
 
+            // 8) Готовим DTO для ответа
             DtoMovie dtoMovie = new DtoMovie();
             dtoMovie.setTitle(newMovie.getTitle());
             dtoMovie.setDescription(newMovie.getDescription());
             dtoMovie.setGenre_film(Genre.valueOf(String.valueOf(newMovie.getGenre_film())));
             dtoMovie.setDateTimeCreated(newMovie.getDateTimeCreated());
+            logger.debug("8) prepared DtoMovie: {}", dtoMovie);
 
-            // Возврат DTO в ответе
+            // 9) Возвращаем результат
+            logger.debug("<< exit createFilm successfully");
             return ResponseEntity.ok(dtoMovie);
+
         } catch (ApiException e) {
-            logger.error("Error creating movie: {}", e.getMessage());
+            logger.error("API error in createFilm: {}", e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
+
         } catch (Exception e) {
-            logger.error("Unexpected error creating movie", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Some error while creating film");
+            logger.error("Unexpected error in createFilm", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Some error while creating film");
         }
     }
+
+
 
 
 

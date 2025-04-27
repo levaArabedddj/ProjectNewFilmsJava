@@ -18,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -263,6 +264,17 @@ public class SecurityController {
         String jwt = jwtCore.generateToken(authentication);
 
         return ResponseEntity.ok(jwt);
+    }
+
+
+    @GetMapping("/user")
+    public ResponseEntity<Map<String, Object>> getCurrentUser(Authentication authentication) {
+        if (authentication.getPrincipal() instanceof OAuth2User oauth2User) {
+            // возвращаем атрибуты, которые прислал Google (sub, email, name и т.п.)
+            return ResponseEntity.ok(oauth2User.getAttributes());
+        }
+        // fallback — просто имя из токена
+        return ResponseEntity.ok(Map.of("username", authentication.getName()));
     }
 
 }

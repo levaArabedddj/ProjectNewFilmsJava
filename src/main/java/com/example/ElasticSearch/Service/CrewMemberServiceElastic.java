@@ -7,6 +7,9 @@ import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.example.ElasticSearch.ClassDocuments.CrewMemberDocument;
+import com.example.Entity.CrewMemberProfiles;
+import com.example.Entity.FilmCrewMembers;
+import com.example.Entity.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,5 +59,36 @@ public class CrewMemberServiceElastic {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public CrewMemberDocument mapToElastic(FilmCrewMembers crewMembers, Users user, CrewMemberProfiles crewMemberProfiles){
+
+        CrewMemberDocument document = new CrewMemberDocument();
+
+        // Базовые поля
+        document.setId(String.valueOf(crewMembers.getCrewMember_id()));
+        document.setName(crewMembers.getName());
+        document.setSurName(crewMembers.getSurName());
+
+        // Зарплата
+        document.setSalaryPerHour(crewMembers.getSalaryPerHours()); // Убедитесь, что в сущности есть getter
+
+        // Профильные поля из CrewMemberProfiles
+        document.setPosition(crewMemberProfiles.getPosition());
+        document.setExpertise(crewMemberProfiles.getExpertise());
+        document.setEquipmentList(crewMemberProfiles.getEquipmentList());
+
+        // Личные данные
+        document.setGender(String.valueOf(crewMemberProfiles.getGender())); // если gender — enum
+        document.setBiography(crewMemberProfiles.getBiography());
+        document.setSkills(null);
+        document.setLanguages(crewMemberProfiles.getLanguages());
+        document.setExperience(crewMemberProfiles.getExperience());
+
+        // Контактная информация
+        document.setGmail(user.getGmail());
+        document.setWorkingHoursPerWeek(crewMemberProfiles.getWorkingHoursPerWeek());
+
+        return document;
     }
 }

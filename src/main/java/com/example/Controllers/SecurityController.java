@@ -1,8 +1,13 @@
 package com.example.Controllers;
 
 
+import com.example.ElasticSearch.ClassDocuments.ActorDocument;
+import com.example.ElasticSearch.ClassDocuments.CrewMemberDocument;
+import com.example.ElasticSearch.Service.ActorService;
+import com.example.ElasticSearch.Service.CrewMemberServiceElastic;
 import com.example.Entity.*;
 import com.example.Repository.*;
+import com.example.Service.CrewMemberService;
 import com.example.Service.SenderService;
 import com.example.config.JwtCore;
 import com.example.config.SigninRequest;
@@ -46,9 +51,10 @@ public class SecurityController {
     private final SenderService emailService;
     private final DirectorRepo directorRepo;
     private final DirectorProfilesRepo directorProfilesRepo;
-
+    private final ActorService actorService;
+    private final CrewMemberServiceElastic service;
     @Autowired
-    public SecurityController(ActorRepo actorRepo, ActorProfilesRepository actorProfilesRepository, CrewMemberRepo crewMemberRepo, CrewMemberProfilesRepo crewMemberProfilesRepo, SenderService emailService, DirectorRepo directorRepo, DirectorProfilesRepo directorProfilesRepo) {
+    public SecurityController(ActorRepo actorRepo, ActorProfilesRepository actorProfilesRepository, CrewMemberRepo crewMemberRepo, CrewMemberProfilesRepo crewMemberProfilesRepo, SenderService emailService, DirectorRepo directorRepo, DirectorProfilesRepo directorProfilesRepo, ActorService actorService, CrewMemberService service, CrewMemberServiceElastic service1) {
         this.actorRepo = actorRepo;
         this.actorProfilesRepository = actorProfilesRepository;
         this.crewMemberRepo = crewMemberRepo;
@@ -56,6 +62,9 @@ public class SecurityController {
         this.emailService = emailService;
         this.directorRepo = directorRepo;
         this.directorProfilesRepo = directorProfilesRepo;
+        this.actorService = actorService;
+
+        this.service = service1;
     }
 
     @Autowired
@@ -220,6 +229,10 @@ public class SecurityController {
                 actorProfile.setActors(actor);
                 actorProfilesRepository.save(actorProfile);
                 System.out.println(user);
+
+                ActorDocument actorDocument = actorService.mapToElastic(actor,user,actorProfile);
+                actorService.indexActor(actorDocument);
+
                 break;
             case CREW_MEMBER:
                 FilmCrewMembers crewMembers = new FilmCrewMembers();
@@ -234,6 +247,9 @@ public class SecurityController {
                 crewMemberProfiles.setNumberPhone(signupRequest.getPhone());
                 crewMemberProfiles.setCrewMembers(crewMembers);
                 crewMemberProfilesRepo.save(crewMemberProfiles);
+                CrewMemberDocument crewMemberDocument = service.mapToElastic(crewMembers,user,crewMemberProfiles);
+                service.indexCrewMember(crewMemberDocument);
+
                 break;
             case DIRECTOR:
 

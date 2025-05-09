@@ -11,18 +11,11 @@ import com.example.ElasticSearch.ClassDocuments.MovieDocument;
 
 import com.example.Entity.Movies;
 
-import org.elasticsearch.common.unit.Fuzziness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import java.util.stream.Collectors;
 
 
 @Service
@@ -90,9 +83,19 @@ public class MovieElasticService {
                         .size(size)
                         .query(q ->
                                 q.bool(b ->
-                                        b.must(m1 -> m1. match(m -> m. field("title"). query(title).fuzziness("AUTO").maxExpansions(50).prefixLength(1)))
-                                                .filter(f -> f. term(t -> t. field("genre_film.keyword"). value(v -> v.stringValue(genre))))
-                                                .must(m2 -> m2. match(m -> m. field("description"). query(description).fuzziness("AUTO").maxExpansions(50).prefixLength(1)))
+                                        b.must(m1 -> m1. match
+                                                        (m -> m. field("title").
+                                                                query(title).
+                                                                fuzziness("AUTO").
+                                                                maxExpansions(50).
+                                                                prefixLength(1)))
+                                                .filter(f -> f. term(t -> t. field("genre_film.keyword").
+                                                        value(v -> v.stringValue(genre))))
+                                                .must(m2 -> m2. match(m -> m. field("description").
+                                                        query(description).
+                                                        fuzziness("AUTO").
+                                                        maxExpansions(50).
+                                                        prefixLength(1)))
                                 )).
                         sort(
                                 st -> st. field(f -> f. field("title.keyword"). order(SortOrder.Asc))

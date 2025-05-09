@@ -109,5 +109,55 @@ public class ElasticSearchController {
     }
 
 
+    @GetMapping("/by-language")
+    public ResponseEntity<List<ActorDocument>> getActorsByLanguage(
+            @RequestParam("lang") String language) {
+        try {
+            List<ActorDocument> actors = actorService.getAllActorsByLanguages(language);
+            if (actors.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(actors);
+        } catch (IOException e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build();
+        }
+    }
+
+    /**
+     * Поиск актёров по почте.
+     */
+    @GetMapping("/by-email")
+    public ResponseEntity<List<ActorDocument>> getActorsByEmail(
+            @RequestParam("gmail") String email) {
+        try {
+            List<ActorDocument> actors = actorService.getAllActorsByEmail(email);
+            if (actors.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(actors);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Поиск актёров по полу.
+     */
+    @GetMapping("/by-gender")
+    public ResponseEntity<List<ActorDocument>> getActorsByGender(
+            @RequestParam("gender") String gender) {
+        try {
+            List<ActorDocument> actors = actorService.getAllActorsByGender(gender);
+            if (actors.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(actors);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }
 

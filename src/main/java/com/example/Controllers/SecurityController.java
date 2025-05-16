@@ -1,15 +1,21 @@
 package com.example.Controllers;
 
 
+import com.example.DTO.CreateModeratorRequest;
 import com.example.ElasticSearch.ClassDocuments.ActorDocument;
 import com.example.ElasticSearch.ClassDocuments.CrewMemberDocument;
 import com.example.ElasticSearch.Service.ActorService;
 import com.example.ElasticSearch.Service.CrewMemberServiceElastic;
 import com.example.Entity.*;
+import com.example.Enum.AdminRole;
+import com.example.Enum.SubscriptionLevelVisitor;
+import com.example.Enum.UserRole;
+import com.example.Exception.ApiException;
 import com.example.Repository.*;
 import com.example.Service.CrewMemberService;
 import com.example.Service.SenderService;
 import com.example.config.JwtCore;
+import com.example.config.MyUserDetails;
 import com.example.config.SigninRequest;
 import com.example.config.SignupRequest;
 import jakarta.transaction.Transactional;
@@ -17,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +33,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +54,7 @@ public class SecurityController {
     private PasswordEncoder passwordEncoder;
     private AuthenticationManager authenticationManager;
     private JwtCore jwtCore;
+    private final MoviesRepo moviesRepo;
 
     private final ActorRepo actorRepo;
     private final ActorProfilesRepository actorProfilesRepository;
@@ -53,8 +65,14 @@ public class SecurityController {
     private final DirectorProfilesRepo directorProfilesRepo;
     private final ActorService actorService;
     private final CrewMemberServiceElastic service;
+
+
+    private final VisitorRepo visitorRepo;
+    private final AdminRepo adminRepo;
+
     @Autowired
-    public SecurityController(ActorRepo actorRepo, ActorProfilesRepository actorProfilesRepository, CrewMemberRepo crewMemberRepo, CrewMemberProfilesRepo crewMemberProfilesRepo, SenderService emailService, DirectorRepo directorRepo, DirectorProfilesRepo directorProfilesRepo, ActorService actorService, CrewMemberService service, CrewMemberServiceElastic service1) {
+    public SecurityController(MoviesRepo moviesRepo, ActorRepo actorRepo, ActorProfilesRepository actorProfilesRepository, CrewMemberRepo crewMemberRepo, CrewMemberProfilesRepo crewMemberProfilesRepo, SenderService emailService, DirectorRepo directorRepo, DirectorProfilesRepo directorProfilesRepo, ActorService actorService, CrewMemberService service, CrewMemberServiceElastic service1, VisitorRepo visitorRepo, AdminRepo adminRepo) {
+        this.moviesRepo = moviesRepo;
         this.actorRepo = actorRepo;
         this.actorProfilesRepository = actorProfilesRepository;
         this.crewMemberRepo = crewMemberRepo;
@@ -65,6 +83,8 @@ public class SecurityController {
         this.actorService = actorService;
 
         this.service = service1;
+        this.visitorRepo = visitorRepo;
+        this.adminRepo = adminRepo;
     }
 
     @Autowired
@@ -267,7 +287,18 @@ public class SecurityController {
                 director.setSurName(signupRequest.getSurName());
                 director.setDirectorProfiles(profiles);
                 directorRepo.save(director);
+                break;
                 // прописать условие когда будет создаваться админ
+
+            case VISITOR:
+
+                Visitor visitor = new Visitor();
+                visitor.setUser(user);
+                visitor.setSubscriptionLevel(SubscriptionLevelVisitor.FREE);
+                visitor.setBalance(BigDecimal.ZERO);
+
+                visitorRepo.save(visitor);
+                break;
         }
 
         System.out.println(user);
@@ -292,5 +323,7 @@ public class SecurityController {
         // fallback — просто имя из токена
         return ResponseEntity.ok(Map.of("username", authentication.getName()));
     }
+
+
 
 }

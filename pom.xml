@@ -132,6 +132,8 @@
             <version>1.34.1</version>
         </dependency>
 
+
+
         <!-- Для запуска локального HTTP-callback (InstalledAppFlow) -->
         <dependency>
             <groupId>com.google.oauth-client</groupId>
@@ -161,6 +163,14 @@
             <artifactId>spring-data-elasticsearch</artifactId>
             <version>4.4.7</version>
         </dependency>
+
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>5.10.0</version> <!-- актуальная версия на 2025 год -->
+                <scope>test</scope>
+            </dependency>
+
 
 
 

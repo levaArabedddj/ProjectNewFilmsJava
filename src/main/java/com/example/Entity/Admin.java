@@ -4,9 +4,11 @@ import com.example.Enum.AdminPermission;
 import com.example.Enum.AdminRole;
 import jakarta.persistence.*;
 import jdk.jfr.Enabled;
+import lombok.Data;
 
 @Entity
 @Table(name = "admin")
+@Data
 public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,4 +27,7 @@ public class Admin {
     @Column(name = "access_level", nullable = false)
     private AdminPermission accessLevel; // Уровень доступа
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id")
+    private Movies movie;
 }

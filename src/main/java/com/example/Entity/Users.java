@@ -32,9 +32,8 @@ public class Users {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private FilmCrewMembers filmCrewMembers;
 
-
-//    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY) // добавлено для связи с фильмами
-//    private List<Movies> moviesList;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true )
+    private List<MovieRental> movieRentals;
 
     @OneToMany(mappedBy = "actors", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TrialParticipants> trialParticipants;

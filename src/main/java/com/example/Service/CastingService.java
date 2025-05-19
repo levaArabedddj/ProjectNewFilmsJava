@@ -318,7 +318,7 @@ public class CastingService {
             throw new RuntimeException("Only director can get casting");
         }
 
-        Movies movie = moviesRepo.findById(filmId);
+        Movies movie = moviesRepo.findById(filmId).orElseThrow();
 
         if(!(movie.getDirector().getUsers().getUser_id() == userId)){
             throw new AccessDeniedException("Only the film's director can get casting");

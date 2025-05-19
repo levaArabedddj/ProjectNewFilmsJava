@@ -9,9 +9,12 @@ import com.example.DTO.DtoScript;
 import com.example.DTO.DtoShootingDay;
 import com.example.ElasticSearch.ClassDocuments.MovieDocument;
 
+import com.example.ElasticSearch.Service.MovieElasticService;
 import com.example.Entity.Director;
 import com.example.Entity.Movies;
 import com.example.Entity.Users;
+import com.example.Enum.DevelopmentStage;
+import com.example.Exception.ApiException;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;
@@ -48,11 +51,15 @@ public class MovieService {
     private ElasticsearchClient elasticsearchClient;
 
 
+
+    private final MovieElasticService movieElasticService;
+
     @Autowired
-    public MovieService( MoviesRepo moviesRepo, UsersRepo usersRepo, DirectorRepo directorRepo) {
+    public MovieService(MoviesRepo moviesRepo, UsersRepo usersRepo, DirectorRepo directorRepo, MovieElasticService movieElasticService) {
         this.moviesRepo = moviesRepo;
         this.usersRepo = usersRepo;
         this.directorRepo = directorRepo;
+        this.movieElasticService = movieElasticService;
     }
 
     @Loggable
@@ -228,4 +235,45 @@ public class MovieService {
                 movies.getTitle(),movies.getDescription(),
                 movies.getGenre_film());
     }
+
+
+    public DtoMovie createMovieForUser(Movies movies, MyUserDetails currentUser) throws ApiException, IOException {
+        Long userId = currentUser.getUser_id();
+
+        Users user = usersRepo.findById(userId)
+                .orElseThrow(() -> new ApiException("User not found"));
+
+        Director director = directorRepo.findByUsers(user)
+                .orElseThrow(() -> new ApiException("You are not a director"));
+
+        Optional<Movies> existingMovie = moviesRepo.findByTitle(movies.getTitle());
+        if (existingMovie.isPresent()) {
+            throw new ApiException("Film already exists");
+        }
+
+        Movies newMovie = new Movies();
+        newMovie.setTitle(movies.getTitle());
+        newMovie.setDescription(movies.getDescription());
+        newMovie.setGenre_film(movies.getGenre_film());
+        newMovie.setDevelopmentStage(DevelopmentStage.CONCEPT);
+        newMovie.setDirector(director);
+
+        moviesRepo.save(newMovie);
+
+        MovieDocument document = movieElasticService.mapToElastic(newMovie);
+        elasticsearchClient.index(i -> i
+                .index("movies")
+                .id(String.valueOf(newMovie.getId()))
+                .document(document)
+        );
+
+        DtoMovie dtoMovie = new DtoMovie();
+        dtoMovie.setTitle(newMovie.getTitle());
+        dtoMovie.setDescription(newMovie.getDescription());
+        dtoMovie.setGenre_film(newMovie.getGenre_film());
+        dtoMovie.setDateTimeCreated(newMovie.getDateTimeCreated());
+
+        return dtoMovie;
+    }
+
 }

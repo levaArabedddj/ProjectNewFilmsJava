@@ -19,4 +19,5 @@ public class OopKursovaApplication {
         SpringApplication.run(OopKursovaApplication.class, args);
     }
 
+
 }

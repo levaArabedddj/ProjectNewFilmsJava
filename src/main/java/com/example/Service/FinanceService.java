@@ -21,7 +21,7 @@ public class FinanceService {
 
     @Loggable
     public void updateFinance(Long id, Finance updatedFinance) {
-        Finance finance = financeRepo.findById(id)
+        Finance finance = financeRepo.findById(updatedFinance.getId())
                 .orElseThrow(() -> new RuntimeException("Finance with id " + id + " not found"));
 
         finance.setBudget(updatedFinance.getBudget());

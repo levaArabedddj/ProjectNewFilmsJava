@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -78,6 +79,7 @@ public class MovieControllers {
             @Valid @RequestBody Movies movies,
             @AuthenticationPrincipal MyUserDetails currentUser
     ) {
+        System.out.println("+++ ENTERED createFilm()");
         logger.debug(">> enter createFilm, payload movies={}, currentUser={}", movies, currentUser);
 
         try {
@@ -320,6 +322,8 @@ public class MovieControllers {
         return ResponseEntity.ok(movies);
 
     }
+
+
 
 
 

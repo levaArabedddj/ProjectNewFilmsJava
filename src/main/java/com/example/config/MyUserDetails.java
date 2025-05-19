@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -20,6 +21,8 @@ public class MyUserDetails implements UserDetails {
     private UserRole role;
     private String gmail;
     private String password;
+
+
 
 
     public static MyUserDetails build(Users user) {

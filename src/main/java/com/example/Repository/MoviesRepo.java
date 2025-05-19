@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MoviesRepo extends JpaRepository<Movies, Long> {
-    @Loggable
-    Movies findById(long id);
+//    @Loggable
+//    Movies findById(long id);
 
     @Loggable
-    Optional<Movies> findById(Long id);
+    Optional<Movies> findById(long id);
 
    // List<Movies> findByUserName(String currentUsername);
 

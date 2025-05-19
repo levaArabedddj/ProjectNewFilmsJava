@@ -1,6 +1,13 @@
 package com.example.Exception;
 
-public class ApiException extends Throwable {
-    public ApiException(String filmIsAlreadyExist) {
+
+public class ApiException extends RuntimeException {
+    public ApiException(String message) {
+        super(message);
+    }
+
+    public ApiException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
+

@@ -164,7 +164,7 @@ public class SecurityConfig {
 
 
 
-                // Если вы хотите использовать Spring’s OAuth2Client (опционально)
+                
                 .oauth2Client(Customizer.withDefaults())
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -197,13 +197,13 @@ public class SecurityConfig {
                 // 2) Достать email
                 String email = oidcUser.getEmail();
 
-                // 3) Найти или создать вашего юзера через сервис
+                // 3) Найти или создать  юзера через сервис
                 Users dbUser = uds.findOrCreateByEmail(email);
 
                 // 4) Собрать MyUserDetails
                 MyUserDetails userDetails = MyUserDetails.build(dbUser);
 
-                // 5) Генерировать токен из ваших деталей
+                // 5) Генерировать токен из деталей
                 String token = jwtCore.generateToken(userDetails);
 
                 // (Опционально) Вытянуть Google-access-token, если нужен

@@ -52,9 +52,9 @@ import org.springframework.security.web.authentication.*;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -173,9 +173,9 @@ public class SecurityConfig {
 
     @Bean
     public Storage storage() throws IOException {
-        try (FileInputStream serviceAccountStream = new FileInputStream(password)) {
+        try (FileInputStream stream = new FileInputStream(password)) {
             return StorageOptions.newBuilder()
-                    .setCredentials(ServiceAccountCredentials.fromStream(serviceAccountStream))
+                    .setCredentials(ServiceAccountCredentials.fromStream(stream))
                     .build()
                     .getService();
         }

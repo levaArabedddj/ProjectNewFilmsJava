@@ -1,9 +1,9 @@
 spring.application.name=OOPKursova
 
 #BD
-SPRING_DATASOURCE_URL=${spring.datasource.url}
-SPRING_DATASOURCE_USERNAME=${spring.datasource.username}
-SPRING_DATASOURCE_PASSWORD=${spring.datasource.password}
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true

@@ -28,7 +28,7 @@ spring.mail.properties.mail.smtp.ssl.trust=smtp.gmail.com
 
 server.port=8080
 
-testing.app.secret=${JWT_SECRET_CODE}
+testing.app.secret=${your_super_secret_key_with_256bit_length!}
 testing.app.lifetime=60000000
 spring.main.allow-bean-definition-overriding=true
 

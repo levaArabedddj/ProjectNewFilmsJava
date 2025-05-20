@@ -82,20 +82,20 @@ public class DirectorController {
     }
 
 
-    @PostMapping("/profile/photo")
-    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
-    public ResponseEntity<?> uploadPhotoProfileCrewMember(
-            @RequestParam MultipartFile file) {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
-        try {
-            String url = directorService.uploadProfilePhoto(userId,file);
-            return ResponseEntity.ok(url);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    @PostMapping("/profile/photo")
+//    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+//    public ResponseEntity<?> uploadPhotoProfileCrewMember(
+//            @RequestParam MultipartFile file) {
+//
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+//        try {
+//            String url = directorService.uploadProfilePhoto(userId,file);
+//            return ResponseEntity.ok(url);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
 
     @GetMapping("/profile")

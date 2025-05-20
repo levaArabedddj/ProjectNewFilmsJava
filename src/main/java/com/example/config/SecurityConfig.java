@@ -77,9 +77,9 @@ public class SecurityConfig {
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
 
-
-    @Value("${GOOGLE_APPLICATION_CREDENTIALS}")
-    String password;
+//
+//    @Value("${GOOGLE_APPLICATION_CREDENTIALS}")
+//    String password;
 
     @Autowired
     public SecurityConfig(MyUserDetailsService userService, TokenFilter authTokenFilter, MyUserDetailsService uds) {
@@ -171,15 +171,15 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public Storage storage() throws IOException {
-        try (FileInputStream stream = new FileInputStream(password)) {
-            return StorageOptions.newBuilder()
-                    .setCredentials(ServiceAccountCredentials.fromStream(stream))
-                    .build()
-                    .getService();
-        }
-    }
+//    @Bean
+//    public Storage storage() throws IOException {
+//        try (FileInputStream stream = new FileInputStream(password)) {
+//            return StorageOptions.newBuilder()
+//                    .setCredentials(ServiceAccountCredentials.fromStream(stream))
+//                    .build()
+//                    .getService();
+//        }
+//    }
 
     @Bean
     public AuthenticationSuccessHandler oAuth2SuccessHandler(JwtCore jwtCore) {

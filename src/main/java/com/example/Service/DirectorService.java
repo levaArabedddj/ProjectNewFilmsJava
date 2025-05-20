@@ -30,16 +30,16 @@ public class DirectorService {
 
     // прописать логику для получения данных о профиле режиссера
     private final DirectorRepo directorRepo;
-    private  final Storage storage;
+   // private  final Storage storage;
     private final DirectorProfilesRepo directorProfilesRepo;
 
     @Value("${google.cloud.storage.bucket.name1}")
     private String bucketName;
 
     @Autowired
-    public DirectorService(DirectorRepo directorRepo, Storage storage, DirectorProfilesRepo directorProfilesRepo) {
+    public DirectorService(DirectorRepo directorRepo/* Storage storage*/, DirectorProfilesRepo directorProfilesRepo) {
         this.directorRepo = directorRepo;
-        this.storage = storage;
+        //this.storage = storage;
         this.directorProfilesRepo = directorProfilesRepo;
     }
 
@@ -94,49 +94,49 @@ public class DirectorService {
 
         return false;
     }
-
-    public String uploadProfilePhoto(Long userId ,
-                                     MultipartFile file)
-            throws IOException {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
-
-        // Проверяем, что переданный ID совпадает с ID аутентифицированного пользователя
-        if (!authenticatedUserId.equals(userId)) {
-            throw new AccessDeniedException("You are not authorized to update this profile photo");
-        }
-
-        Optional<Director> directorOpt = directorRepo.findByUserUserId(userId);
-
-        if (directorOpt.isPresent()) {
-            Director director = directorOpt.get();
-            System.out.println("Found director: " + director.getId());
-           String fileUrl = uploadPhotoDirector(file);
-            Optional<DirectorProfiles> directorProfiles1 = directorProfilesRepo.findByDirectorId(director.getId());
-
-            if (directorProfiles1.isPresent()) {
-
-            DirectorProfiles directorProfiles = directorProfiles1.get();
-            directorProfiles.setProfilePhotoUrl(fileUrl);
-            directorProfilesRepo.save(directorProfiles);
-            return fileUrl;
-            }
-        }
-
-        return null;
-    }
-
-
-    private String uploadPhotoDirector(MultipartFile file) throws IOException {
-
-        String fileName ="profile_photos/" + UUID.randomUUID() + file.getOriginalFilename();
-
-        Bucket bucket = storage.get(bucketName);
-        Blob blob = bucket.create(fileName,file.getInputStream(),file.getContentType());
-
-        return "https://storage.googleapis.com/"+bucketName+"/"+fileName;
-    }
+//
+//    public String uploadProfilePhoto(Long userId ,
+//                                     MultipartFile file)
+//            throws IOException {
+//
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+//
+//        // Проверяем, что переданный ID совпадает с ID аутентифицированного пользователя
+//        if (!authenticatedUserId.equals(userId)) {
+//            throw new AccessDeniedException("You are not authorized to update this profile photo");
+//        }
+//
+//        Optional<Director> directorOpt = directorRepo.findByUserUserId(userId);
+//
+//        if (directorOpt.isPresent()) {
+//            Director director = directorOpt.get();
+//            System.out.println("Found director: " + director.getId());
+//           String fileUrl = uploadPhotoDirector(file);
+//            Optional<DirectorProfiles> directorProfiles1 = directorProfilesRepo.findByDirectorId(director.getId());
+//
+//            if (directorProfiles1.isPresent()) {
+//
+//            DirectorProfiles directorProfiles = directorProfiles1.get();
+//            directorProfiles.setProfilePhotoUrl(fileUrl);
+//            directorProfilesRepo.save(directorProfiles);
+//            return fileUrl;
+//            }
+//        }
+//
+//        return null;
+//    }
+//
+//
+//    private String uploadPhotoDirector(MultipartFile file) throws IOException {
+//
+//        String fileName ="profile_photos/" + UUID.randomUUID() + file.getOriginalFilename();
+//
+//        Bucket bucket = storage.get(bucketName);
+//        Blob blob = bucket.create(fileName,file.getInputStream(),file.getContentType());
+//
+//        return "https://storage.googleapis.com/"+bucketName+"/"+fileName;
+//    }
 
 
     public CompletableFuture<Optional<DtoDirectorProfiles>> getDirectorProfile(Long userId){

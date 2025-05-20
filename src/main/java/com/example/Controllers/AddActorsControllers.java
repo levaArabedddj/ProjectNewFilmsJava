@@ -144,19 +144,19 @@ public class AddActorsControllers {
 
 
 
-    @PostMapping("/profile/photo")
-    @PreAuthorize("hasAuthority('ROLE_ACTOR')")
-    public ResponseEntity<?> uploadPhotoActor(@RequestParam MultipartFile file) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
-        try {
-            String photoUrl = actorsService.uploadProfilePhoto(userId, file);
-            return ResponseEntity.ok(photoUrl);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
+//    @PostMapping("/profile/photo")
+//    @PreAuthorize("hasAuthority('ROLE_ACTOR')")
+//    public ResponseEntity<?> uploadPhotoActor(@RequestParam MultipartFile file) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+//        try {
+//            String photoUrl = actorsService.uploadProfilePhoto(userId, file);
+//            return ResponseEntity.ok(photoUrl);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//    }
 
 
     @GetMapping("/{userId}/profile")

@@ -135,20 +135,20 @@ public class AddCrewMemberController {
     }
 
 
-//    @PostMapping("/profile/photo")
-//    @PreAuthorize("hasAuthority('ROLE_CREW_MEMBER')")
-//    public ResponseEntity<?> uploadPhotoProfileCrewMember(
-//            @RequestParam MultipartFile file) {
-//
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
-//        try {
-//            String url = crewMemberService.uploadProfilePhoto(userId,file);
-//            return ResponseEntity.ok(url);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
+    @PostMapping("/profile/photo")
+    @PreAuthorize("hasAuthority('ROLE_CREW_MEMBER')")
+    public ResponseEntity<?> uploadPhotoProfileCrewMember(
+            @RequestParam MultipartFile file) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+        try {
+            String url = crewMemberService.uploadProfilePhoto(userId,file);
+            return ResponseEntity.ok(url);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @GetMapping("/{userId}/profile")
     public CompletableFuture<ResponseEntity<?>> getCrewMemberProfile(@PathVariable Long userId) {

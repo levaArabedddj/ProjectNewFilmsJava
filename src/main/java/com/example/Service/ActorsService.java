@@ -34,13 +34,14 @@ public class ActorsService {
 
     public final ActorRepo actorRepo;
     public  final ActorProfilesRepository actorProfilRepo;
- //   private  Storage storage;
+    private final Storage storage;
 
     @Autowired
-    public ActorsService(ActorRepo actorRepo, ActorProfilesRepository actorProfilRepo) {
+    public ActorsService(ActorRepo actorRepo, ActorProfilesRepository actorProfilRepo, Storage storage) {
         this.actorRepo = actorRepo;
         this.actorProfilRepo = actorProfilRepo;
-        //this.storage = storage;
+
+        this.storage = storage;
     }
 
     @Value("${google.cloud.storage.bucket.name1}")
@@ -94,43 +95,43 @@ public class ActorsService {
         return false;
     }
 
-//    public String uploadProfilePhoto(Long userId , MultipartFile file) throws IOException {
-//        // Получаем текущего аутентифицированного пользователя
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
-//
-//        // Проверяем, что переданный ID совпадает с ID аутентифицированного пользователя
-//        if (!authenticatedUserId.equals(userId)) {
-//            throw new AccessDeniedException("You are not authorized to update this profile photo");
-//        }
-//
-//        Optional<Actors> actorsOpt = actorRepo.findByUserUserId(userId);
-//
-//        if(actorsOpt.isPresent()) {
-//            Actors actors = actorsOpt.get();
-//            System.out.println("Found Actor: " + actors.getId());
-//            String fileUrl = uploadProfilePhoto(file);
-//            Optional<ActorProfiles> actorProfileOpt = actorProfilRepo.findByActorId(actors.getId());
-//
-//            if (actorProfileOpt.isPresent()) {
-//                ActorProfiles actorProfiles = actorProfileOpt.get();
-//                actorProfiles.setProfile_photo_url(fileUrl);
-//                actorProfilRepo.save(actorProfiles);
-//                return fileUrl;
-//            }
-//        }
-//        throw new IllegalArgumentException("Actor profile not found!");
-//    }
-//
-//    public String uploadProfilePhoto(MultipartFile file) throws IOException {
-//
-//        String fileName = "profile_photos/"+ UUID.randomUUID() + file.getOriginalFilename();
-//
-//        Bucket bucket = storage.get(bucketName);
-//        Blob blob = bucket.create(fileName,file.getInputStream(),file.getContentType());
-//
-//        return "https://storage.googleapis.com/"+ bucketName+"/"+fileName;
-//    }
+    public String uploadProfilePhoto(Long userId , MultipartFile file) throws IOException {
+        // Получаем текущего аутентифицированного пользователя
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+
+        // Проверяем, что переданный ID совпадает с ID аутентифицированного пользователя
+        if (!authenticatedUserId.equals(userId)) {
+            throw new AccessDeniedException("You are not authorized to update this profile photo");
+        }
+
+        Optional<Actors> actorsOpt = actorRepo.findByUserUserId(userId);
+
+        if(actorsOpt.isPresent()) {
+            Actors actors = actorsOpt.get();
+            System.out.println("Found Actor: " + actors.getId());
+            String fileUrl = uploadProfilePhoto(file);
+            Optional<ActorProfiles> actorProfileOpt = actorProfilRepo.findByActorId(actors.getId());
+
+            if (actorProfileOpt.isPresent()) {
+                ActorProfiles actorProfiles = actorProfileOpt.get();
+                actorProfiles.setProfile_photo_url(fileUrl);
+                actorProfilRepo.save(actorProfiles);
+                return fileUrl;
+            }
+        }
+        throw new IllegalArgumentException("Actor profile not found!");
+    }
+
+    public String uploadProfilePhoto(MultipartFile file) throws IOException {
+
+        String fileName = "profile_photos/"+ UUID.randomUUID() + file.getOriginalFilename();
+
+        Bucket bucket = storage.get(bucketName);
+        Blob blob = bucket.create(fileName,file.getInputStream(),file.getContentType());
+
+        return "https://storage.googleapis.com/"+ bucketName+"/"+fileName;
+    }
 
     public Optional<DtoActorProfile> getInformationActor(Long userId){
         // получаем актера по Id

@@ -35,13 +35,14 @@ public class CrewMemberService {
 
     private final CrewMemberRepo crewMemberRepo;
     private final CrewMemberProfilesRepo crewMemberProfilesRepo;
-   // private  Storage storage;
+    private final Storage storage;
 
     @Autowired
-    public CrewMemberService(CrewMemberRepo crewMemberRepo, CrewMemberProfilesRepo crewMemberProfilesRepo) {
+    public CrewMemberService(CrewMemberRepo crewMemberRepo, CrewMemberProfilesRepo crewMemberProfilesRepo, Storage storage) {
         this.crewMemberRepo = crewMemberRepo;
         this.crewMemberProfilesRepo = crewMemberProfilesRepo;
-//        this.storage = storage;
+
+        this.storage = storage;
     }
 
 
@@ -51,11 +52,12 @@ public class CrewMemberService {
 //    public List<FilmCrewMembers> allGetCrewMember(){
 //        return crewMemberRepo.findAllWithMovies();
 //    }
-//    @Transactional
-//    @Loggable
-//    public FilmCrewMembers createdCrewMember(FilmCrewMembers filmCrewMembers){
-//        return crewMemberRepo.save(filmCrewMembers);
-//    }
+
+    @Transactional
+    @Loggable
+    public FilmCrewMembers createdCrewMember(FilmCrewMembers filmCrewMembers){
+        return crewMemberRepo.save(filmCrewMembers);
+    }
 
     @Transactional
     public boolean updateCrewMemberProfile(Long userId, String fieldName, String newValue) throws AccessDeniedException {
@@ -102,47 +104,47 @@ public class CrewMemberService {
     }
 
 
-//    public String uploadProfilePhoto(Long userId, MultipartFile file) throws IOException {
-//
-//        // Получаем текущего аутентифицированного пользователя
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
-//
-//        // Проверяем, что переданный ID совпадает с ID аутентифицированного пользователя
-//        if (!authenticatedUserId.equals(userId)) {
-//            throw new AccessDeniedException("You are not authorized to update this profile photo");
-//        }
-//        Optional<FilmCrewMembers> crewMembersOpt = crewMemberRepo.findByUserUserId(userId);
-//
-//        if(crewMembersOpt.isPresent()){
-//            FilmCrewMembers crewMembers = crewMembersOpt.get();
-//            System.out.println("Found crewMember: " + crewMembers.getCrewMember_id());
-//            String fileUrl = uploadPhotoCrewMember(file);
-//            Optional<CrewMemberProfiles> crewMemberProfile = crewMemberProfilesRepo.findByCrewMemberId(crewMembers.getCrewMember_id());
-//
-//            if (crewMemberProfile.isPresent()){
-//                CrewMemberProfiles profiles = crewMemberProfile.get();
-//                profiles.setProfile_photo_url(fileUrl);
-//                crewMemberProfilesRepo.save(profiles);
-//                return fileUrl;
-//            }
-//            return null;
-//
-//        }
-//
-//        throw new IllegalArgumentException("CrewMemberProfile not found");
-//    }
-//
-//
-//    private String uploadPhotoCrewMember(MultipartFile file) throws IOException {
-//
-//        String fileName = "profile_photos/"+ UUID.randomUUID() + file.getOriginalFilename();
-//
-//        Bucket bucket = storage.get(bucketName);
-//        Blob blob = bucket.create(fileName, file.getInputStream(), file.getContentType());
-//
-//        return "https://storage.googleapis.com/"+bucketName+"/"+fileName;
-//    }
+    public String uploadProfilePhoto(Long userId, MultipartFile file) throws IOException {
+
+        // Получаем текущего аутентифицированного пользователя
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+
+        // Проверяем, что переданный ID совпадает с ID аутентифицированного пользователя
+        if (!authenticatedUserId.equals(userId)) {
+            throw new AccessDeniedException("You are not authorized to update this profile photo");
+        }
+        Optional<FilmCrewMembers> crewMembersOpt = crewMemberRepo.findByUserUserId(userId);
+
+        if(crewMembersOpt.isPresent()){
+            FilmCrewMembers crewMembers = crewMembersOpt.get();
+            System.out.println("Found crewMember: " + crewMembers.getCrewMember_id());
+            String fileUrl = uploadPhotoCrewMember(file);
+            Optional<CrewMemberProfiles> crewMemberProfile = crewMemberProfilesRepo.findByCrewMemberId(crewMembers.getCrewMember_id());
+
+            if (crewMemberProfile.isPresent()){
+                CrewMemberProfiles profiles = crewMemberProfile.get();
+                profiles.setProfile_photo_url(fileUrl);
+                crewMemberProfilesRepo.save(profiles);
+                return fileUrl;
+            }
+            return null;
+
+        }
+
+        throw new IllegalArgumentException("CrewMemberProfile not found");
+    }
+
+
+    private String uploadPhotoCrewMember(MultipartFile file) throws IOException {
+
+        String fileName = "profile_photos/"+ UUID.randomUUID() + file.getOriginalFilename();
+
+        Bucket bucket = storage.get(bucketName);
+        Blob blob = bucket.create(fileName, file.getInputStream(), file.getContentType());
+
+        return "https://storage.googleapis.com/"+bucketName+"/"+fileName;
+    }
 
 
     public CompletableFuture<Optional<DtoCrewMemberProfile>> getCrewMemberProfile(Long userId) {

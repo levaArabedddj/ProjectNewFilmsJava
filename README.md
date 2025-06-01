@@ -3,6 +3,7 @@
 ## 🌐 Деплой
 ### 🖥️ Frontend
 - 🌍 [https://mellow-dolphin-38542e.netlify.app](https://mellow-dolphin-38542e.netlify.app)
+-     https://github.com/levaArabedddj/ProjectFilmFrontend - посилання на github-репозиторій 
 - 🔧 Built with: Vue.js
 
 ### ⚙️ Backend

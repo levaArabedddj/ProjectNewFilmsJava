@@ -8,7 +8,11 @@
 
 ### ⚙️ Backend
 - 🌍 [https://film-no9d.onrender.com](https://film-no9d.onrender.com)
-- 🔧 Built with: Java Spring , Postgres
+- 🔧 Built with: Java Spring
+
+### 🗃️ Diagram Database
+- 🛢️ https://dbdiagram.io/d/67c20717263d6cf9a0d7242e
+- 🐘 PostgresSQL
 ---
 
 ## ✅ Виконані завдання

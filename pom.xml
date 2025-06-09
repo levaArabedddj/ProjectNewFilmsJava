@@ -175,14 +175,14 @@
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
-                <version>5.10.0</version> <!-- актуальная версия на 2025 год -->
+                <version>5.10.0</version> 
                 <scope>test</scope>
             </dependency>
 
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>7.4</version>  <!-- следите за актуальной версией -->
+            <version>7.4</version>
         </dependency>
 
 

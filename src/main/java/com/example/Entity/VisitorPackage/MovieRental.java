@@ -1,7 +1,9 @@
-package com.example.Entity;
+package com.example.Entity.VisitorPackage;
 
 
 
+import com.example.Entity.MoviesPackage.Movies;
+import com.example.Entity.Users;
 import jakarta.persistence.*;
 import lombok.Data;
 

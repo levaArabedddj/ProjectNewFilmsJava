@@ -2,6 +2,7 @@ package com.example.Service;
 
 import com.example.DTO.*;
 import com.example.Entity.*;
+import com.example.Entity.MoviesPackage.Movies;
 import com.example.Enum.ApplicationStatus;
 import com.example.Enum.TrialResult;
 import com.example.Enum.UserRole;
@@ -18,7 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

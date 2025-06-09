@@ -11,7 +11,7 @@ import com.example.ElasticSearch.ClassDocuments.MovieDocument;
 
 import com.example.ElasticSearch.Service.MovieElasticService;
 import com.example.Entity.Director;
-import com.example.Entity.Movies;
+import com.example.Entity.MoviesPackage.Movies;
 import com.example.Entity.Users;
 import com.example.Enum.DevelopmentStage;
 import com.example.Exception.ApiException;
@@ -38,6 +38,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class MovieService {
+
+    /* 1. Добавить возможность к фильму создать трейлер и опубликовать его */
 
 
 //    private final MovieElasticRepo movieElasticRepo;

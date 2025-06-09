@@ -1,7 +1,7 @@
 package com.example.oopkursova;
 
 import com.example.Entity.Director;
-import com.example.Entity.Finance;
+import com.example.Entity.MoviesPackage.Finance;
 import com.example.Entity.Users;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.FinanceRepo;

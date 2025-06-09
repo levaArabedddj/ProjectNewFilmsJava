@@ -1,8 +1,8 @@
 package com.example.Service;
 
 import com.example.DTO.DtoShootingDay;
-import com.example.Entity.Movies;
-import com.example.Entity.ShootingDay;
+import com.example.Entity.MoviesPackage.Movies;
+import com.example.Entity.MoviesPackage.ShootingDay;
 import com.example.Exception.ApiException;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.ShootingDayRepo;

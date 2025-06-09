@@ -1,11 +1,10 @@
 package com.example.Repository;
 
 
-import com.example.Entity.Script;
+import com.example.Entity.MoviesPackage.Script;
 import com.example.loger.Loggable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface ScriptRepo extends JpaRepository<Script, Long> {

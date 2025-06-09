@@ -4,10 +4,9 @@ package com.example.Controllers;
 import com.example.DTO.DtoMovie;
 import com.example.ElasticSearch.ClassDocuments.MovieDocument;
 
-import com.example.ElasticSearch.ElasticConfiguration;
 import com.example.ElasticSearch.Service.MovieElasticService;
 import com.example.Entity.Director;
-import com.example.Entity.Movies;
+import com.example.Entity.MoviesPackage.Movies;
 import com.example.Entity.Users;
 import com.example.Enum.DevelopmentStage;
 import com.example.Enum.Genre;
@@ -18,7 +17,6 @@ import com.example.Repository.UsersRepo;
 import com.example.Service.MovieService;
 import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +27,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;

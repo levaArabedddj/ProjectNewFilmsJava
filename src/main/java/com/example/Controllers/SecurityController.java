@@ -1,31 +1,24 @@
 package com.example.Controllers;
 
 
-import com.example.DTO.CreateModeratorRequest;
 import com.example.ElasticSearch.ClassDocuments.ActorDocument;
 import com.example.ElasticSearch.ClassDocuments.CrewMemberDocument;
 import com.example.ElasticSearch.Service.ActorService;
 import com.example.ElasticSearch.Service.CrewMemberServiceElastic;
 import com.example.Entity.*;
-import com.example.Enum.AdminRole;
+import com.example.Entity.VisitorPackage.Visitor;
 import com.example.Enum.SubscriptionLevelVisitor;
-import com.example.Enum.UserRole;
-import com.example.Exception.ApiException;
 import com.example.Repository.*;
 
 import com.example.Service.CrewMemberService;
 import com.example.Service.SenderService;
 import com.example.config.JwtCore;
-import com.example.config.MyUserDetails;
 import com.example.config.SigninRequest;
 import com.example.config.SignupRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,16 +27,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.example.Enum.UserRole.*;
 
 @RestController
 @RequestMapping("/auth")

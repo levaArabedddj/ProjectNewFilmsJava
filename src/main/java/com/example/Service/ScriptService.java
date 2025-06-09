@@ -2,16 +2,15 @@ package com.example.Service;
 
 
 
-import com.example.Controllers.AddActorsControllers;
 import com.example.Entity.Director;
-import com.example.Entity.Movies;
-import com.example.Entity.Script;
+import com.example.Entity.MoviesPackage.Movies;
+import com.example.Entity.MoviesPackage.Script;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.ScriptRepo;
 import com.example.loger.Loggable;
 import com.google.api.gax.paging.Page;
-import com.google.cloud.ReadChannel;
+import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.*;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -26,13 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 
 import java.util.*;
@@ -354,5 +350,48 @@ public class ScriptService {
         scriptRepo.delete(script); // Удаляем запись из базы (опционально)
     }
 
+    @Async("fileUploadExecutor")
+    public CompletableFuture<String> uploadFileBuf(Long userId, Long movieId, MultipartFile file) throws IOException {
+
+        Director director = directorRepo.findByUserUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Director with id " + userId + " not found"));
+
+        Movies movies = moviesRepo.findById(movieId)
+                .orElseThrow(() -> new RuntimeException("Movies with id " + movieId + " not found"));
+
+        Long directorUserId = movies.getDirector().getUsers().getUser_id();
+        if (!directorUserId.equals(userId)) {
+            throw new RuntimeException("User " + userId + " is not director of movie " + movieId);
+        }
+
+        String uniqueFileName = UUID.randomUUID() + file.getOriginalFilename();
+        String fullPath = "ScriptFilms/" + uniqueFileName;
+
+        // Потоковая загрузка через BlobWriteChannel
+        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, fullPath)
+                .setContentType(file.getContentType())
+                .build();
+
+        try (WriteChannel writer = storage.writer(blobInfo);
+             InputStream inputStream = file.getInputStream()) {
+
+            byte[] buffer = new byte[16384]; // 8KB буфер, можно увеличить до 16KB
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                writer.write(ByteBuffer.wrap(buffer, 0, bytesRead));
+            }
+        }
+
+        // Сохраняем путь к файлу в базу
+        Script script = new Script();
+        script.setContent(fullPath);
+        script.setMovie(movies);
+        scriptRepo.save(script);
+
+        return CompletableFuture.completedFuture(fullPath);
     }
+
+
+
+}
 

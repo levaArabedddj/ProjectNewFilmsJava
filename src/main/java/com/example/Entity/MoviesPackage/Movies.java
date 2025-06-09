@@ -1,6 +1,7 @@
-package com.example.Entity;
+package com.example.Entity.MoviesPackage;
 
 
+import com.example.Entity.*;
 import com.example.Enum.DevelopmentStage;
 import com.example.Enum.Genre;
 import jakarta.persistence.*;

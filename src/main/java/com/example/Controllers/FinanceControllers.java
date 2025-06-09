@@ -2,8 +2,8 @@ package com.example.Controllers;
 
 
 import com.example.DTO.DtoFinance;
-import com.example.Entity.Finance;
-import com.example.Entity.Movies;
+import com.example.Entity.MoviesPackage.Finance;
+import com.example.Entity.MoviesPackage.Movies;
 import com.example.Entity.Users;
 import com.example.Exception.ApiException;
 import com.example.Exception.FinanceException;
@@ -15,16 +15,12 @@ import com.example.loger.Loggable;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.SneakyThrows;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;

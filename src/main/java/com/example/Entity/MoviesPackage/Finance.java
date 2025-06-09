@@ -1,4 +1,4 @@
-package com.example.Entity;
+package com.example.Entity.MoviesPackage;
 
 import jakarta.persistence.*;
 import lombok.Data;

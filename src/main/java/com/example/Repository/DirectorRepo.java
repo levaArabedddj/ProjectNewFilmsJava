@@ -2,8 +2,7 @@ package com.example.Repository;
 
 
 import com.example.Entity.Director;
-import com.example.Entity.DirectorProfiles;
-import com.example.Entity.Movies;
+import com.example.Entity.MoviesPackage.Movies;
 import com.example.Entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

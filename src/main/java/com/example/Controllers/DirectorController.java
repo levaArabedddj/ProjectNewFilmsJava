@@ -2,10 +2,9 @@ package com.example.Controllers;
 
 import com.example.DTO.CreateModeratorRequest;
 import com.example.Entity.Admin;
-import com.example.Entity.Movies;
+import com.example.Entity.MoviesPackage.Movies;
 import com.example.Entity.Users;
 import com.example.Enum.AdminRole;
-import com.example.Enum.UserRole;
 import com.example.Exception.ApiException;
 import com.example.Repository.AdminRepo;
 import com.example.Repository.DirectorRepo;
@@ -20,11 +19,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.util.HashMap;

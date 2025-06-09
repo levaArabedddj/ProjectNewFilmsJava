@@ -1,9 +1,9 @@
 package com.example.Entity;
 
+import com.example.Entity.MoviesPackage.Movies;
 import com.example.Enum.AdminPermission;
 import com.example.Enum.AdminRole;
 import jakarta.persistence.*;
-import jdk.jfr.Enabled;
 import lombok.Data;
 
 @Entity

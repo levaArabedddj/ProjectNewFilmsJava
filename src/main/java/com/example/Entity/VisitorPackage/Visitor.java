@@ -1,5 +1,6 @@
-package com.example.Entity;
+package com.example.Entity.VisitorPackage;
 
+import com.example.Entity.Users;
 import com.example.Enum.SubscriptionLevelVisitor;
 import jakarta.persistence.*;
 import lombok.Data;

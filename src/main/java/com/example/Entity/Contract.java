@@ -1,5 +1,6 @@
 package com.example.Entity;
 
+import com.example.Entity.MoviesPackage.Movies;
 import com.example.Enum.ContractStatus;
 import jakarta.persistence.*;
 import lombok.Data;

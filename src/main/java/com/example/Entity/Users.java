@@ -2,6 +2,7 @@ package com.example.Entity;
 
 
 
+import com.example.Entity.VisitorPackage.MovieRental;
 import com.example.Enum.UserRole;
 import jakarta.persistence.*;
 import lombok.Data;

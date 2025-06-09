@@ -2,8 +2,6 @@ package com.example.Controllers;
 
 
 
-import com.example.Entity.Movies;
-import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;
 import com.example.Service.ScriptService;
 import com.example.config.MyUserDetails;
@@ -14,7 +12,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -78,6 +75,31 @@ public class ScriptController {
             throw new RuntimeException(e);
         }
     }
+    //второй контроллер - тест
+    @Loggable
+    @PostMapping("/uploadScriptMovieBuf/{movieId}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public CompletableFuture<ResponseEntity<String>> uploadScriptBuf(@RequestParam("file") MultipartFile file,
+                                                                  Principal principal,
+                                                                  @PathVariable("movieId") Long movieId){
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+
+        try {
+            return service.uploadFileBuf( userId, movieId,file).
+                    thenApply( path -> ResponseEntity.ok(path))
+                    .exceptionally( ex-> {
+                        String msg = ex.getCause() != null ? ex.getCause().getMessage(): ex.getMessage();
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed " + msg);
+                    });
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 
  // контроллер для скачивания сценария
     @Loggable

@@ -1,7 +1,7 @@
 package com.example.Service;
 
 
-import com.example.Entity.Finance;
+import com.example.Entity.MoviesPackage.Finance;
 import com.example.Repository.FinanceRepo;
 import com.example.loger.Loggable;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package com.example.Repository;
 
 
-import com.example.Entity.Finance;
+import com.example.Entity.MoviesPackage.Finance;
 import com.example.loger.Loggable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

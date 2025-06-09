@@ -2,15 +2,13 @@ package com.example.oopkursova;
 
 import com.example.DTO.DtoShootingDay;
 import com.example.Entity.Director;
-import com.example.Entity.Finance;
-import com.example.Entity.Movies;
+import com.example.Entity.MoviesPackage.Finance;
+import com.example.Entity.MoviesPackage.Movies;
 import com.example.Entity.Users;
 import com.example.Exception.ApiException;
 import com.example.Repository.*;
-import com.example.Service.FinanceService;
 import com.example.Service.ShootingDayService;
 import com.example.config.MyUserDetails;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Optional;
 

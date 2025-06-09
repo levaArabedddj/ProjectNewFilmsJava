@@ -1,6 +1,7 @@
 package com.example.Entity;
 
 
+import com.example.Entity.MoviesPackage.Movies;
 import jakarta.persistence.*;
 import lombok.Data;
 

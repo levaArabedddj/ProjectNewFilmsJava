@@ -2,6 +2,7 @@ package com.example.config;
 
 import com.example.Entity.Users;
 import com.example.Service.OAuth2TokenService;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
@@ -55,6 +56,7 @@ import org.springframework.web.filter.CorsFilter;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 
@@ -78,7 +80,7 @@ public class SecurityConfig {
 
 
 
-    @Value("${GOOGLE_APPLICATION_CREDENTIALS}")
+    @Value("${GOOGLE_APPLICATION_CREDENTIALS1}")
     String password;
 
     @Autowired
@@ -173,9 +175,11 @@ public class SecurityConfig {
 
     @Bean
     public Storage storage() throws IOException {
-        try (FileInputStream stream = new FileInputStream(password)) {
+        byte[] decodedBytes = Base64.getDecoder().decode(password);
+        try (InputStream stream = new ByteArrayInputStream(decodedBytes)) {
+            GoogleCredentials credentials = ServiceAccountCredentials.fromStream(stream);
             return StorageOptions.newBuilder()
-                    .setCredentials(ServiceAccountCredentials.fromStream(stream))
+                    .setCredentials(credentials)
                     .build()
                     .getService();
         }

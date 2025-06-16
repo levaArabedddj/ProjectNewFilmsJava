@@ -6,7 +6,7 @@ import com.example.ElasticSearch.ClassDocuments.CrewMemberDocument;
 import com.example.ElasticSearch.Service.ActorService;
 import com.example.ElasticSearch.Service.CrewMemberServiceElastic;
 import com.example.Entity.*;
-import com.example.Entity.VisitorPackage.Visitor;
+import com.example.Entity.Visitor;
 import com.example.Enum.SubscriptionLevelVisitor;
 import com.example.Repository.*;
 

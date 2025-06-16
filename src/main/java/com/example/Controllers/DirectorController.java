@@ -2,7 +2,7 @@ package com.example.Controllers;
 
 import com.example.DTO.CreateModeratorRequest;
 import com.example.Entity.Admin;
-import com.example.Entity.MoviesPackage.Movies;
+import com.example.Entity.Movies;
 import com.example.Entity.Users;
 import com.example.Enum.AdminRole;
 import com.example.Exception.ApiException;

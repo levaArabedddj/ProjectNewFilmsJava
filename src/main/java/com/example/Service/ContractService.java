@@ -1,7 +1,7 @@
 package com.example.Service;
 
 import com.example.Entity.*;
-import com.example.Entity.MoviesPackage.Movies;
+import com.example.Entity.Movies;
 import com.example.Enum.ContractStatus;
 import com.example.Repository.*;
 import jakarta.persistence.EntityNotFoundException;

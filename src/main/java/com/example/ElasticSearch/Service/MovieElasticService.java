@@ -6,7 +6,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.example.ElasticSearch.ClassDocuments.MovieDocument;
 
-import com.example.Entity.MoviesPackage.Movies;
+import com.example.Entity.Movies;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

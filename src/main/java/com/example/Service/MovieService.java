@@ -11,7 +11,7 @@ import com.example.ElasticSearch.ClassDocuments.MovieDocument;
 
 import com.example.ElasticSearch.Service.MovieElasticService;
 import com.example.Entity.Director;
-import com.example.Entity.MoviesPackage.Movies;
+import com.example.Entity.Movies;
 import com.example.Entity.Users;
 import com.example.Enum.DevelopmentStage;
 import com.example.Exception.ApiException;

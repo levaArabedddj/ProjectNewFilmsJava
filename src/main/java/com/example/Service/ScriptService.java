@@ -3,8 +3,8 @@ package com.example.Service;
 
 
 import com.example.Entity.Director;
-import com.example.Entity.MoviesPackage.Movies;
-import com.example.Entity.MoviesPackage.Script;
+import com.example.Entity.Movies;
+import com.example.Entity.Script;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.ScriptRepo;

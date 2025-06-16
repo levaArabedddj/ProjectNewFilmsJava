@@ -64,4 +64,12 @@ public class SenderService {
     }
 
 
+    public void sendEmail(String email, String subject, String message) {
+
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setTo(email);
+        msg.setSubject(subject);
+        msg.setText(message);
+        mailSender.send(msg);
+    }
 }

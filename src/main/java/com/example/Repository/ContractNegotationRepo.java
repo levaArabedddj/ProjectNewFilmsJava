@@ -1,7 +1,7 @@
 package com.example.Repository;
 
 import com.example.Entity.ContractNegotiation;
-import com.example.Entity.MoviesPackage.Movies;
+import com.example.Entity.Movies;
 import com.example.Entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 

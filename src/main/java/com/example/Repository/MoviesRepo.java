@@ -2,7 +2,8 @@ package com.example.Repository;
 
 
 import com.example.Entity.Director;
-import com.example.Entity.MoviesPackage.Movies;
+import com.example.Entity.Movies;
+import com.example.Entity.filmTeamUser;
 import com.example.loger.Loggable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -34,7 +35,6 @@ public interface MoviesRepo extends JpaRepository<Movies, Long> {
 
     @Query("SELECT m FROM Movies m WHERE LOWER(m.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(m.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Movies> searchByTitleOrDescription(@Param("keyword") String keyword);
-
 
 
 

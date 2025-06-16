@@ -3,14 +3,17 @@ package com.example.Service;
 import com.example.DTO.DtoActorProfile;
 import com.example.Entity.ActorProfiles;
 import com.example.Entity.Actors;
+import com.example.Entity.filmTeamUser;
 import com.example.Repository.ActorProfilesRepository;
 import com.example.Repository.ActorRepo;
+import com.example.Repository.FilmTeamUserRepo;
 import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage;
+import com.nimbusds.oauth2.sdk.id.Actor;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,12 +41,15 @@ public class ActorsService {
     public  final ActorProfilesRepository actorProfilRepo;
     private final Storage storage;
 
+    private final FilmTeamUserRepo filmTeamUserRepository;
+
     @Autowired
-    public ActorsService(ActorRepo actorRepo, ActorProfilesRepository actorProfilRepo, Storage storage) {
+    public ActorsService(ActorRepo actorRepo, ActorProfilesRepository actorProfilRepo, Storage storage, FilmTeamUserRepo filmTeamUserRepository) {
         this.actorRepo = actorRepo;
         this.actorProfilRepo = actorProfilRepo;
 
         this.storage = storage;
+        this.filmTeamUserRepository = filmTeamUserRepository;
     }
 
     @Value("${google.cloud.storage.bucket.name1}")
@@ -165,6 +173,16 @@ public class ActorsService {
                 actorProfiles.getNumberPhone()
         );
 
+    }
+
+    public List<Actors> getActorsByMovieId(Long movieId) {
+        List<filmTeamUser> filmTeamUsers = filmTeamUserRepository.findActorsByMovieId(movieId);
+
+      List<Actors> actorsList = new ArrayList<>();
+      for(filmTeamUser ftu : filmTeamUsers){
+          actorRepo.findByUserUserId(ftu.getUser().getUser_id()).ifPresent(actorsList::add);
+      }
+      return actorsList;
     }
 
 

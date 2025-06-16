@@ -3,7 +3,7 @@ package com.example.Service;
 
 import com.example.DTO.DtoMovie;
 import com.example.Entity.Director;
-import com.example.Entity.MoviesPackage.Movies;
+import com.example.Entity.Movies;
 import com.example.Entity.Users;
 import com.example.Enum.DevelopmentStage;
 import com.example.Exception.ApiException;

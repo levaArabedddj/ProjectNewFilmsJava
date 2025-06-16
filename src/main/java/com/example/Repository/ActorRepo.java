@@ -23,4 +23,7 @@ public interface ActorRepo extends JpaRepository<Actors, Long> {
 
     @Query("SELECT act FROM Actors act WHERE act.user.user_id = :userId")
     Optional<Actors> findByUserUserId(@Param("userId") Long userId);
+
+//    @Query("SELECT act from Actors act where ")
+//    List<Actors> findActorsByMovieId(Long movieId);
 }

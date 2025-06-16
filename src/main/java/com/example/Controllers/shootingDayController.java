@@ -3,10 +3,12 @@ package com.example.Controllers;
 
 import com.example.DTO.DtoShootingDay;
 import com.example.Entity.Director;
-import com.example.Entity.MoviesPackage.Movies;
-import com.example.Entity.MoviesPackage.ShootingDay;
+import com.example.Entity.Movies;
+import com.example.Entity.ShootingDay;
 import com.example.Entity.Users;
 import com.example.Exception.ApiException;
+import com.example.RabbitMQ.DtoShootingDayMQ;
+import com.example.RabbitMQ.ShootingDayEventPublisher;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.ShootingDayRepo;
@@ -38,6 +40,9 @@ public class shootingDayController {
     private ShootingDayRepo shootingDayRepo;
     private static final Logger logger = LoggerFactory.getLogger(shootingDayController.class);
 
+
+    private final ShootingDayEventPublisher shootingDayEventPublisher;
+
     @Autowired
     private UsersRepo usersRepo;
     @Autowired
@@ -50,8 +55,9 @@ public class shootingDayController {
 
 
     @Autowired
-    public shootingDayController(ShootingDayRepo shootingDayRepo, DirectorRepo directorRepo) {
+    public shootingDayController(ShootingDayRepo shootingDayRepo, ShootingDayEventPublisher shootingDayEventPublisher, DirectorRepo directorRepo) {
         this.shootingDayRepo = shootingDayRepo;
+        this.shootingDayEventPublisher = shootingDayEventPublisher;
         this.directorRepo = directorRepo;
     }
 
@@ -88,14 +94,14 @@ public class shootingDayController {
             shootingDayRepo.save(newShootingDay);
 
             // Создание DTO для возвращаемого объекта
-            DtoShootingDay dtoShootingDay = new DtoShootingDay();
-            dtoShootingDay.setShootingDate(newShootingDay.getShootingDate());
-            dtoShootingDay.setShootingTime(newShootingDay.getShootingTime());
-            dtoShootingDay.setShootingLocation(newShootingDay.getShootingLocation());
-            dtoShootingDay.setEstimatedDurationHours(newShootingDay.getEstimatedDurationHours());
+            DtoShootingDayMQ event = new DtoShootingDayMQ();
+            event.setFilmId(filmId);
+            event.setShootingDate(newShootingDay.getShootingDate());
+            event.setShootingTime(newShootingDay.getShootingTime());
+            event.setLocation(newShootingDay.getShootingLocation());
+            shootingDayEventPublisher.publish(event,shootingDay.getShootingTime(), shootingDay.getShootingDate(), shootingDay.getShootingLocation()); // << отправка в RabbitMQ
 
-
-            return ResponseEntity.ok(dtoShootingDay);
+            return ResponseEntity.ok(event);
         } catch (ApiException e) {
             logger.error("Error creating shooting day: {}", e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());

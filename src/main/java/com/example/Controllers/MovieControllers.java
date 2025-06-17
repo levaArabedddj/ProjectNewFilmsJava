@@ -2,6 +2,7 @@ package com.example.Controllers;
 
 
 import com.example.DTO.DtoMovie;
+import com.example.DTO.MovieCreatedEvent;
 import com.example.ElasticSearch.ClassDocuments.MovieDocument;
 
 import com.example.ElasticSearch.Service.MovieElasticService;
@@ -11,6 +12,7 @@ import com.example.Entity.Users;
 import com.example.Enum.DevelopmentStage;
 import com.example.Enum.Genre;
 import com.example.Exception.ApiException;
+import com.example.RabbitMQ.ElasticConfigQueue;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;
@@ -20,6 +22,7 @@ import com.example.loger.Loggable;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,15 +60,16 @@ public class MovieControllers {
 
     private final MovieElasticService movieElasticService;
 
+
+    private final RabbitTemplate rabbitTemplate;
     @Autowired
-    public MovieControllers(MoviesRepo moviesRepo, MovieService movieService, DirectorRepo directorRepo,  ElasticsearchClient elasticsearchClient, MovieElasticService movieElasticService) {
+    public MovieControllers(MoviesRepo moviesRepo, MovieService movieService, DirectorRepo directorRepo, ElasticsearchClient elasticsearchClient, MovieElasticService movieElasticService, RabbitTemplate rabbitTemplate) {
         this.moviesRepo = moviesRepo;
         this.movieService = movieService;
         this.directorRepo = directorRepo;
         this.elasticsearchClient = elasticsearchClient;
-
-
         this.movieElasticService = movieElasticService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Loggable
@@ -75,27 +79,20 @@ public class MovieControllers {
             @Valid @RequestBody Movies movies,
             @AuthenticationPrincipal MyUserDetails currentUser
     ) {
-        System.out.println("+++ ENTERED createFilm()");
-        logger.debug(">> enter createFilm, payload movies={}, currentUser={}", movies, currentUser);
-
         try {
             // 1) Получаем userId
             Long userId = currentUser.getUser_id();
-            logger.debug("1) extracted userId from token: {}", userId);
 
             // 2) Загружаем юзера из БД
             Users user = usersRepo.findById(userId)
                     .orElseThrow(() -> new ApiException("User not found"));
-            logger.debug("2) loaded Users entity: {}", user);
 
             // 3) Ищем профиль режиссёра
             Director director = directorRepo.findByUsers(user)
                     .orElseThrow(() -> new ApiException("You are not a director"));
-            logger.debug("3) found Director profile: {}", director);
 
             // 4) Проверяем, не существует ли фильм с таким же названием
             Optional<Movies> existingMovie = moviesRepo.findByTitle(movies.getTitle());
-            logger.debug("4) check existingMovie by title '{}': present={}", movies.getTitle(), existingMovie.isPresent());
             if (existingMovie.isPresent()) {
                 throw new ApiException("Film already exists");
             }
@@ -107,21 +104,24 @@ public class MovieControllers {
             newMovie.setGenre_film(movies.getGenre_film());
             newMovie.setDevelopmentStage(DevelopmentStage.CONCEPT);
             newMovie.setDirector(director);
-            logger.debug("5) new Movie object prepared: {}", newMovie);
 
             // 6) Сохраняем в БД
             moviesRepo.save(newMovie);
-            logger.debug("6) Movie saved to DB, id={}", newMovie.getId());
 
-            // 7) Индексируем в Elasticsearch
-            MovieDocument document = movieElasticService.mapToElastic(newMovie);
-            logger.debug("7) mapped Movie to MovieDocument: {}", document);
-            elasticsearchClient.index(i -> i
-                    .index("movies")
-                    .id(String.valueOf(newMovie.getId()))
-                    .document(document)
+            // 7) Индексируем в Elasticsearch, но сначала в RabbitMQ
+            MovieCreatedEvent evt = new MovieCreatedEvent(
+                    newMovie.getId(),
+                    newMovie.getTitle(),
+                    newMovie.getDescription(),
+                    newMovie.getGenre_film().name()
             );
-            logger.debug("7) indexed MovieDocument in Elasticsearch, id={}", newMovie.getId());
+            rabbitTemplate.convertAndSend(
+                    ElasticConfigQueue.INDEX_EXCHANGE,
+                    "movies.created",
+                    evt
+            );
+            logger.info(" опубликован  MovieCreatedEvent в RabbitMQ: {}", evt);
+
 
             // 8) Готовим DTO для ответа
             DtoMovie dtoMovie = new DtoMovie();
@@ -129,10 +129,9 @@ public class MovieControllers {
             dtoMovie.setDescription(newMovie.getDescription());
             dtoMovie.setGenre_film(Genre.valueOf(String.valueOf(newMovie.getGenre_film())));
             dtoMovie.setDateTimeCreated(newMovie.getDateTimeCreated());
-            logger.debug("8) prepared DtoMovie: {}", dtoMovie);
+
 
             // 9) Возвращаем результат
-            logger.debug("<< exit createFilm successfully");
             return ResponseEntity.ok(dtoMovie);
 
         } catch (ApiException e) {

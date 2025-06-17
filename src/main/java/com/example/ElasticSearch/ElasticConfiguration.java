@@ -6,56 +6,54 @@ import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import jakarta.annotation.PostConstruct;
-import org.apache.http.Header;
-import org.apache.http.HttpHost;
+import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HttpContext;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-
 @Configuration
 public class ElasticConfiguration {
 
     @Value("${spring.elasticsearch.uris}")
-    private String login;
+    private String elasticUri;      // например "https://localhost:9200"
 
     @Value("${spring.elasticsearch.username}")
-    private String elasticUser;
+    private String elasticUser;     // "elastic"
 
     @Value("${spring.elasticsearch.password}")
-    private String elasticPass;
-
+    private String elasticPass;     // твой пароль
 
     @Bean
     public RestClient lowLevelRestClient() {
-        // 1) Basic auth
-        BasicCredentialsProvider creds = new BasicCredentialsProvider();
-        creds.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials(elasticUser, elasticPass));
+        String auth = "Basic " + Base64.getEncoder()
+                .encodeToString((elasticUser + ":" + elasticPass)
+                        .getBytes(StandardCharsets.UTF_8));
 
-        // 2) Собираем builder по URI
-        RestClientBuilder builder = RestClient.builder(HttpHost.create(login))
-                .setHttpClientConfigCallback(httpClient ->
-                        httpClient.setDefaultCredentialsProvider(creds)
-                )
-                // 3) Переопределяем заголовки по-умолчанию:
-                .setDefaultHeaders(new Header[] {
-                        // a) чтобы кластер 7.x принимал body
-                        new BasicHeader("Content-Type", "application/json"),
-                        // b) чтобы кластер распознавал, что это именно Elasticsearch
-                        new BasicHeader("X-Elastic-Product", "Elasticsearch")
-                });
+        Header[] headers = new Header[]{
+                new BasicHeader(HttpHeaders.AUTHORIZATION, auth),
+                new BasicHeader("X-Elastic-Product", "Elasticsearch")
+                // НЕ указываем Content-Type
+        };
 
-        return builder.build();
+        return RestClient.builder(HttpHost.create(elasticUri))
+                .setDefaultHeaders(headers)
+                .build();
     }
+
 
 
     @Bean
@@ -64,6 +62,5 @@ public class ElasticConfiguration {
                 new RestClientTransport(lowLevelRestClient, new JacksonJsonpMapper());
         return new ElasticsearchClient(transport);
     }
-
-
 }
+

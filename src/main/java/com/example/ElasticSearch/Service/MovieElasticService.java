@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.example.DTO.MovieCreatedEvent;
 import com.example.ElasticSearch.ClassDocuments.MovieDocument;
 
 import com.example.Entity.Movies;
@@ -33,6 +34,15 @@ public class MovieElasticService {
         document.setTitle(movie.getTitle());
         document.setDescription(movie.getDescription());
         document.setGenre_film(movie.getGenre_film().name());
+        return document;
+    }
+
+    public MovieDocument mapToElasticForQueue(MovieCreatedEvent movie){
+        MovieDocument document = new MovieDocument();
+        document.setId(String.valueOf(movie.getMovieId()));
+        document.setTitle(movie.getTitle());
+        document.setDescription(movie.getDescription());
+        document.setGenre_film(movie.getGenre());
         return document;
     }
 

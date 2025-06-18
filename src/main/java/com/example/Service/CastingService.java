@@ -7,6 +7,10 @@ import com.example.Enum.ApplicationStatus;
 import com.example.Enum.TrialResult;
 import com.example.Enum.UserRole;
 import com.example.Exception.ApiException;
+import com.example.RabbitMQ.CastingTask.CastingApplicationEventPublisher;
+import com.example.RabbitMQ.CastingTask.CastingEventPublisher;
+import com.example.RabbitMQ.DtoRabbitMQ.CastingApplicationAnswerEvent;
+import com.example.RabbitMQ.DtoRabbitMQ.CastingApplicationEvent;
 import com.example.Repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -36,9 +40,11 @@ public class CastingService {
     private final SenderService service;
     @PersistenceContext
     private EntityManager entityManager;
+    private final CastingEventPublisher castingEventPublisher;
+    private final CastingApplicationEventPublisher castingApplicationEventPublisher;
 
     @Autowired
-    public CastingService(MoviesRepo moviesRepo, ActorRepo actorRepo, UsersRepo usersRepo, CastingsRepo castingsRepo, DirectorRepo directorRepo, CastingApplicationsRepo castingApplicationsRepo, Trial_ShootingsRepo trialShootingsRepo, TrialParticipantsRepo trialParticipantsRepo, SenderService service) {
+    public CastingService(MoviesRepo moviesRepo, ActorRepo actorRepo, UsersRepo usersRepo, CastingsRepo castingsRepo, DirectorRepo directorRepo, CastingApplicationsRepo castingApplicationsRepo, Trial_ShootingsRepo trialShootingsRepo, TrialParticipantsRepo trialParticipantsRepo, SenderService service, CastingEventPublisher castingEventPublisher, CastingApplicationEventPublisher castingApplicationEventPublisher) {
         this.moviesRepo = moviesRepo;
         this.actorRepo = actorRepo;
         this.usersRepo = usersRepo;
@@ -49,6 +55,8 @@ public class CastingService {
         this.trialParticipantsRepo = trialParticipantsRepo;
 
         this.service = service;
+        this.castingEventPublisher = castingEventPublisher;
+        this.castingApplicationEventPublisher = castingApplicationEventPublisher;
     }
 
 
@@ -99,6 +107,15 @@ public class CastingService {
         applications.setCastings(casting);
         applications.setStatus(ApplicationStatus.Pending);
         applications.setMessage(message);
+
+        CastingApplicationEvent event = new CastingApplicationEvent();
+        event.setCastingId((long) castingId);
+        event.setActorId(applications.getActor().getUser_id());
+        event.setActorName(actors.getUserName());
+        event.setMovieTitle(casting.getMovie().getTitle());
+        event.setDirectorEmail(casting.getMovie().getDirector().getUsers().getGmail());
+        event.setStatus("Pending");
+        castingEventPublisher.publishCastingEvent(event);
         return castingApplicationsRepo.save(applications);
     }
 
@@ -195,6 +212,7 @@ public class CastingService {
 
         Users director = applications.getCastings().getMovie().getDirector().getUsers();
 
+        String movie = applications.getCastings().getMovie().getTitle();
         if(director == null || !director.getUserName().equals(currentUsername)){
             throw new AccessDeniedException("У вас нет прав изменять заявку в этом кастинге!");
         }
@@ -209,9 +227,19 @@ public class CastingService {
             throw new RuntimeException("Actor not found");
         }
         String email = actor.getUser().getGmail();
-        String username  = actor.getUser().getUserName();
+        String name  = actor.getUser().getActor().getName();
 
-        service.sendAssignApplication(email,username,status);
+        CastingApplicationAnswerEvent event = new CastingApplicationAnswerEvent();
+        event.setFilmName(movie);
+        event.setCastingId(applicationId);
+        event.setActorName(name);
+        event.setActorGmail(email);
+        event.setStatus(String.valueOf(status));
+
+        System.out.println("отправили в очередь");
+        castingApplicationEventPublisher.publishCastingEvent(event);
+
+        //service.sendAssignApplication(email,username,status);
         return castingApplicationsRepo.save(applications);
     }
 

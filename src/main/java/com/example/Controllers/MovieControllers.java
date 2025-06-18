@@ -12,7 +12,7 @@ import com.example.Entity.Users;
 import com.example.Enum.DevelopmentStage;
 import com.example.Enum.Genre;
 import com.example.Exception.ApiException;
-import com.example.RabbitMQ.ElasticConfigQueue;
+import com.example.RabbitMQ.ElasticTask.ElasticConfigQueue;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;

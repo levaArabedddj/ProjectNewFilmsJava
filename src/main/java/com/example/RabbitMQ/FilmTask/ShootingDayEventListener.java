@@ -1,18 +1,14 @@
-package com.example.RabbitMQ;
+package com.example.RabbitMQ.FilmTask;
 
-import com.example.DTO.DtoShootingDay;
-import com.example.ElasticSearch.Service.ActorService;
 import com.example.Entity.Actors;
+import com.example.RabbitMQ.DtoRabbitMQ.DtoShootingDayMQ;
 import com.example.Repository.ActorRepo;
 import com.example.Service.ActorsService;
 import com.example.Service.SenderService;
-import com.nimbusds.oauth2.sdk.id.Actor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 @Component

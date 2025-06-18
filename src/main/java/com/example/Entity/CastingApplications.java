@@ -11,10 +11,6 @@ import java.util.List;
 @Table(name = "Casting_Applications")
 @Data
 public class CastingApplications {
-
-    // исправить связь на юзера , а не актера
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -4,9 +4,9 @@ import com.example.DTO.CastingApplicationDto;
 import com.example.DTO.CastingDto;
 import com.example.DTO.TrialShootingDto;
 import com.example.Entity.CastingApplications;
-import com.example.Entity.Castings;
 import com.example.Entity.Trial_Shootings;
 import com.example.Enum.ApplicationStatus;
+import com.example.RabbitMQ.CastingTask.CastingEventPublisher;
 import com.example.Service.CastingService;
 import com.example.config.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,20 +26,13 @@ import java.util.Map;
 public class CastingController {
 
     private final CastingService castingService;
-
-
+    private final CastingEventPublisher castingEventPublisher;
 
     @Autowired
-    public CastingController(CastingService castingService) {
+    public CastingController(CastingService castingService, CastingEventPublisher castingEventPublisher) {
         this.castingService = castingService;
+        this.castingEventPublisher = castingEventPublisher;
     }
-
-
-    // тут проработать кто какие ендпоинты может использовать
-    // и какие не может , желательно для всех контроллеров осмотреть по логике
-
-
-
 
     /**
      * Создание кастинга для фильма

@@ -1,5 +1,6 @@
-package com.example.RabbitMQ;
+package com.example.RabbitMQ.FilmTask;
 
+import com.example.RabbitMQ.DtoRabbitMQ.DtoShootingDayMQ;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

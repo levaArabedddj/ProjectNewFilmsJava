@@ -1,4 +1,4 @@
-package com.example.RabbitMQ;
+package com.example.RabbitMQ.ElasticTask;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.example.DTO.MovieCreatedEvent;

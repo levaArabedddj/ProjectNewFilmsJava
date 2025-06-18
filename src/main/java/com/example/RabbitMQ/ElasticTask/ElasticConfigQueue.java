@@ -1,4 +1,4 @@
-package com.example.RabbitMQ;
+package com.example.RabbitMQ.ElasticTask;
 
 
 import org.springframework.amqp.core.Binding;

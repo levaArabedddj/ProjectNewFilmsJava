@@ -1,4 +1,4 @@
-package com.example.RabbitMQ;
+package com.example.RabbitMQ.DtoRabbitMQ;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

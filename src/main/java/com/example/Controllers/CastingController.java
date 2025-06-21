@@ -147,7 +147,6 @@ public class CastingController {
     public ResponseEntity<String> assignToTrial(
             @PathVariable Long applicationId,
             @PathVariable Long trialId) {
-
         castingService.assignToTrial(applicationId, trialId);
         return ResponseEntity.ok("Actor successfully assigned to trial shooting");
     }

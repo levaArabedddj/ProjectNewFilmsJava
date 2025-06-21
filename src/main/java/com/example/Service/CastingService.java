@@ -9,14 +9,17 @@ import com.example.Enum.UserRole;
 import com.example.Exception.ApiException;
 import com.example.RabbitMQ.CastingTask.CastingApplicationEventPublisher;
 import com.example.RabbitMQ.CastingTask.CastingEventPublisher;
+import com.example.RabbitMQ.CastingTask.TrialShootingDayEventPublisher;
 import com.example.RabbitMQ.DtoRabbitMQ.CastingApplicationAnswerEvent;
 import com.example.RabbitMQ.DtoRabbitMQ.CastingApplicationEvent;
+import com.example.RabbitMQ.DtoRabbitMQ.TrialShootingDayEvent;
 import com.example.Repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +29,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class CastingService {
 
@@ -42,9 +46,10 @@ public class CastingService {
     private EntityManager entityManager;
     private final CastingEventPublisher castingEventPublisher;
     private final CastingApplicationEventPublisher castingApplicationEventPublisher;
+    private final TrialShootingDayEventPublisher trialShootingDayEventPublisher;
 
     @Autowired
-    public CastingService(MoviesRepo moviesRepo, ActorRepo actorRepo, UsersRepo usersRepo, CastingsRepo castingsRepo, DirectorRepo directorRepo, CastingApplicationsRepo castingApplicationsRepo, Trial_ShootingsRepo trialShootingsRepo, TrialParticipantsRepo trialParticipantsRepo, SenderService service, CastingEventPublisher castingEventPublisher, CastingApplicationEventPublisher castingApplicationEventPublisher) {
+    public CastingService(MoviesRepo moviesRepo, ActorRepo actorRepo, UsersRepo usersRepo, CastingsRepo castingsRepo, DirectorRepo directorRepo, CastingApplicationsRepo castingApplicationsRepo, Trial_ShootingsRepo trialShootingsRepo, TrialParticipantsRepo trialParticipantsRepo, SenderService service, CastingEventPublisher castingEventPublisher, CastingApplicationEventPublisher castingApplicationEventPublisher, TrialShootingDayEventPublisher trialShootingDayEventPublisher) {
         this.moviesRepo = moviesRepo;
         this.actorRepo = actorRepo;
         this.usersRepo = usersRepo;
@@ -57,6 +62,7 @@ public class CastingService {
         this.service = service;
         this.castingEventPublisher = castingEventPublisher;
         this.castingApplicationEventPublisher = castingApplicationEventPublisher;
+        this.trialShootingDayEventPublisher = trialShootingDayEventPublisher;
     }
 
 
@@ -244,19 +250,17 @@ public class CastingService {
     }
 
 
-
-
-    public void assignToTrial(Long applicationId, Long trialId){
+    public void assignToTrial(Long applicationId, Long trialId) {
 
         CastingApplications castingApplications = castingApplicationsRepo.findById(applicationId)
-                .orElseThrow(()-> new EntityNotFoundException("Application not found") );
+                .orElseThrow(() -> new EntityNotFoundException("Application not found"));
 
-        if(castingApplications.getStatus() != ApplicationStatus.Approved){
+        if (castingApplications.getStatus() != ApplicationStatus.Approved) {
             throw new RuntimeException("Application is not approved");
         }
 
         Trial_Shootings trial = trialShootingsRepo.findById(trialId)
-                .orElseThrow(()-> new EntityNotFoundException("Trial not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Trial not found"));
 
         TrialParticipants participants = new TrialParticipants();
         participants.setActors(castingApplications.getActor());
@@ -266,6 +270,15 @@ public class CastingService {
         participants.setCastingApplications(castingApplications);
         trialParticipantsRepo.save(participants);
 
+        TrialShootingDayEvent event = new TrialShootingDayEvent();
+        event.setTitle(castingApplications.getCastings().getMovie().getTitle());
+        event.setStartDate(trial.getDate());
+        event.setStartTime(trial.getStartTime());
+        event.setLocation(trial.getLocation());
+        event.setNameActor(participants.getActors().getActor().getName());
+        event.setActorGmail(participants.getActors().getGmail());
+        System.out.println();
+        trialShootingDayEventPublisher.publishTrialShootingEvent(event);
 
         trialShootingsRepo.save(trial);
     }
@@ -305,14 +318,7 @@ public class CastingService {
 
         entityManager.persist(filmTeamUser);
         service.sendMsgForActorInTeam(participants.getActors().getActor(), role);
-    } // - создать новый метод , после того как актера приняли в комнаду сделать метод
-    // где будет выносится вопрос по условиям контракта с актером
-    // и его согласованости , типо режиссер кидает
-    // свою версию контракта , но актера что то не устраивает и он
-    // отправляет такой же контракт но со своими правками и такое может
-    // просиходить сколько угодно раз пока актер и режиссер не будут решатся и
-    // после этого , актер отправляет подпись и режиссер свое подпись и
-    // после этого конракт создается
+    }
 
     public Trial_Shootings createTrialShooting(Long userId, Long movieId, TrialShootingDto trialDto) {
 

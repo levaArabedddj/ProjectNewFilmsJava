@@ -1,8 +1,12 @@
 package com.example.Service;
 
+import com.example.DTO.ContractInitData;
 import com.example.Entity.*;
 import com.example.Entity.Movies;
 import com.example.Enum.ContractStatus;
+import com.example.RabbitMQ.CastingTask.TrialShootingDayEventPublisher;
+import com.example.RabbitMQ.ContractTask.ContractEventPublisher;
+import com.example.RabbitMQ.DtoRabbitMQ.ContractNegotiationEvent;
 import com.example.Repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Service
 public class ContractService {
@@ -19,15 +24,16 @@ public class ContractService {
     private final UsersRepo usersRepo;
     private final MoviesRepo moviesRepo;
     private final DirectorRepo directorRepo;
-
+    private final ContractEventPublisher contractEventPublisher;
 
     @Autowired
-    public ContractService(ContractNegotationRepo contractNegotationRepo, ContractRepo contractRepo, UsersRepo usersRepo, MoviesRepo moviesRepo, DirectorRepo directorRepo) {
+    public ContractService(ContractNegotationRepo contractNegotationRepo, ContractRepo contractRepo, UsersRepo usersRepo, MoviesRepo moviesRepo, DirectorRepo directorRepo, ContractEventPublisher contractEventPublisher) {
         this.contractNegotationRepo = contractNegotationRepo;
         this.contractRepo = contractRepo;
         this.usersRepo = usersRepo;
         this.moviesRepo = moviesRepo;
         this.directorRepo = directorRepo;
+        this.contractEventPublisher = contractEventPublisher;
     }
 
 
@@ -37,19 +43,44 @@ public class ContractService {
                                                    Double bonuses, String paymentSchedule) {
 
 
-        Users actor = usersRepo.findById(actorId).orElseThrow(() -> new RuntimeException("User not found"));
-        Director director = directorRepo.findByUserUserId(directorId).orElseThrow(()-> new RuntimeException("Director not found"));
-        Movies movies = moviesRepo.findById(movieId).orElseThrow(()-> new RuntimeException("Movies not found"));
+//        Users actor = usersRepo.findById(actorId).orElseThrow(() -> new RuntimeException("User not found"));
+//        Director director = directorRepo.findByUserUserId(directorId).orElseThrow(()-> new RuntimeException("Director not found"));
+//        Movies movies = moviesRepo.findById(movieId).orElseThrow(()-> new RuntimeException("Movies not found"));
 
+        ContractInitData init = usersRepo.findInitData(actorId, directorId, movieId);
         ContractNegotiation contr = new ContractNegotiation();
-        contr.setActor(actor);
-        contr.setDirector(director);
-        contr.setMovie(movies);
+
+        contr.setActor(init.getActor());
+        contr.setDirector(init.getDirector());
+        contr.setMovie(init.getMovie());
         contr.setProposedSalary(proposedSalary);
         contr.setPenalty(penalty);
         contr.setBonuses(bonuses);
         contr.setPaymentSchedule(paymentSchedule);
         contr.setStatus(ContractStatus.WAITING_ACTOR);
+        contractNegotationRepo.save(contr);
+
+        ContractNegotiationEvent event = new ContractNegotiationEvent();
+        event.setContractId(contr.getId());
+        event.setActorId(actorId);
+        event.setFullNameActor(init.getActor().getActor().getName());
+        event.setActorEmail(init.getActor().getGmail());
+        event.setDirectorId(directorId);
+        event.setFullNameDirector(init.getDirector().getName());
+        event.setDirectorEmail(init.getDirector().getUsers().getGmail());
+        event.setMovieId(movieId);
+        event.setMovieTitle(init.getMovie().getTitle());
+        event.setProposedSalary(proposedSalary);
+        event.setPenalty(penalty);
+        event.setBonuses(bonuses);
+        event.setPaymentSchedule(paymentSchedule);
+        event.setStartDate(LocalDate.now());
+        event.setEndDate(LocalDate.now().plusYears(1));
+        event.setConfidentialityAgreement(false);
+
+        contractEventPublisher.publishContract(event);
+        System.out.println("отправил в паблишер");
+
         return contractNegotationRepo.save(contr);
     }
 

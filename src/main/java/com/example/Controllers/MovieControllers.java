@@ -13,6 +13,7 @@ import com.example.Enum.DevelopmentStage;
 import com.example.Enum.Genre;
 import com.example.Exception.ApiException;
 import com.example.RabbitMQ.ElasticTask.ElasticConfigQueue;
+import com.example.RabbitMQ.ElasticTask.UpdateFilmConfigQueue;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;
@@ -221,13 +222,17 @@ public class MovieControllers {
             // Сохранение изменений
             moviesRepo.save(existingMovie);
 
-            MovieDocument document = movieElasticService.mapToElastic(existingMovie);
-
-            elasticsearchClient.index(i -> i
-                    .index("movies")
-                    .id(String.valueOf(existingMovie.getId()))
-                    .document(document)
+            MovieCreatedEvent event = new MovieCreatedEvent(
+                    existingMovie.getId(),
+                    existingMovie.getTitle(),
+                    existingMovie.getDescription(),
+                    existingMovie.getGenre_film().name()
             );
+            rabbitTemplate.convertAndSend(
+                    UpdateFilmConfigQueue.EXCHANGE_NAME,
+                    "filmupdate.elastic",
+                    event);
+
 
             DtoMovie dtoMovie = new DtoMovie();
             dtoMovie.setTitle(existingMovie.getTitle());
@@ -260,22 +265,34 @@ public class MovieControllers {
             // Получение имени текущего пользователя
             String username = principal.getName();
 
-            // Поиск пользователя по имени
-            Users user = usersRepo.findByUserName(username)
-                    .orElseThrow(() -> new ApiException("User not found"));
+//            // Поиск пользователя по имени
+//            Users user = usersRepo.findByUserName(username)
+//                    .orElseThrow(() -> new ApiException("User not found"));
+//
+//            // Проверка, существует ли фильм и принадлежит ли он текущему пользователю
+//            Movies deleteMovie = moviesRepo.findById(filmId)
+//                    .orElseThrow(() -> new ApiException("Film not found"));
+//
+//            if (deleteMovie.getDirector().getUsers().getUser_id() != user.getUser_id()) {
+//                throw new ApiException("You don't have permission to edit this film");
+//            }
 
-            // Проверка, существует ли фильм и принадлежит ли он текущему пользователю
-            Movies deleteMovie = moviesRepo.findById(filmId)
-                    .orElseThrow(() -> new ApiException("Film not found"));
+            Movies movie = moviesRepo
+                    .findByIdAndDirectorUserUserName(filmId, username)
+                    .orElseThrow(() -> new ApiException(
+                            "Film not found or you have no permission to delete it"));
 
-            if (deleteMovie.getDirector().getUsers().getUser_id() != user.getUser_id()) {
-                throw new ApiException("You don't have permission to edit this film");
-            }
-            moviesRepo.delete(deleteMovie);
-            elasticsearchClient.delete( i -> i
-                    .index("movies")
-                    .id(String.valueOf(deleteMovie.getId())
-                    ));
+            moviesRepo.delete(movie);
+
+//            elasticsearchClient.delete( i -> i
+//                    .index("movies")
+//                    .id(String.valueOf(deleteMovie.getId())
+//                    ));
+
+            rabbitTemplate.convertAndSend(
+                    UpdateFilmConfigQueue.EXCHANGE_NAME_DELETE,
+                    "filmdelete.elastic",
+                    movie.getId());
 
 
             return ResponseEntity.status(HttpStatus.OK).body("Film deleted successfully");

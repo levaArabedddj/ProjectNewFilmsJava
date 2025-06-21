@@ -24,7 +24,7 @@ public class Contract {
 
     @ManyToOne
     @JoinColumn(name = "movie_id", referencedColumnName = "id")
-    private Movies movie; // Ссылка на фильм
+    private Movies movie; //
 
     @Column(name = "salary", precision = 10, scale = 2)
     private BigDecimal salary; // Заработная плата

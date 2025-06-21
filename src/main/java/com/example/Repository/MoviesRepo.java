@@ -37,5 +37,17 @@ public interface MoviesRepo extends JpaRepository<Movies, Long> {
     List<Movies> searchByTitleOrDescription(@Param("keyword") String keyword);
 
 
+    @Query("""
+        SELECT m
+        FROM Movies m
+          JOIN m.director d
+          JOIN d.users     u
+        WHERE m.id          = :filmId
+          AND u.userName    = :username
+    """)
+    Optional<Movies> findByIdAndDirectorUserUserName(
+            @Param("filmId")   Long filmId,
+            @Param("username") String username
+    );
 
 }

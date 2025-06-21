@@ -6,6 +6,7 @@ import com.example.Entity.ContractNegotiation;
 import com.example.Service.ContractService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +26,7 @@ public class ContractController {
      *    body: NegotiationRequest
      */
     @PostMapping("/initiate/{actorId}/{directorId}/{movieId}")
-    public ResponseEntity<ContractNegotiation> initiate(
+    public void initiate(
             @PathVariable Long actorId,
             @PathVariable Long directorId,
             @PathVariable Long movieId,
@@ -38,7 +39,6 @@ public class ContractController {
                 req.getBonuses(),
                 req.getPaymentSchedule()
         );
-        return ResponseEntity.ok(neg);
     }
 
     /**

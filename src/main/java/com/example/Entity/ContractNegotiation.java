@@ -43,6 +43,5 @@ public class ContractNegotiation { // переговорный процесс п
     @Column(nullable = true)
     private String directorSignature;
 
-    // Геттеры и сеттеры
 }
 

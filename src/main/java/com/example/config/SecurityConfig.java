@@ -163,10 +163,6 @@ public class SecurityConfig {
                         .failureHandler(oAuth2FailureHandler)
 
                 )
-
-
-
-                
                 .oauth2Client(Customizer.withDefaults())
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
 

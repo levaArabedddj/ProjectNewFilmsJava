@@ -325,15 +325,39 @@ public class MovieControllers {
     }
 
     @GetMapping("/getMovieById/{movieId}")
-    public ResponseEntity<?>getMovieById(@PathVariable Long movieId) {
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<String>getMovieById(@PathVariable Long movieId) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
 
-        List<DtoMovie> movies = movieService.findById(movieId,userId);
+        String movies = movieService.getCachedMovie(movieId);
         return ResponseEntity.ok(movies);
 
     }
+
+//    @GetMapping("/getMovieByIdd/{movieId}")
+//    public ResponseEntity<String> getMovieByIdd(@PathVariable Long movieId) {
+//        long startController = System.nanoTime();
+//
+//        // 1) Вызов сервиса
+//        long beforeService = System.nanoTime();
+//        String moviesJson = movieService.getCachedMovie(movieId);
+//        long afterService = System.nanoTime();
+//
+//        // 2) Формирование ResponseEntity
+//        ResponseEntity<String> response = ResponseEntity.ok(moviesJson);
+//        long afterResponse = System.nanoTime();
+//
+//        // 3) Логируем результаты
+//        logger.info("TIMING — controller total: {} ms; service: {} ms; responseBuild: {} ms",
+//                (afterResponse - startController) / 1_000_000,
+//                (afterService     - beforeService)   / 1_000_000,
+//                (afterResponse    - afterService)    / 1_000_000
+//        );
+//
+//        return response;
+//    }
 
 
 

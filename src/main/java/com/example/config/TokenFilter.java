@@ -1,5 +1,6 @@
 package com.example.config;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.FilterChain;
@@ -9,12 +10,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;  // <— этот импорт
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class TokenFilter extends OncePerRequestFilter {
 
@@ -28,60 +34,44 @@ public class TokenFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
         String path = request.getRequestURI();
-
-        // Пропускаем без проверки токена запросы на OAuth2 авторизацию и на аутентификацию
         if (path.startsWith("/auth/") || path.startsWith("/oauth2/") || path.startsWith("/login/oauth2/")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String jwt = null;
-        String name = null;
-        UserDetails userDetails;
-        UsernamePasswordAuthenticationToken authenticationToken;
-        try {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer")) {
-                jwt = authHeader.substring(7);
-            }
-            else {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
-                return; // Блокуємо запит
-            }
-
-
-
-            if(jwt == null || !jwtCore.isValidToken(jwt)){
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
-                return;
-            }
-
-
-            try {
-                name = jwtCore.getUserNameFromToken(jwt); // Вызов через экземпляр
-            } catch (ExpiredJwtException e) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
-            }
-            if (name != null) {
-                userDetails = myUserDetailsService.loadUserByUsername(name);
-                if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                    authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                } else {
-                    if (!userDetails.isAccountNonLocked()) {
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Account is locked");
-                        return;
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
+            return;
         }
+
+        String token = header.substring(7);
+        if (!jwtCore.isValidToken(token)) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+            return;
+        }
+
+        // Получаем клеймы
+        Claims claims = jwtCore.getAllClaimsFromToken(token);
+        String username = claims.getSubject();
+        @SuppressWarnings("unchecked")
+        List<String> roles = (List<String>) claims.get("roles");
+
+        // Маппим роли в SimpleGrantedAuthority
+        List<GrantedAuthority> authorities = roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+
+        // Создаём Authentication
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(username, null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         filterChain.doFilter(request, response);
     }
 }

@@ -50,4 +50,11 @@ public interface MoviesRepo extends JpaRepository<Movies, Long> {
             @Param("username") String username
     );
 
+    @Query("SELECT m FROM Movies m " +
+            "LEFT JOIN FETCH m.shootingDays " +
+            "LEFT JOIN FETCH m.script " +
+            "LEFT JOIN FETCH m.filmFinance " +
+            "WHERE m.id = :id")
+    Optional<Movies> findByIdWithDetails(@Param("id") Long id);
+
 }

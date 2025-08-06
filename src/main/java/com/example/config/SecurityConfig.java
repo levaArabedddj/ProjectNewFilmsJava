@@ -1,12 +1,10 @@
 package com.example.config;
 
 import com.example.Entity.Users;
-import com.example.Service.OAuth2TokenService;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,12 +29,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -44,8 +40,6 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
@@ -53,22 +47,13 @@ import org.springframework.security.web.authentication.*;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
-
-
-
-
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-
-
 
     @Autowired
     private TokenFilter tokenFilter;
@@ -77,8 +62,6 @@ public class SecurityConfig {
     @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
-
-
 
     @Value("${GOOGLE_APPLICATION_CREDENTIALS1}")
     String password;
@@ -152,6 +135,7 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                         .requestMatchers("/secured/user").fullyAuthenticated()
                         .anyRequest().authenticated()
+
                 )
 
                 // Включаем OAuth2-login
@@ -204,7 +188,7 @@ public class SecurityConfig {
                 MyUserDetails userDetails = MyUserDetails.build(dbUser);
 
                 // 5) Генерировать токен из деталей
-                String token = jwtCore.generateToken(userDetails);
+                String token = jwtCore.generateToken((Authentication) userDetails);
 
                 // (Опционально) Вытянуть Google-access-token, если нужен
                 OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) auth;

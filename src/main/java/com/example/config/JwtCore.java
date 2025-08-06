@@ -1,131 +1,89 @@
+// src/main/java/com/example/config/JwtCore.java
 package com.example.config;
 
-
-import com.example.Repository.UsersRepo;
-import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.stream.Collectors;
 
 @Component
 public class JwtCore {
 
-    private final UsersRepo userRepository;
-
     @Value("${testing.app.secret}")
-    public String secret;
+    private String secret;
 
     @Value("${testing.app.lifetime}")
-    public Long lifeTime;
-
-    private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-
-
-    @Autowired
-    public JwtCore(UsersRepo userRepository) {
-        this.userRepository = userRepository;
-    }
-    @PostConstruct
-    public void ensureKeyInitialized() {
-        init();
-    }
-
+    private Long lifeTime;
 
     private SecretKey secretKey;
 
+    @PostConstruct
     public void init() {
-        if (secret != null && secret.length() >= 32) {
-            this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-        } else {
-            throw new IllegalArgumentException("JWT секретный ключ должен быть длиной не менее 32 символов.");
+        if (secret == null || secret.length() < 32) {
+            throw new IllegalArgumentException("JWT secret must be at least 32 characters");
         }
+        // Инициализируем ключ на основе вашей строки
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-
+    /**
+     * Генерирует JWT-токен со следующими клеймами:
+     *   sub = username
+     *   roles = список ролей из Authentication
+     *   userId = кастомный user_id
+     */
     public String generateToken(Authentication auth) {
-        if (SECRET_KEY == null) {
-            init();
-        }
-
         MyUserDetails user = (MyUserDetails) auth.getPrincipal();
-        Date currentDate = new Date();
-        Date expireDate = new Date(currentDate.getTime() + lifeTime);
-
-        return Jwts.builder()
-                .subject(user.getUsername())
-                .claim("roles", user.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toSet()))
-                .claim("userId", user.getUser_id())
-                .issuedAt(new Date())
-                .expiration(expireDate)
-                .signWith(SECRET_KEY)
-                .compact();
-    }
-
-    // В JwtCore:
-    public String generateToken(MyUserDetails user) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + lifeTime);
+
         return Jwts.builder()
-                .subject(user.getUsername())
+                .setSubject(user.getUsername())
                 .claim("roles", user.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority).collect(Collectors.toSet()))
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList()))
                 .claim("userId", user.getUser_id())
-                .issuedAt(now)
-                .expiration(exp)
-                .signWith(SECRET_KEY)  // ваш HS-256 ключ
+                .setIssuedAt(now)
+                .setExpiration(exp)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
 
-    public String getUserNameFromToken(String token) {
-        if (SECRET_KEY == null) {
-            init();
-        }
-        return Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload().getSubject();
-    }
-
     public boolean isValidToken(String token) {
-        if (SECRET_KEY == null) {
-            init();
-        }
         try {
             Jwts.parser()
-                    .verifyWith(SECRET_KEY)
+                    .setSigningKey(secretKey)
                     .build()
-                    .parse(token);
-            return true; // Токен валідний
-        } catch (ExpiredJwtException e) {
-            System.out.println("Токен прострочений: " + e.getMessage());
-        } catch (JwtException e) {
-            System.out.println("Невалідний токен: " + e.getMessage());
+                    .parseClaimsJws(token);
+            return true;
+        } catch (JwtException ex) {
+            return false;
         }
-        return false;
     }
 
-    public boolean isValidUserToken(String token) {
-        if (isValidToken(token)) {
-            String username = getUserNameFromToken(token);
-            if (username != null) {
-                return userRepository.existsUsersByUserName(username);
-            }
-        }
-        return false;
+    public Claims getAllClaimsFromToken(String token) {
+        Jws<Claims> jws = Jwts.parser()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token);
+        return jws.getBody();
+    }
+
+    public String getUserNameFromToken(String token) {
+        return getAllClaimsFromToken(token).getSubject();
     }
 
 }
-
-
-

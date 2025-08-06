@@ -20,8 +20,14 @@ import com.example.Repository.MoviesRepo;
 import com.example.Repository.UsersRepo;
 import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,10 +35,7 @@ import org.springframework.stereotype.Service;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,10 +52,14 @@ public class MovieService {
 
     private final DirectorRepo directorRepo;
 
+
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
+    @Autowired
+    ObjectMapper mapper ;
 
+    private static final int TTL = 3600;
 
     private final MovieElasticService movieElasticService;
 
@@ -66,19 +73,85 @@ public class MovieService {
 
     @Loggable
     public List<DtoMovie> findById(Long id, Long userId) {
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
 
-        if(!authenticatedUserId.equals(userId)) {
+        if (!authenticatedUserId.equals(userId)) {
             throw new AccessDeniedException("You are not authorized to access this resource");
         }
 
-        return moviesRepo.findById(id).stream().
-                map(this::convertToMovieDto)
-                .collect(Collectors.toList());
-
+        return moviesRepo.findByIdWithDetails(id)
+                .map(this::convertToMovieDto)
+                .map(Collections::singletonList)
+                .orElse(Collections.emptyList());
     }
+
+    public List<DtoMovie> findByIdeRedis(Long id, Long userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+
+        if (!authenticatedUserId.equals(userId)) {
+            throw new AccessDeniedException("You are not authorized to access this resource");
+        }
+
+        // Получаем DTO из кеша или из базы (если нет в кеше)
+        DtoMovie dtoMovie = loadMovieDtoById(id);
+        return Collections.singletonList(dtoMovie);
+    }
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Cacheable(value = "movies", key = "#id")
+    public String getCachedMovie(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = authentication.getPrincipal();
+
+        if (!(principal instanceof MyUserDetails)) {
+            throw new AccessDeniedException("User not authenticated properly");
+        }
+
+        Long authenticatedUserId = ((MyUserDetails) principal).getUser_id();
+
+        if (!authenticatedUserId.equals(userId)) {
+            throw new AccessDeniedException("You are not authorized to access this resource");
+        }
+        long startService = System.nanoTime();
+
+        Optional<Movies> movieOpt = moviesRepo.findById(id);
+        long afterRepo = System.nanoTime();
+
+        Movies movie = movieOpt.orElseThrow(
+                () -> new NoSuchElementException("Movie not found with id: " + id));
+        long afterFetch = System.nanoTime();
+
+        // Маппинг в Dto — если он у вас иногда длинный
+        DtoMovie dto = convertToMovieDto(movie);
+        long afterConvert = System.nanoTime();
+
+        // Сериализация
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(Collections.singletonList(dto));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Ошибка сериализации", e);
+        }
+        long afterSerialize = System.nanoTime();
+
+        log.info("TIMING — service total: {} ms; repo: {} ms; convert: {} ms; serialize: {} ms",
+                (afterSerialize - startService) / 1_000_000,
+                (afterRepo      - startService) / 1_000_000,
+                (afterConvert   - afterFetch)   / 1_000_000,
+                (afterSerialize - afterConvert) / 1_000_000
+        );
+
+        return json;
+    }
+
+
+
+
+
 
     @Loggable
     public void save(Movies movie) {
@@ -277,5 +350,14 @@ public class MovieService {
 
         return dtoMovie;
     }
+    @Cacheable(value = "movies", key = "#id")
+    public DtoMovie loadMovieDtoById(Long id) {
+        // Метод загружает DTO из базы и мапит его (без проверки прав)
+        System.out.println("Loading movie from DB for id = " + id);
+        Movies movie = moviesRepo.findByIdWithDetails(id)
+                .orElseThrow(() -> new EntityNotFoundException("Movie not found"));
+        return convertToMovieDto(movie);
+    }
+
 
 }

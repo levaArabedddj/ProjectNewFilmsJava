@@ -1,0 +1,20 @@
+2025-08-10 20:39:17 INFO  TimingLogger - Method ResponseEntity com.example.Controllers.SecurityController.signup(SigninRequest) executed in 569 ms
+2025-08-10 20:39:37 INFO  TimingLogger - Method ResponseEntity com.example.Controllers.MovieControllers.getMovieById(Long) executed in 7 ms
+2025-08-10 20:39:37 INFO  TimingLogger - Total request time for GET /Film/getMovieById/416: 612 ms
+2025-08-10 20:39:46 INFO  TimingLogger - Method ResponseEntity com.example.Controllers.MovieControllers.getMovieById(Long) executed in 3 ms
+2025-08-10 20:39:46 INFO  TimingLogger - Total request time for GET /Film/getMovieById/416: 11 ms
+2025-08-10 20:43:57 INFO  TimingLogger - Method ResponseEntity com.example.Controllers.SecurityController.signup(SigninRequest) executed in 514 ms
+2025-08-10 20:44:00 INFO  TimingLogger - Method ResponseEntity com.example.Controllers.SecurityController.signup(SigninRequest) executed in 265 ms
+2025-08-10 20:44:34 INFO  TimingLogger - Method ResponseEntity com.example.Controllers.MovieControllers.getMovieById(Long) executed in 6 ms
+2025-08-10 20:44:34 INFO  TimingLogger - Total request time for GET /Film/getMovieById/416: 544 ms
+2025-08-10 20:48:41 INFO  TimingLogger - Method ResponseEntity com.example.Controllers.MovieControllers.createFilm(Movies,MyUserDetails) executed in 463 ms
+2025-08-10 20:48:41 INFO  TimingLogger - Total request time for POST /Film/create_movie: 522 ms
+2025-08-10 20:52:42 INFO  TimingLogger - Method Service List com.example.Service.MovieService.getAllMovie(Long) executed in 44982 ms
+2025-08-10 20:52:42 INFO  TimingLogger - Method ResponseEntity com.example.Controllers.MovieControllers.getAllFilmsDirector(Principal) executed in 44982 ms
+2025-08-10 20:52:42 INFO  TimingLogger - Total request time for GET /Film/getAllFilms: 44998 ms
+2025-08-10 20:54:43 INFO  TimingLogger - Method Service List com.example.Service.MovieService.getAllMovie(Long) executed in 46913 ms
+2025-08-10 20:54:43 INFO  TimingLogger - Method ResponseEntity com.example.Controllers.MovieControllers.getAllFilmsDirector(Principal) executed in 46914 ms
+2025-08-10 20:54:43 INFO  TimingLogger - Total request time for GET /Film/getAllFilms: 46926 ms
+2025-08-10 20:57:25 INFO  TimingLogger - Method Service List com.example.Service.MovieService.getAllMovie(Long) executed in 52745 ms
+2025-08-10 20:57:25 INFO  TimingLogger - Method ResponseEntity com.example.Controllers.MovieControllers.getAllFilmsDirector(Principal) executed in 52746 ms
+2025-08-10 20:57:25 INFO  TimingLogger - Total request time for GET /Film/getAllFilms: 52759 ms

@@ -32,6 +32,8 @@ public class TokenFilter extends OncePerRequestFilter {
     private final JwtCore jwtCore;
     private final UserCacheService userCacheService;
     private final CacheManager cacheManager;
+    private static final Logger timingLogger = LoggerFactory.getLogger("TimingLogger");
+
 
     public TokenFilter(@NonNull JwtCore jwtCore,
                        @NonNull UserCacheService userCacheService,
@@ -45,6 +47,8 @@ public class TokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
+        long startTime = System.currentTimeMillis();
         String path = request.getRequestURI();
 
         if (path.startsWith("/auth/") || path.startsWith("/oauth2/") || path.startsWith("/login/oauth2/") ||
@@ -128,6 +132,10 @@ public class TokenFilter extends OncePerRequestFilter {
         } catch (Exception ex) {
             log.error("TokenFilter error", ex);
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed");
+        } finally {
+            long totalTime = System.currentTimeMillis() - startTime;
+            timingLogger.info("Total request time for {} {}: {} ms",
+                    request.getMethod(), request.getRequestURI(), totalTime);
         }
     }
 }

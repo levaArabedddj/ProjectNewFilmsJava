@@ -11,9 +11,10 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class LoggingAspect {
-    private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
+    private static final Logger timingLogger = LoggerFactory.getLogger("TimingLogger");
 
-    @Around("execution(* com.example.oopkursova.Controllers.*.*(..))")
+
+    @Around("execution(* com.example.Controllers.*.*(..))")
     public Object logControllerMethodsExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
 
@@ -23,7 +24,24 @@ public class LoggingAspect {
         long endTime = System.currentTimeMillis();
         long executionTime = endTime - startTime;
 
-        logger.info("Method {} executed in {} ms", joinPoint.getSignature(), executionTime);
+        if(executionTime > 1){
+            long timeNanoSeconds = executionTime / 1000;
+        }
+
+        timingLogger.info("Method {} executed in {} ms", joinPoint.getSignature(), executionTime);
+        return result;
+    }
+
+    @Around("execution(* com.example.Service.*.*(..))")
+    public Object logMethodExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = System.currentTimeMillis();
+        Object result = joinPoint.proceed();
+        long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+        if(executionTime > 1){
+            long timeNanoSeconds = executionTime / 1000;
+        }
+        timingLogger.info("Method Service {} executed in {} ms", joinPoint.getSignature(), executionTime);
         return result;
     }
 

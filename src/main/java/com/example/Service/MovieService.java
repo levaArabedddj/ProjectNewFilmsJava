@@ -103,6 +103,7 @@ public class MovieService {
     private ObjectMapper objectMapper;
 
     @Cacheable(value = "movies", key = "#id")
+    @Loggable
     public String getCachedMovie(Long id) {
 //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //        Object principal = authentication.getPrincipal();
@@ -209,6 +210,7 @@ public class MovieService {
     }
 
 
+    @Loggable
     private DtoMovie convertToMovieDto(Movies movie){
 
         Set<DtoShootingDay> dtoShootingDays = movie.getShootingDays().stream()

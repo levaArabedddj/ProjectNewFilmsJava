@@ -27,14 +27,16 @@ public class MyUserDetailsService implements UserDetailsService {
     @Autowired
     private  DirectorProfilesRepo directorProfilesRepo;
 
+
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Users user = usersRepo.findByUserName(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
         return MyUserDetails.build(user); // Используем  кастомный метод build
     }
+
+
 
     /** Если есть пользователь с таким email (gmail), возвращаем его, иначе создаём новый. */
     @Transactional

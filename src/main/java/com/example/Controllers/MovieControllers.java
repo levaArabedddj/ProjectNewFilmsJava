@@ -328,8 +328,8 @@ public class MovieControllers {
     @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
     public ResponseEntity<String>getMovieById(@PathVariable Long movieId) {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        Long userId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
 
         String movies = movieService.getCachedMovie(movieId);
         return ResponseEntity.ok(movies);

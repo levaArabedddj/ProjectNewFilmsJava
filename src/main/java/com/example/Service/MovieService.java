@@ -104,18 +104,18 @@ public class MovieService {
 
     @Cacheable(value = "movies", key = "#id")
     public String getCachedMovie(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Object principal = authentication.getPrincipal();
-
-        if (!(principal instanceof MyUserDetails)) {
-            throw new AccessDeniedException("User not authenticated properly");
-        }
-
-        Long authenticatedUserId = ((MyUserDetails) principal).getUser_id();
-
-        if (!authenticatedUserId.equals(userId)) {
-            throw new AccessDeniedException("You are not authorized to access this resource");
-        }
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        Object principal = authentication.getPrincipal();
+//
+//        if (!(principal instanceof MyUserDetails)) {
+//            throw new AccessDeniedException("User not authenticated properly");
+//        }
+//
+//        Long authenticatedUserId = ((MyUserDetails) principal).getUser_id();
+//
+//        if (!authenticatedUserId.equals(userId)) {
+//            throw new AccessDeniedException("You are not authorized to access this resource");
+//        }
         long startService = System.nanoTime();
 
         Optional<Movies> movieOpt = moviesRepo.findById(id);
@@ -125,7 +125,7 @@ public class MovieService {
                 () -> new NoSuchElementException("Movie not found with id: " + id));
         long afterFetch = System.nanoTime();
 
-        // Маппинг в Dto — если он у вас иногда длинный
+        // Маппинг в Dto
         DtoMovie dto = convertToMovieDto(movie);
         long afterConvert = System.nanoTime();
 

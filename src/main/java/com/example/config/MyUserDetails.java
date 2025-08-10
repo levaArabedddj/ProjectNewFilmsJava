@@ -1,28 +1,42 @@
 package com.example.config;
 
+import com.example.DTO.UserCacheDTO;
 import com.example.Entity.Users;
 import com.example.Enum.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
-public class MyUserDetails implements UserDetails {
+public class MyUserDetails implements UserDetails, Serializable  {
 
     private long user_id;
     private String userName;
     private UserRole role;
     private String gmail;
+
     private String password;
 
-
+    public static MyUserDetails fromDTO(UserCacheDTO dto) {
+        return new MyUserDetails(
+                dto.getUserId(),
+                dto.getUsername(),
+                UserRole.valueOf(dto.getRole()),
+                dto.getGmail(),
+                dto.getPassword()
+        );
+    }
 
 
     public static MyUserDetails build(Users user) {
@@ -34,6 +48,8 @@ public class MyUserDetails implements UserDetails {
                 user.getGmail(),
                 user.getPassword());
     }
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));

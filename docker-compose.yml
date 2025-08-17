@@ -1,0 +1,64 @@
+#version: '3.7'
+#networks:
+#  elk:
+#    external: true
+#
+#services:
+#  logstash:
+#    image: docker.elastic.co/logstash/logstash:8.12.2
+#    container_name: logstash
+#    volumes:
+#      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+#    ports:
+#      - "5000:5000"
+#      - "5044:5044"
+#    environment:
+#      - ELASTICSEARCH_HOST=https://elasticsearch:9200
+#      - ELASTIC_USERNAME=elastic
+#      - ELASTIC_PASSWORD=DRfT6zWW4LiWUY5tmp3B
+#      - xpack.monitoring.enabled=false
+#    networks:
+#      - elk
+#
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:8.12.2
+#    container_name: kibana
+#    ports:
+#      - "5601:5601"
+#    environment:
+#      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+#      - ELASTICSEARCH_USERNAME=kibana_user
+#      - ELASTICSEARCH_PASSWORD=DRfT6zWW4LiWUY5tmp3B
+#      - ELASTICSEARCH_SSL_VERIFICATIONMODE=none
+#      - XPACK_ENCRYPTED_SAVED_OBJECTS_ENCRYPTIONKEY=NvHue08SJ3DBRo1cw7Mueox/NwLv4WUvdG4pSDgP7Pk=
+#    networks:
+#      - elk
+#
+#
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: my-film-project:latest
+    container_name: java-backend
+    env_file:
+      - .env
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmqFilm
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_DATA_REDIS_HOST: redis-container
+      SPRING_DATA_REDIS_PORT: 6379
+    ports:
+      - "5001:5001"
+    networks:
+     - film-project-network
+
+
+
+networks:
+  film-project-network:
+    external: true

@@ -67,8 +67,6 @@ public class MyUserDetailsService implements UserDetailsService {
                                     ? familyName
                                     : username
                     );
-                    // если есть @NotNull или @NotBlank на других полях —
-                    // заполните их либо дефолтными значениями
                     profiles.setGender(null);
                     profiles.setPhoneNumber(null);
                     DirectorProfiles savedProfiles = directorProfilesRepo.save(profiles);

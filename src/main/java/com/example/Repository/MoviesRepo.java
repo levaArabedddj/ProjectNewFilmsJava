@@ -3,7 +3,6 @@ package com.example.Repository;
 
 import com.example.Entity.Director;
 import com.example.Entity.Movies;
-import com.example.Entity.filmTeamUser;
 import com.example.loger.Loggable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -57,4 +56,5 @@ public interface MoviesRepo extends JpaRepository<Movies, Long> {
             "WHERE m.id = :id")
     Optional<Movies> findByIdWithDetails(@Param("id") Long id);
 
+    long deleteAllByTitleStartingWith(String title);
 }

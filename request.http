@@ -1,0 +1,41 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+###
+GET http://localhost:5001/actuator/metrics
+###
+GET http://localhost:5001/actuator/scheduledtasks
+###
+GET http://localhost:5001/actuator/prometheus
+###
+http://localhost:5001/actuator/metrics/jvm.memory.used
+###
+GET http://localhost:5001/actuator/metrics/jvm.memory.used?tag=area:heap
+###
+http://localhost:5001/actuator/metrics/jvm.memory.usage.after.gc
+###
+http://localhost:5001/actuator/metrics/http.server.requests?tag=uri:/Film/getMovieById/{movieId}
+###
+http://localhost:5001/actuator/metrics/film.memory.used.heap
+###
+http://localhost:5001/actuator/metrics/film.thread.live
+###
+http://localhost:5001/actuator/metrics/film.getMovieById
+###
+http://localhost:5001/actuator/metrics/film.gc.pause.G1 Concurrent GC
+###
+
+http://localhost:5001/actuator/metrics/film.gc.pause.G1 Old Generation
+###
+http://localhost:5001/actuator/metrics/film.gc.pause.G1 Young Generation
+###
+http://localhost:5001/actuator/metrics/film.memory.heap.nonheap
+###
+http://localhost:5001/actuator/metrics/film.memory.used.heap
+###
+http://localhost:5001/actuator/metrics/film.thread.daemon
+###
+http://localhost:5001/actuator/metrics/film.thread.live
+###
+
+###

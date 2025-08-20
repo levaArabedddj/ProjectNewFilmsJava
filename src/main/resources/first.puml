@@ -1,0 +1,62 @@
+@startuml
+
+' Классы
+class DirectorProfiles {
+    +Long id
+    +int experienceYears
+    +String firstName
+    +String lastName
+    +Gender gender
+    +String phoneNumber
+    +String biography
+    +String mainGenre
+    +String famousWorks
+    +String education
+    +String awards
+    +String linkedinUrl
+    +String imdbProfileUrl
+    +String portfolioUrl
+    +String language
+    +String profilePhotoUrl
+}
+
+class Director {
+    +long id
+    +String name
+    +String surName
+}
+
+class Users {
+    +long user_id
+    +String gmail
+    +String password
+    +String userName
+    +UserRole role
+}
+
+class Movies {
+    +long id
+    +String title
+    +String description
+    +Genre genre_film
+    +LocalDateTime dateTimeCreated
+    +DevelopmentStage developmentStage
+}
+
+' Связи
+DirectorProfiles "1" -- "1" Director : has
+Director "1" -- "1" Users : account
+Director "1" -- "0..*" Movies : creates
+
+Users "0..1" -- "1" Actors : actorProfile
+Users "0..1" -- "1" FilmCrewMembers : crewProfile
+Users "0..*" -- "1" MovieRental : rentals
+Users "0..*" -- "1" TrialParticipants : trials
+
+Movies "1" -- "0..*" ShootingDay : shootingDays
+Movies "0..1" -- "1" Script : script
+Movies "0..1" -- "1" Finance : finance
+Movies "0..*" -- "1" Castings : castings
+Movies "0..*" -- "1" Trial_Shootings : trialShootings
+
+@enduml

@@ -1,9 +1,7 @@
 package com.example.Service;
 
 
-import com.example.Entity.Users;
 import com.example.Repository.UsersRepo;
-import com.example.loger.Loggable;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -20,6 +20,7 @@ import com.example.Repository.UsersRepo;
 import com.example.Service.MovieService;
 import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
+import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -326,6 +327,7 @@ public class MovieControllers {
 
     @GetMapping("/getMovieById/{movieId}")
     @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    @Timed(value = "film.getMovieById", description = "Time taken to get movie by id")
     public ResponseEntity<String>getMovieById(@PathVariable Long movieId) {
 
 //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

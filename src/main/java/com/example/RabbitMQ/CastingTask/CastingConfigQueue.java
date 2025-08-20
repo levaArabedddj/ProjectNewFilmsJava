@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,15 +34,16 @@ public class CastingConfigQueue {
                 .with("casting.application");
     }
 
-    @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+    @Bean()
+    @ConditionalOnMissingBean(name = "rabbitTemplate")
+    public RabbitTemplate rabbitTemplateCasting(ConnectionFactory connectionFactory) {
         RabbitTemplate t = new RabbitTemplate(connectionFactory);
         t.setMessageConverter(new Jackson2JsonMessageConverter());
         return t;
     }
 
     @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactoryCasting(ConnectionFactory connectionFactory) {
         SimpleRabbitListenerContainerFactory f = new SimpleRabbitListenerContainerFactory();
         f.setConnectionFactory(connectionFactory);
         f.setMessageConverter(new Jackson2JsonMessageConverter());

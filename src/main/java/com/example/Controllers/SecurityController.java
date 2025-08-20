@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -166,29 +165,29 @@ public class SecurityController {
         return ResponseEntity.ok(jwt);
     }
 
-    //Метод логина для андроид приложения , вместо строки возвращаем json
-    @PostMapping("/signinn")
-    public ResponseEntity<?> signinn(@RequestBody SigninRequest signinRequest) {
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            signinRequest.getUserName(),
-                            signinRequest.getPassword()
-                    )
-            );
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"error\": \"" + e.getMessage() + "\"}");
-        }
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtCore.generateToken(authentication);
-
-        // Оборачиваем токен в JSON-объект
-        Map<String, String> response = new HashMap<>();
-        response.put("token", jwt);
-        return ResponseEntity.ok(response);
-    }
+//    //Метод логина для андроид приложения , вместо строки возвращаем json
+//    @PostMapping("/signinn")
+//    public ResponseEntity<?> signinn(@RequestBody SigninRequest signinRequest) {
+//        Authentication authentication;
+//        try {
+//            authentication = authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(
+//                            signinRequest.getUserName(),
+//                            signinRequest.getPassword()
+//                    )
+//            );
+//        } catch (BadCredentialsException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"error\": \"" + e.getMessage() + "\"}");
+//        }
+//
+//        SecurityContextHolder.getContext().setAuthentication(authentication);
+//        String jwt = jwtCore.generateToken(authentication);
+//
+//        // Оборачиваем токен в JSON-объект
+//        Map<String, String> response = new HashMap<>();
+//        response.put("token", jwt);
+//        return ResponseEntity.ok(response);
+//    }
 
 
     @Transactional
@@ -226,68 +225,17 @@ public class SecurityController {
         System.out.println(user);
         switch (signupRequest.getRole()) {
             case ACTOR:
-                Actors actor = new Actors();
-                actor.setUser(user);
-                actor.setName(signupRequest.getName());
-                actor.setSurName(signupRequest.getSurName());
-                actorRepo.save(actor);
-
-                ActorProfiles actorProfile = new ActorProfiles();
-                actorProfile.setGender(signupRequest.getGender());
-                actorProfile.setGmail(signupRequest.getGmail());
-                actorProfile.setNumberPhone(signupRequest.getPhone());
-                actorProfile.setActors(actor);
-                actorProfilesRepository.save(actorProfile);
-                System.out.println(user);
-
-                ActorDocument actorDocument = actorService.mapToElastic(actor,user,actorProfile);
-                actorService.indexActor(actorDocument);
-
+                registerActorMethod(signupRequest, user);
                 break;
             case CREW_MEMBER:
-                FilmCrewMembers crewMembers = new FilmCrewMembers();
-                crewMembers.setUser(user);
-                crewMembers.setName(signupRequest.getName());
-                crewMembers.setSurName(signupRequest.getSurName());
-                crewMemberRepo.save(crewMembers);
-
-                CrewMemberProfiles crewMemberProfiles = new CrewMemberProfiles();
-                crewMemberProfiles.setGender(signupRequest.getGender());
-                crewMemberProfiles.setGmail(signupRequest.getGmail());
-                crewMemberProfiles.setNumberPhone(signupRequest.getPhone());
-                crewMemberProfiles.setCrewMembers(crewMembers);
-                crewMemberProfilesRepo.save(crewMemberProfiles);
-                CrewMemberDocument crewMemberDocument = service.mapToElastic(crewMembers,user,crewMemberProfiles);
-                service.indexCrewMember(crewMemberDocument);
-
+                registerMethodCrewMember(signupRequest, user);
                 break;
-            case DIRECTOR:
-
-                DirectorProfiles profiles = new DirectorProfiles();
-                profiles.setFirstName(signupRequest.getName());
-                profiles.setLastName(signupRequest.getSurName());
-                profiles.setGender(signupRequest.getGender());
-                profiles.setPhoneNumber(signupRequest.getPhone());
-                profiles = directorProfilesRepo.save(profiles);
-
-
-                Director director = new Director();
-                director.setUsers(user);
-                director.setName(signupRequest.getName());
-                director.setSurName(signupRequest.getSurName());
-                director.setDirectorProfiles(profiles);
-                directorRepo.save(director);
+            case DIRECTOR: 
+                registerDirector(signupRequest, user);
                 break;
-                // прописать условие когда будет создаваться админ
-
+            // прописать условие когда будет создаваться админ
             case VISITOR:
-
-                Visitor visitor = new Visitor();
-                visitor.setUser(user);
-                visitor.setSubscriptionLevel(SubscriptionLevelVisitor.FREE);
-                visitor.setBalance(BigDecimal.ZERO);
-
-                visitorRepo.save(visitor);
+                registerVisitorMethod(user);
                 break;
         }
 
@@ -301,6 +249,68 @@ public class SecurityController {
         String jwt = jwtCore.generateToken(authentication);
 
         return ResponseEntity.ok(jwt);
+    }
+
+    private void registerVisitorMethod(Users user) {
+        Visitor visitor = new Visitor();
+        visitor.setUser(user);
+        visitor.setSubscriptionLevel(SubscriptionLevelVisitor.FREE);
+        visitor.setBalance(BigDecimal.ZERO);
+
+        visitorRepo.save(visitor);
+    }
+
+    private void registerDirector(SignupRequest signupRequest, Users user) {
+        DirectorProfiles profiles = new DirectorProfiles();
+        profiles.setFirstName(signupRequest.getName());
+        profiles.setLastName(signupRequest.getSurName());
+        profiles.setGender(signupRequest.getGender());
+        profiles.setPhoneNumber(signupRequest.getPhone());
+        profiles = directorProfilesRepo.save(profiles);
+
+
+        Director director = new Director();
+        director.setUsers(user);
+        director.setName(signupRequest.getName());
+        director.setSurName(signupRequest.getSurName());
+        director.setDirectorProfiles(profiles);
+        directorRepo.save(director);
+    }
+
+    private void registerMethodCrewMember(SignupRequest signupRequest, Users user) {
+        FilmCrewMembers crewMembers = new FilmCrewMembers();
+        crewMembers.setUser(user);
+        crewMembers.setName(signupRequest.getName());
+        crewMembers.setSurName(signupRequest.getSurName());
+        crewMemberRepo.save(crewMembers);
+
+        CrewMemberProfiles crewMemberProfiles = new CrewMemberProfiles();
+        crewMemberProfiles.setGender(signupRequest.getGender());
+        crewMemberProfiles.setGmail(signupRequest.getGmail());
+        crewMemberProfiles.setNumberPhone(signupRequest.getPhone());
+        crewMemberProfiles.setCrewMembers(crewMembers);
+        crewMemberProfilesRepo.save(crewMemberProfiles);
+        CrewMemberDocument crewMemberDocument = service.mapToElastic(crewMembers, user,crewMemberProfiles);
+        service.indexCrewMember(crewMemberDocument);
+    }
+
+    private void registerActorMethod(SignupRequest signupRequest, Users user) {
+        Actors actor = new Actors();
+        actor.setUser(user);
+        actor.setName(signupRequest.getName());
+        actor.setSurName(signupRequest.getSurName());
+        actorRepo.save(actor);
+
+        ActorProfiles actorProfile = new ActorProfiles();
+        actorProfile.setGender(signupRequest.getGender());
+        actorProfile.setGmail(signupRequest.getGmail());
+        actorProfile.setNumberPhone(signupRequest.getPhone());
+        actorProfile.setActors(actor);
+        actorProfilesRepository.save(actorProfile);
+        System.out.println(user);
+
+        ActorDocument actorDocument = actorService.mapToElastic(actor, user,actorProfile);
+        actorService.indexActor(actorDocument);
     }
 
 

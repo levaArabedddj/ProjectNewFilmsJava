@@ -24,6 +24,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
 @Component
 public class TokenFilter extends OncePerRequestFilter {
 
@@ -51,7 +54,9 @@ public class TokenFilter extends OncePerRequestFilter {
         long startTime = System.currentTimeMillis();
         String path = request.getRequestURI();
 
-        if (path.startsWith("/auth/") || path.startsWith("/oauth2/") || path.startsWith("/login/oauth2/") ||
+        if (path.startsWith("/auth/") || path.startsWith("/oauth2/") ||
+                path.startsWith("/login/oauth2/") || path.contains("/actuator")||
+                path.startsWith("/actuator")||
                 "OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;

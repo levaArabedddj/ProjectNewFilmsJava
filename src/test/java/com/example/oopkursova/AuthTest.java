@@ -10,6 +10,7 @@ import com.example.Enum.UserRole;
 import com.example.Repository.*;
 import com.example.Service.CrewMemberService;
 import com.example.Service.SenderService;
+import com.example.Service.UserCacheService;
 import com.example.config.JwtCore;
 import com.example.config.MyUserDetailsService;
 import com.example.config.SignupRequest;
@@ -80,6 +81,9 @@ public class AuthTest {
     private VisitorRepo visitorRepo;
     @Autowired
     ObjectMapper objectMapper;
+
+    @MockBean
+    private UserCacheService userCacheService;
 
     @MockBean private AdminRepo adminRepo;
 

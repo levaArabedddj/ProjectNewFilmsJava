@@ -3,12 +3,12 @@ package com.example.Service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.example.DTO.DtoFinance;
 import com.example.DTO.DtoMovie;
 import com.example.DTO.DtoScript;
 import com.example.DTO.DtoShootingDay;
 import com.example.ElasticSearch.ClassDocuments.MovieDocument;
-
 import com.example.ElasticSearch.Service.MovieElasticService;
 import com.example.Entity.Director;
 import com.example.Entity.Movies;
@@ -21,8 +21,6 @@ import com.example.Repository.UsersRepo;
 import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +30,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import co.elastic.clients.elasticsearch.core.search.Hit;
 
 import java.io.IOException;
 import java.util.*;
@@ -45,7 +42,7 @@ public class MovieService {
     /* 1. Добавить возможность к фильму создать трейлер и опубликовать его */
 
 
-//    private final MovieElasticRepo movieElasticRepo;
+    //    private final MovieElasticRepo movieElasticRepo;
     private final MoviesRepo moviesRepo;
 
     private final UsersRepo usersRepo;
@@ -57,7 +54,7 @@ public class MovieService {
     private ElasticsearchClient elasticsearchClient;
 
     @Autowired
-    ObjectMapper mapper ;
+    ObjectMapper mapper;
 
     private static final int TTL = 3600;
 
@@ -74,9 +71,9 @@ public class MovieService {
     @Loggable
     public List<DtoMovie> findById(Long id, Long userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
+        Long userAuthenticationId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
 
-        if (!authenticatedUserId.equals(userId)) {
+        if (!userAuthenticationId.equals(userId)) {
             throw new AccessDeniedException("You are not authorized to access this resource");
         }
 
@@ -90,9 +87,8 @@ public class MovieService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
 
-        if (!authenticatedUserId.equals(userId)) {
+        if (!authenticatedUserId.equals(userId))
             throw new AccessDeniedException("You are not authorized to access this resource");
-        }
 
         // Получаем DTO из кеша или из базы (если нет в кеше)
         DtoMovie dtoMovie = loadMovieDtoById(id);
@@ -141,8 +137,8 @@ public class MovieService {
 
         log.info("TIMING — service total: {} ms; repo: {} ms; convert: {} ms; serialize: {} ms",
                 (afterSerialize - startService) / 1_000_000,
-                (afterRepo      - startService) / 1_000_000,
-                (afterConvert   - afterFetch)   / 1_000_000,
+                (afterRepo - startService) / 1_000_000,
+                (afterConvert - afterFetch) / 1_000_000,
                 (afterSerialize - afterConvert) / 1_000_000
         );
 
@@ -150,16 +146,13 @@ public class MovieService {
     }
 
 
-
-
-
-
     @Loggable
     public void save(Movies movie) {
         moviesRepo.save(movie);
     }
+
     @Loggable
-    public Movies createdMovies(Movies movies){
+    public Movies createdMovies(Movies movies) {
         return moviesRepo.save(movies);
     }
 
@@ -169,7 +162,7 @@ public class MovieService {
     }
 
     @Loggable
-    public void deleteMovie(Long id ){
+    public void deleteMovie(Long id) {
         moviesRepo.deleteById(id);
     }
 
@@ -211,18 +204,18 @@ public class MovieService {
 
 
     @Loggable
-    private DtoMovie convertToMovieDto(Movies movie){
+    private DtoMovie convertToMovieDto(Movies movie) {
 
         Set<DtoShootingDay> dtoShootingDays = movie.getShootingDays().stream()
                 .map(shootingDay -> new DtoShootingDay(shootingDay.getId(), shootingDay.getShootingDate(), shootingDay.getShootingTime(), shootingDay.getShootingLocation(), shootingDay.getEstimatedDurationHours()))
                 .collect(Collectors.toSet());
 
         DtoScript dtoScript = new DtoScript();
-        if(movie.getScript() != null) {
-            dtoScript.setContent(movie.getScript().getContent());
-        }
+        if (movie.getScript() != null) dtoScript.setContent(movie.getScript().getContent());
+
+
         DtoFinance dtoFinance = new DtoFinance();
-        if(movie.getFilmFinance() != null) {
+        if (movie.getFilmFinance() != null) {
             dtoFinance.setId(movie.getFilmFinance().getId());
             dtoFinance.setBudget(movie.getFilmFinance().getBudget());
             dtoFinance.setActorsSalary(movie.getFilmFinance().getActorsSalary());
@@ -284,32 +277,31 @@ public class MovieService {
         Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
 
 
-        if(!authenticatedUserId.equals(userId)) {
+        if (!authenticatedUserId.equals(userId))
             throw new AccessDeniedException("You are not authorized to access this resource");
-        }
 
         Optional<Director> director = directorRepo.findByUserUserId(userId);
 
-            Director director1 = director.get();
-            System.out.println("Found director " + director1.getId());
+        Director director1 = director.get();
+        System.out.println("Found director " + director1.getId());
 
-            List<Movies> movies = directorRepo.findMoviesByDirectorId(director1.getId());
+        List<Movies> movies = directorRepo.findMoviesByDirectorId(director1.getId());
 
-            if (movies == null || movies.isEmpty()) {
-                System.out.println("film not found");
-                return Collections.emptyList();
-            }
+        if (movies == null || movies.isEmpty()) {
+            System.out.println("film not found");
+            return Collections.emptyList();
+        }
 
-            return movies.stream()
-                    .map(this::convertToDtoMovie)
-                    .collect(Collectors.toList());
+        return movies.stream()
+                .map(this::convertToDtoMovie)
+                .collect(Collectors.toList());
 
     }
 
     private DtoMovie convertToDtoMovie(Movies movies) {
 
         return new DtoMovie(movies.getId(),
-                movies.getTitle(),movies.getDescription(),
+                movies.getTitle(), movies.getDescription(),
                 movies.getGenre_film());
     }
 
@@ -324,9 +316,7 @@ public class MovieService {
                 .orElseThrow(() -> new ApiException("You are not a director"));
 
         Optional<Movies> existingMovie = moviesRepo.findByTitle(movies.getTitle());
-        if (existingMovie.isPresent()) {
-            throw new ApiException("Film already exists");
-        }
+        if (existingMovie.isPresent()) throw new ApiException("Film already exists");
 
         Movies newMovie = new Movies();
         newMovie.setTitle(movies.getTitle());
@@ -352,6 +342,7 @@ public class MovieService {
 
         return dtoMovie;
     }
+
     @Cacheable(value = "movies", key = "#id")
     public DtoMovie loadMovieDtoById(Long id) {
         // Метод загружает DTO из базы и мапит его (без проверки прав)

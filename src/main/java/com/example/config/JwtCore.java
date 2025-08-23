@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.stream.Collectors;
 
@@ -55,8 +57,9 @@ public class JwtCore {
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))
                 .claim("userId", user.getUser_id())
+                .claim("gmail", user.getGmail())
                 .setIssuedAt(now)
-                .setExpiration(exp)
+                .setExpiration(Date.from(Instant.now().plus(15, ChronoUnit.MINUTES)))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }

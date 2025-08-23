@@ -9,6 +9,9 @@ import com.example.Enum.UserRole;
 import com.example.Repository.DirectorProfilesRepo;
 import com.example.Repository.DirectorRepo;
 import com.example.Repository.UsersRepo;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +30,29 @@ public class MyUserDetailsService implements UserDetailsService {
     @Autowired
     private  DirectorProfilesRepo directorProfilesRepo;
 
+    @Autowired
+    private  MeterRegistry meterRegistry;
+    private Counter loadUserByUsernameCounter;
+    private Counter findOrCreateByEmailLookupCounter;
+    private Counter findOrCreateByEmailCreateCounter;
+    private Counter findOrCreateByEmailUsersSaveCounter;
+    private Counter findOrCreateByEmailProfilesSaveCounter;
+    private Counter findOrCreateByEmailDirectorSaveCounter;
+
+    @PostConstruct
+    public void initCounters() {
+        this.loadUserByUsernameCounter = meterRegistry.counter("db.calls.loadUserByUsername");
+        this.findOrCreateByEmailLookupCounter = meterRegistry.counter("db.calls.findOrCreateByEmail.lookup");
+        this.findOrCreateByEmailCreateCounter = meterRegistry.counter("db.calls.findOrCreateByEmail.create");
+        this.findOrCreateByEmailUsersSaveCounter = meterRegistry.counter("db.calls.findOrCreateByEmail.save.users");
+        this.findOrCreateByEmailProfilesSaveCounter = meterRegistry.counter("db.calls.findOrCreateByEmail.save.profiles");
+        this.findOrCreateByEmailDirectorSaveCounter = meterRegistry.counter("db.calls.findOrCreateByEmail.save.director");
+    }
 
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        loadUserByUsernameCounter.increment();
         Users user = usersRepo.findByUserName(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return MyUserDetails.build(user); // Используем  кастомный метод build

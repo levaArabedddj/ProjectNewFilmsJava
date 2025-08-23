@@ -37,5 +37,5 @@ http://localhost:5001/actuator/metrics/film.thread.daemon
 ###
 http://localhost:5001/actuator/metrics/film.thread.live
 ###
-
+http://localhost:5001/actuator/metrics/db.calls.loadUserByUsername
 ###

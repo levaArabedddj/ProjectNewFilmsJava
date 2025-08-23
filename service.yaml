@@ -9,7 +9,8 @@ spec:
   ports:
     - protocol: TCP
       name: http-traffic
-      port: 8080
+      port: 5001
       targetPort: 5001
+      nodePort: 30080
 
   

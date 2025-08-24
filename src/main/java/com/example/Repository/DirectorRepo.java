@@ -23,4 +23,7 @@ public interface DirectorRepo extends JpaRepository<Director, Long> {
 
     @Query("select mov from Movies mov where mov.director.id = :directorId")
     List<Movies> findMoviesByDirectorId(Long directorId);
+
+    @Query("select d.id from Director d where d.users.user_id = :userId")
+    Optional<Long> findIdBuUserId(@Param("userId") Long userId);
 }

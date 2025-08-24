@@ -100,7 +100,7 @@ public class shootingDayController {
             event.setShootingDate(newShootingDay.getShootingDate());
             event.setShootingTime(newShootingDay.getShootingTime());
             event.setLocation(newShootingDay.getShootingLocation());
-            shootingDayEventPublisher.publish(event,shootingDay.getShootingTime(), shootingDay.getShootingDate(), shootingDay.getShootingLocation()); // << отправка в RabbitMQ
+          shootingDayEventPublisher.publish(event,shootingDay.getShootingTime(), shootingDay.getShootingDate(), shootingDay.getShootingLocation()); // << отправка в RabbitMQ
 
             return ResponseEntity.ok(event);
         } catch (ApiException e) {

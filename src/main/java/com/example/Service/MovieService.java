@@ -273,9 +273,8 @@ public class MovieService {
 
     public List<DtoMovie> getAllMovie(Long userId) {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long authenticatedUserId = ((MyUserDetails) authentication.getPrincipal()).getUser_id();
-
+        Long authenticatedUserId = ((MyUserDetails) SecurityContextHolder.getContext().
+                getAuthentication().getPrincipal()).getUser_id();
 
         if (!authenticatedUserId.equals(userId))
             throw new AccessDeniedException("You are not authorized to access this resource");

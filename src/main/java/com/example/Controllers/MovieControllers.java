@@ -21,6 +21,8 @@ import com.example.Service.MovieService;
 import com.example.config.MyUserDetails;
 import com.example.loger.Loggable;
 import io.micrometer.core.annotation.Timed;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +41,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/Film")
@@ -51,6 +54,8 @@ public class MovieControllers {
     @Autowired
     private UsersRepo usersRepo;
 
+    @Autowired
+    private EntityManager entityManager;
     private static final Logger logger = LoggerFactory.getLogger(MovieControllers.class);
 
 
@@ -85,32 +90,29 @@ public class MovieControllers {
             // 1) Получаем userId
             Long userId = currentUser.getUser_id();
 
-            // 2) Загружаем юзера из БД
-            Users user = usersRepo.findById(userId)
-                    .orElseThrow(() -> new ApiException("User not found"));
-
-            // 3) Ищем профиль режиссёра
-            Director director = directorRepo.findByUsers(user)
+            // 2) Ищем профиль режиссёра
+            Long directorId = directorRepo.findIdBuUserId(userId)
                     .orElseThrow(() -> new ApiException("You are not a director"));
+            Director directorRef = entityManager.getReference(Director.class, directorId);
 
-            // 4) Проверяем, не существует ли фильм с таким же названием
-            Optional<Movies> existingMovie = moviesRepo.findByTitle(movies.getTitle());
-            if (existingMovie.isPresent()) {
-                throw new ApiException("Film already exists");
+            // 3) Проверяем, не существует ли фильм с таким же названием
+
+            if(moviesRepo.existsByTitle(movies.getTitle())) {
+                throw new ApiException("Title already exists");
             }
 
-            // 5) Создаём новую сущность фильма
+            // 4) Создаём новую сущность фильма
             Movies newMovie = new Movies();
             newMovie.setTitle(movies.getTitle());
             newMovie.setDescription(movies.getDescription());
             newMovie.setGenre_film(movies.getGenre_film());
             newMovie.setDevelopmentStage(DevelopmentStage.CONCEPT);
-            newMovie.setDirector(director);
+            newMovie.setDirector(directorRef);
 
-            // 6) Сохраняем в БД
+            // 5) Сохраняем в БД
             moviesRepo.save(newMovie);
 
-            // 7) Индексируем в Elasticsearch, но сначала в RabbitMQ
+            // 6) Индексируем в Elasticsearch, но сначала в RabbitMQ
             MovieCreatedEvent evt = new MovieCreatedEvent(
                     newMovie.getId(),
                     newMovie.getTitle(),
@@ -132,9 +134,8 @@ public class MovieControllers {
             dtoMovie.setGenre_film(Genre.valueOf(String.valueOf(newMovie.getGenre_film())));
             dtoMovie.setDateTimeCreated(newMovie.getDateTimeCreated());
 
-
             // 9) Возвращаем результат
-            return ResponseEntity.ok(dtoMovie);
+            return ResponseEntity.ok("Фильм создан");
 
         } catch (ApiException e) {
             logger.error("API error in createFilm: {}", e.getMessage());
@@ -148,8 +149,60 @@ public class MovieControllers {
     }
 
 
+    @Loggable
+    @PostMapping("/create_movie_async")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<?> createFilmAsync(
+            @Valid @RequestBody Movies movies,
+            @AuthenticationPrincipal MyUserDetails currentUser
+    ) {
 
+        Long userId = currentUser.getUser_id();
+        if(moviesRepo.existsByTitle(movies.getTitle())) {
+            throw new ApiException("Title already exists");
+        }
 
+        CompletableFuture.runAsync(()-> AsyncCreateMovie(movies, userId));
+
+            return ResponseEntity.
+                    accepted().
+                    body("Фильм ставится в очередь на создание");
+    }
+
+    @Transactional
+    public void AsyncCreateMovie(Movies movies, Long userId) {
+        // 2) Ищем профиль режиссёра
+        Long directorId = directorRepo.findIdBuUserId(userId)
+                .orElseThrow(() -> new ApiException("You are not a director"));
+        Director directorRef = entityManager.getReference(Director.class, directorId);
+
+        // 3) Проверяем, не существует ли фильм с таким же названием
+
+        // 4) Создаём новую сущность фильма
+        Movies newMovie = new Movies();
+        newMovie.setTitle(movies.getTitle());
+        newMovie.setDescription(movies.getDescription());
+        newMovie.setGenre_film(movies.getGenre_film());
+        newMovie.setDevelopmentStage(DevelopmentStage.CONCEPT);
+        newMovie.setDirector(directorRef);
+
+        // 5) Сохраняем в БД
+        moviesRepo.save(newMovie);
+
+        // 6) Индексируем в Elasticsearch, но сначала в RabbitMQ
+        MovieCreatedEvent evt = new MovieCreatedEvent(
+                newMovie.getId(),
+                newMovie.getTitle(),
+                newMovie.getDescription(),
+                newMovie.getGenre_film().name()
+        );
+        rabbitTemplate.convertAndSend(
+                ElasticConfigQueue.INDEX_EXCHANGE,
+                "movies.created",
+                evt
+        );
+        logger.info(" опубликован  MovieCreatedEvent в RabbitMQ: {}", evt);
+    }
 
 
     @Loggable

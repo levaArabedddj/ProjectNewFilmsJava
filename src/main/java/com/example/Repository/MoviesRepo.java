@@ -26,6 +26,8 @@ public interface MoviesRepo extends JpaRepository<Movies, Long> {
 
     Optional<Movies> findByTitle(String title);
 
+    boolean existsByTitle(String title);
+
     List<Movies> findByDirector(Director director);
 
     @Query("SELECT COUNT(m) > 0 FROM Movies m WHERE m.id = :id AND m.director.users.userName = :name")
@@ -57,4 +59,12 @@ public interface MoviesRepo extends JpaRepository<Movies, Long> {
     Optional<Movies> findByIdWithDetails(@Param("id") Long id);
 
     long deleteAllByTitleStartingWith(String title);
+
+    @Query("SELECT m FROM Movies m " +
+            "LEFT JOIN FETCH m.shootingDays " +
+            "LEFT JOIN FETCH m.script " +
+            "LEFT JOIN FETCH m.filmFinance " +
+            "WHERE m.id = :id")
+    Movies findByIdWithAll(@Param("id") Long id);
+
 }

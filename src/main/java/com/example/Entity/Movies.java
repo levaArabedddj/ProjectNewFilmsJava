@@ -6,14 +6,17 @@ import com.example.Enum.Genre;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table
 public class Movies {
@@ -54,7 +57,7 @@ public class Movies {
 
     private LocalDateTime dateTimeCreated;
 
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.LAZY)
     private Set<ShootingDay> shootingDays;
 
     @OneToOne(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -65,12 +68,12 @@ public class Movies {
     @Column(name = "development_stage", nullable = false)
     private DevelopmentStage developmentStage;
 
-    @OneToOne(mappedBy = "movie", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "movie", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Finance filmFinance;
 
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true , fetch = FetchType.LAZY)
     private List<Castings> castings;
-    @OneToMany(mappedBy = "movies", cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "movies", cascade = CascadeType.ALL, orphanRemoval = true , fetch = FetchType.LAZY)
     private List<Trial_Shootings> trial_Shootings;
 
     @PrePersist
@@ -90,14 +93,14 @@ public class Movies {
         return result;
     }
 
-    @Override
-    public String toString() {
-        return "Movies{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", genre='" + genre_film + '\'' +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "Movies{" +
+//                "id=" + id +
+//                ", title='" + title + '\'' +
+//                ", description='" + description + '\'' +
+//                ", genre='" + genre_film + '\'' +
+//                '}';
+//    }
 
 }

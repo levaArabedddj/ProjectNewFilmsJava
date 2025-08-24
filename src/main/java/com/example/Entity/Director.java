@@ -1,11 +1,14 @@
 package com.example.Entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
 @Table(name = "Director")
-@Data
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Director {
 
     @Id
@@ -14,11 +17,11 @@ public class Director {
     private String name;
     private String surName;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", unique = true, nullable = false)
     private Users users;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_id", unique = true, nullable = false)
     private DirectorProfiles directorProfiles;
 }

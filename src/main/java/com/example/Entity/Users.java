@@ -4,15 +4,16 @@ package com.example.Entity;
 
 import com.example.Enum.UserRole;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.List;
 
-@Data
+@Setter
 @Getter
 @Entity
 @Table(name = "Users")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,10 +33,10 @@ public class Users {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private FilmCrewMembers filmCrewMembers;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY )
     private List<MovieRental> movieRentals;
 
-    @OneToMany(mappedBy = "actors", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "actors", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY )
     private List<TrialParticipants> trialParticipants;
 
 

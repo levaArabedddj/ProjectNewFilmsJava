@@ -12,6 +12,7 @@ import com.example.Entity.Users;
 import com.example.Enum.DevelopmentStage;
 import com.example.Enum.Genre;
 import com.example.Exception.ApiException;
+import com.example.RabbitMQ.DtoRabbitMQ.MovieDtoRM;
 import com.example.RabbitMQ.ElasticTask.ElasticConfigQueue;
 import com.example.RabbitMQ.ElasticTask.UpdateFilmConfigQueue;
 import com.example.Repository.DirectorRepo;
@@ -40,6 +41,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -57,8 +59,9 @@ public class MovieControllers {
     @Autowired
     private EntityManager entityManager;
     private static final Logger logger = LoggerFactory.getLogger(MovieControllers.class);
+   // private final FilmEventPublisher publisher;
 
-
+    private final RabbitTemplate rabbitTemplate;
     // Добавить в контролеры проверку что юзер может изменять текущие
     // фильм и проверять что авторизованный юзер именно тот за кого себя выдает
 
@@ -68,15 +71,16 @@ public class MovieControllers {
     private final MovieElasticService movieElasticService;
 
 
-    private final RabbitTemplate rabbitTemplate;
+
     @Autowired
-    public MovieControllers(MoviesRepo moviesRepo, MovieService movieService, DirectorRepo directorRepo, ElasticsearchClient elasticsearchClient, MovieElasticService movieElasticService, RabbitTemplate rabbitTemplate) {
+    public MovieControllers(MoviesRepo moviesRepo, MovieService movieService, DirectorRepo directorRepo, RabbitTemplate rabbitTemplate, ElasticsearchClient elasticsearchClient, MovieElasticService movieElasticService) {
         this.moviesRepo = moviesRepo;
         this.movieService = movieService;
         this.directorRepo = directorRepo;
+//        this.publisher = publisher;
+        this.rabbitTemplate = rabbitTemplate;
         this.elasticsearchClient = elasticsearchClient;
         this.movieElasticService = movieElasticService;
-        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Loggable
@@ -203,7 +207,32 @@ public class MovieControllers {
         );
         logger.info(" опубликован  MovieCreatedEvent в RabbitMQ: {}", evt);
     }
+    @Loggable
+    @PostMapping("/create_movie_mq")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<?> createMovieMq(@Valid @RequestBody Movies movies,
+                                           @AuthenticationPrincipal MyUserDetails userDetails){
+        Long userId = userDetails.getUser_id();
+        String email = userDetails.getGmail();
+        if(moviesRepo.existsByTitle(movies.getTitle())) {
+            throw new ApiException("Title already exists");
+        }
 
+        MovieDtoRM dto = new MovieDtoRM(
+        );
+        dto.setTitle(movies.getTitle());
+        dto.setDescription(movies.getDescription());
+        dto.setGenreFilm(movies.getGenre_film());
+        dto.setUserId(userId);
+        dto.setEmail(email);
+
+
+      CompletableFuture.runAsync( ()-> {rabbitTemplate.convertAndSend("filmCreateExchange","filmcreate.binding",dto);}); // пусть так разницы в производительности и так нету
+
+        return ResponseEntity.accepted().body(Map.of("status","accepted",
+                "message","Movie creation in progress"));
+
+    }
 
     @Loggable
     @GetMapping("/movie_details")

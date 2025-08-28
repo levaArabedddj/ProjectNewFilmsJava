@@ -1,5 +1,6 @@
-package org.example.servicefilm.RabbitMqService;
+package org.example.servicefilm.RabbitMqUpdateMovie;
 
+import org.example.servicefilm.RabbitMqService.MovieDtoRM;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -16,58 +17,54 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Map;
 
 @Configuration
-public class FilmCreateConfigQueue {
+public class FilmUpdateConfigQueue {
 
     @Bean
-    public TopicExchange FilmCreateTopicExchange() {
-        return new TopicExchange("filmCreateExchange");
+    public TopicExchange FilmUpdateConfigExchange() {
+        return new TopicExchange("filmUpdateConfigExchange");
     }
 
     @Bean
-    public Queue filmCreateQueue() {
-        return new Queue("filmCreateQueue", true);
+    public Queue FilmUpdateQueue() {
+        return new Queue("filmUpdateQueue", true);
     }
 
     @Bean
-    public Binding FilmCreateBinding(Queue filmCreateQueue, TopicExchange FilmCreateTopicExchange) {
+    public Binding FilmUpdateBinding(Queue FilmUpdateQueue, TopicExchange FilmUpdateConfigExchange) {
         return BindingBuilder
-                .bind(filmCreateQueue)
-                .to(FilmCreateTopicExchange)
-                .with("filmcreate.binding");
+                .bind(FilmUpdateQueue)
+                .to(FilmUpdateConfigExchange)
+                .with("filmupdate.binding");
     }
 
     @Bean
-    @Qualifier("jackson2JsonMessageConverterCreate")
-    public Jackson2JsonMessageConverter jackson2JsonMessageConverterCreate() {
+    public Jackson2JsonMessageConverter jackson2JsonMessageConverterUpdate() {
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter();
         DefaultClassMapper classMapper = new DefaultClassMapper();
         classMapper.setTrustedPackages("*");
         classMapper.setIdClassMapping(Map.of(
-                "com.example.RabbitMQ.DtoRabbitMQ.MovieDtoRM", MovieDtoRM.class
+                "com.example.RabbitMQ.DtoRabbitMQ.MovieDtoUpdateRM", MovieDtoUpdateRM.class
         ));
         converter.setClassMapper(classMapper);
         return converter;
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplateCreateFilm(ConnectionFactory connectionFactory,
-                                                 @Qualifier("jackson2JsonMessageConverterCreate") Jackson2JsonMessageConverter converter) {
+    public RabbitTemplate rabbitTemplateUpdateFilm(ConnectionFactory connectionFactory,
+                                                   @Qualifier("jackson2JsonMessageConverterUpdate")Jackson2JsonMessageConverter converter) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(converter);
         return template;
     }
 
     @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactoryCreateFilm(
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactoryUpdateFilm(
             ConnectionFactory connectionFactory,
-            @Qualifier("jackson2JsonMessageConverterCreate")  Jackson2JsonMessageConverter converter
+            @Qualifier("jackson2JsonMessageConverterUpdate") Jackson2JsonMessageConverter converter
     ) {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(converter);
         return factory;
     }
-
-
-
 }

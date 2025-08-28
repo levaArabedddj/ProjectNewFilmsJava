@@ -5,12 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MovieDtoRM implements Serializable {
+public class MovieDtoUpdateRM {
+    private long movieId;
     private String title;
     private String description;
     private Genre genreFilm;

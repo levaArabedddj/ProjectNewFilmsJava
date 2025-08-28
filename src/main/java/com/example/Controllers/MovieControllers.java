@@ -13,6 +13,7 @@ import com.example.Enum.DevelopmentStage;
 import com.example.Enum.Genre;
 import com.example.Exception.ApiException;
 import com.example.RabbitMQ.DtoRabbitMQ.MovieDtoRM;
+import com.example.RabbitMQ.DtoRabbitMQ.MovieDtoUpdateRM;
 import com.example.RabbitMQ.ElasticTask.ElasticConfigQueue;
 import com.example.RabbitMQ.ElasticTask.UpdateFilmConfigQueue;
 import com.example.Repository.DirectorRepo;
@@ -37,6 +38,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import org.springframework.web.client.ResourceAccessException;
 
 
 import java.security.Principal;
@@ -273,71 +275,111 @@ public class MovieControllers {
     }
 
 
+
     @Loggable
-    @PostMapping("/update_movie/{filmId}")
-    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
-    public ResponseEntity<?> updateMovie(
-            @PathVariable("filmId") Long filmId,
-            @Valid @RequestBody Movies updatedData,
-            Principal principal) {
+    @PostMapping("/update_movie_mq/{filmId}")
+    public ResponseEntity<?> updateMovieMq(@PathVariable("filmId") Long filmId,
+                                           @Valid @RequestBody Movies movies,
+                                           @AuthenticationPrincipal MyUserDetails details) {
         try {
-            // Получение имени текущего пользователя
-            String username = principal.getName();
+            String currentUserName = details.getUsername();
+            Users users = usersRepo.findByUserName(currentUserName).
+                    orElseThrow(()-> new ResourceAccessException("You are not a director"));
 
-            // Поиск пользователя по имени
-            Users user = usersRepo.findByUserName(username)
-                    .orElseThrow(() -> new ApiException("User not found"));
-
+            System.out.println("зашли в метод");
             // Проверка, существует ли фильм и принадлежит ли он текущему пользователю
             Movies existingMovie = moviesRepo.findById(filmId)
                     .orElseThrow(() -> new ApiException("Film not found"));
 
             // Проверка, принадлежит ли фильм текущему пользователю
-            if (existingMovie.getDirector().getUsers().getUser_id() != user.getUser_id()) {
+            if (existingMovie.getDirector().getUsers().getUser_id() != users.getUser_id()) {
                 throw new ApiException("Ви не маєте дозволу редагувати цей фільм");
             }
 
-            // Обновление данных фильма
-            existingMovie.setTitle(updatedData.getTitle());
-            existingMovie.setDescription(updatedData.getDescription());
-            existingMovie.setGenre_film(updatedData.getGenre_film());
+            MovieDtoUpdateRM dto = new MovieDtoUpdateRM();
+            dto.setMovieId(filmId);
+            dto.setTitle(movies.getTitle());
+            dto.setDescription(movies.getDescription());
+            dto.setGenreFilm(movies.getGenre_film());
+            dto.setUserId(users.getUser_id());
+            dto.setEmail(details.getGmail());
 
-            // Сохранение изменений
-            moviesRepo.save(existingMovie);
+            System.out.println("отправляем сообщение в кролика");
 
-            MovieCreatedEvent event = new MovieCreatedEvent(
-                    existingMovie.getId(),
-                    existingMovie.getTitle(),
-                    existingMovie.getDescription(),
-                    existingMovie.getGenre_film().name()
-            );
             rabbitTemplate.convertAndSend(
-                    UpdateFilmConfigQueue.EXCHANGE_NAME,
-                    "filmupdate.elastic",
-                    event);
+                    "filmUpdateConfigExchange",
+                    "filmupdate.binding",
+                    dto);
 
-
-            DtoMovie dtoMovie = new DtoMovie();
-            dtoMovie.setTitle(existingMovie.getTitle());
-            dtoMovie.setDescription(existingMovie.getDescription());
-            dtoMovie.setGenre_film(Genre.valueOf(String.valueOf(existingMovie.getGenre_film())));
-            dtoMovie.setDateTimeCreated(existingMovie.getDateTimeCreated());
-            // Возврат обновленного фильма
-            return ResponseEntity.ok(dtoMovie);
-
-        } catch (ApiException e) {
-            logger.error("Error updating movie: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Unexpected error while updating movie", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Some error while updating movie");
+        }catch (Exception e) {
+            e.getMessage();
         }
+        return ResponseEntity.accepted().
+                body("Movie has been updated.Please wait for a message in your Gmail");
+
     }
-
-
-
-
-
+// подготовлен новый подход к обновлению фильмов
+//    @Loggable
+//    @PostMapping("/update_movie/{filmId}")
+//    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+//    public ResponseEntity<?> updateMovie(
+//            @PathVariable("filmId") Long filmId,
+//            @Valid @RequestBody Movies updatedData,
+//            Principal principal) {
+//        try {
+//            // Получение имени текущего пользователя
+//            String username = principal.getName();
+//
+//            // Поиск пользователя по имени
+//            Users user = usersRepo.findByUserName(username)
+//                    .orElseThrow(() -> new ApiException("User not found"));
+//
+//            // Проверка, существует ли фильм и принадлежит ли он текущему пользователю
+//            Movies existingMovie = moviesRepo.findById(filmId)
+//                    .orElseThrow(() -> new ApiException("Film not found"));
+//
+//            // Проверка, принадлежит ли фильм текущему пользователю
+//            if (existingMovie.getDirector().getUsers().getUser_id() != user.getUser_id()) {
+//                throw new ApiException("Ви не маєте дозволу редагувати цей фільм");
+//            }
+//
+//            // Обновление данных фильма
+//            existingMovie.setTitle(updatedData.getTitle());
+//            existingMovie.setDescription(updatedData.getDescription());
+//            existingMovie.setGenre_film(updatedData.getGenre_film());
+//
+//            // Сохранение изменений
+//            moviesRepo.save(existingMovie);
+//
+//            MovieCreatedEvent event = new MovieCreatedEvent(
+//                    existingMovie.getId(),
+//                    existingMovie.getTitle(),
+//                    existingMovie.getDescription(),
+//                    existingMovie.getGenre_film().name()
+//            );
+//            rabbitTemplate.convertAndSend(
+//                    UpdateFilmConfigQueue.EXCHANGE_NAME,
+//                    "filmupdate.elastic",
+//                    event);
+//
+//
+//            DtoMovie dtoMovie = new DtoMovie();
+//            dtoMovie.setTitle(existingMovie.getTitle());
+//            dtoMovie.setDescription(existingMovie.getDescription());
+//            dtoMovie.setGenre_film(Genre.valueOf(String.valueOf(existingMovie.getGenre_film())));
+//            dtoMovie.setDateTimeCreated(existingMovie.getDateTimeCreated());
+//            // Возврат обновленного фильма
+//            return ResponseEntity.ok(dtoMovie);
+//
+//        } catch (ApiException e) {
+//            logger.error("Error updating movie: {}", e.getMessage());
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        } catch (Exception e) {
+//            logger.error("Unexpected error while updating movie", e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Some error while updating movie");
+//        }
+//    }
+//
 
     @Loggable
     @DeleteMapping("/DeleteFilm/{filmId}")
@@ -348,17 +390,7 @@ public class MovieControllers {
             // Получение имени текущего пользователя
             String username = principal.getName();
 
-//            // Поиск пользователя по имени
-//            Users user = usersRepo.findByUserName(username)
-//                    .orElseThrow(() -> new ApiException("User not found"));
-//
-//            // Проверка, существует ли фильм и принадлежит ли он текущему пользователю
-//            Movies deleteMovie = moviesRepo.findById(filmId)
-//                    .orElseThrow(() -> new ApiException("Film not found"));
-//
-//            if (deleteMovie.getDirector().getUsers().getUser_id() != user.getUser_id()) {
-//                throw new ApiException("You don't have permission to edit this film");
-//            }
+
 
             Movies movie = moviesRepo
                     .findByIdAndDirectorUserUserName(filmId, username)
@@ -391,6 +423,31 @@ public class MovieControllers {
 
     }
 
+    @Loggable
+    @DeleteMapping("/DeleteFilm_mq/{filmId}")
+    @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
+    public ResponseEntity<?> deleteMovieMq(@PathVariable("filmId") Long filmId,
+                                         @AuthenticationPrincipal MyUserDetails principal) {
+        try {
+            // Получение имени текущего пользователя
+            String username = principal.getUsername();
+
+
+            rabbitTemplate.convertAndSend("filmDeleteConfigExchange","filmdelete.binding,");
+
+
+            return ResponseEntity.status(HttpStatus.OK).body("Film deleted successfully");
+
+        } catch (ApiException e) {
+            logger.error("Error updating movie: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        catch (Exception e) {
+            logger.error("Unexpected error while updating movie", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Some error while updating movie");
+        }
+
+    }
 
 
 

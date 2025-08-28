@@ -23,6 +23,7 @@ public class ElasticSyncListener {
 
     private final MovieElasticService movieElasticService;
 
+
     @Autowired
     public ElasticSyncListener(ElasticsearchClient esClient, MovieElasticService movieElasticService) {
         this.esClient = esClient;

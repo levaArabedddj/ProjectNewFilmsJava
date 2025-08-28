@@ -193,6 +193,8 @@ public class SecurityController {
     @Transactional
     @PostMapping("/signup-Login")
     public ResponseEntity<?> signInAuth(@RequestBody SignupRequest signupRequest){
+
+
         if (usersRepo.existsUsersByUserName(signupRequest.getUserName())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose different name");
         }
@@ -230,7 +232,7 @@ public class SecurityController {
             case CREW_MEMBER:
                 registerMethodCrewMember(signupRequest, user);
                 break;
-            case DIRECTOR: 
+            case DIRECTOR:
                 registerDirector(signupRequest, user);
                 break;
             // прописать условие когда будет создаваться админ
@@ -239,16 +241,23 @@ public class SecurityController {
                 break;
         }
 
-        System.out.println(user);
-        emailService.sendRegistrationEmail(user.getGmail(), user.getUserName());
+        try {
 
-        // Автоматична авторизація
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(signupRequest.getUserName(), signupRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtCore.generateToken(authentication);
 
-        return ResponseEntity.ok(jwt);
+            System.out.println(user);
+            emailService.sendRegistrationEmail(user.getGmail(), user.getUserName());
+
+            // Автоматична авторизація
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(signupRequest.getUserName(), signupRequest.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtCore.generateToken(authentication);
+            return ResponseEntity.ok(jwt);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: " + e.getMessage());
+        }
+
     }
 
     private void registerVisitorMethod(Users user) {

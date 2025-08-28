@@ -149,16 +149,16 @@ public class TokenFilter extends OncePerRequestFilter {
 //    }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                     FilterChain filterChain) throws ServletException, IOException {
 
         long startTime = System.currentTimeMillis();
         String path = request.getRequestURI();
-
-        // Пропускаем открытые пути
-        if (path.startsWith("/auth/") || path.startsWith("/oauth2/") ||
-                path.startsWith("/login/oauth2/") || path.contains("/actuator") ||
+        if (path.startsWith("/auth/") || path.startsWith("/signup-Login")||
+                path.startsWith("/oauth2/") ||
+                path.startsWith("/login/oauth2/") ||
+                path.contains("/actuator") ||
                 "OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
@@ -172,8 +172,10 @@ public class TokenFilter extends OncePerRequestFilter {
                 return;
             }
 
+
             String token = header.substring(7);
 
+            System.out.println("читаем токен");
             // Проверка токена
             if (!jwtCore.isValidToken(token)) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");

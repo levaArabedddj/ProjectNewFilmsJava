@@ -1,17 +1,15 @@
-package org.example.servicefilm.RabbitMqService;
-
+package org.example.servicefilm.RabbitMqUpdateMovie;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.servicefilm.Entity.Genre;
 
-import java.io.Serializable;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MovieDtoRM implements Serializable {
+public class MovieDtoUpdateRM {
+    private long movieId;
     private String title;
     private String description;
     private Genre genreFilm;
@@ -40,6 +38,14 @@ public class MovieDtoRM implements Serializable {
 
     public void setGenreFilm(Genre genreFilm) {
         this.genreFilm = genreFilm;
+    }
+
+    public long getMovieId() {
+        return movieId;
+    }
+
+    public void setMovieId(long movieId) {
+        this.movieId = movieId;
     }
 
     public String getTitle() {

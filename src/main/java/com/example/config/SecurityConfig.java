@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,7 +129,9 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http,AuthenticationSuccessHandler oAuth2SuccessHandler,
-                                            AuthenticationFailureHandler oAuth2FailureHandler, OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService) throws Exception {
+                                            AuthenticationFailureHandler oAuth2FailureHandler,
+                                            OAuth2UserService<OidcUserRequest,
+                                                    OidcUser> oidcUserService) throws Exception {
         http
                 .cors(cors ->
                         cors.configurationSource(corsConfigurationSource()))
@@ -136,7 +139,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(authorizeRequests ->authorizeRequests
                         .requestMatchers("/auth/**","/oauth2/**", "/login/oauth2/**",
-                                "/oauth2/authorization/**").permitAll()
+                                "/oauth2/authorization/**","/actuator", "/auth/signup-Login").permitAll()
                         .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
                         .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                         .requestMatchers("/secured/user").fullyAuthenticated()

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,15 +21,17 @@ public class FilmEventListener {
 
     private  final MoviesRepo moviesRepo;
     private final EntityManager entityManager;
-    private final RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplateCreateFilm;
     private final Logger logger = LoggerFactory.getLogger(FilmEventListener.class);
     private final SenderService senderService;
     @Autowired
-    public FilmEventListener(DirectorRepo directorRepo, MoviesRepo moviesRepo, EntityManager entityManager, RabbitTemplate rabbitTemplate, SenderService senderService) {
+    public FilmEventListener(DirectorRepo directorRepo, MoviesRepo moviesRepo,
+                             EntityManager entityManager,
+                             @Qualifier("rabbitTemplateCreateFilm") RabbitTemplate rabbitTemplateCreateFilm, SenderService senderService) {
         this.directorRepo = directorRepo;
         this.moviesRepo = moviesRepo;
         this.entityManager = entityManager;
-        this.rabbitTemplate = rabbitTemplate;
+        this.rabbitTemplateCreateFilm = rabbitTemplateCreateFilm;
         this.senderService = senderService;
     }
 
@@ -62,7 +65,7 @@ public class FilmEventListener {
                     newMovie.getGenre_film().name()
             );
             System.out.println("начинаем отправку обратно в кролика");
-            rabbitTemplate.convertAndSend(
+            rabbitTemplateCreateFilm.convertAndSend(
                     INDEX_EXCHANGE,
                     "movies.created",
                     evt

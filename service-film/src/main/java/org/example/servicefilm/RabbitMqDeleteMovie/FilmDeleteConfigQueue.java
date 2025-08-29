@@ -26,11 +26,11 @@ public class FilmDeleteConfigQueue {
 
     @Bean
     public Queue FilmDeleteQueue() {
-        return new Queue("filmDeleteQueue", true);
+        return new Queue("filmDeleteQueueService", true);
     }
 
     @Bean
-    public Binding FilmUpdateBinding(Queue FilmDeleteQueue, TopicExchange FilmDeleteConfigExchange) {
+    public Binding FilmDeleteBinding(Queue FilmDeleteQueue, TopicExchange FilmDeleteConfigExchange) {
         return BindingBuilder
                 .bind(FilmDeleteQueue)
                 .to(FilmDeleteConfigExchange)
@@ -43,7 +43,7 @@ public class FilmDeleteConfigQueue {
         DefaultClassMapper classMapper = new DefaultClassMapper();
         classMapper.setTrustedPackages("*");
         classMapper.setIdClassMapping(Map.of(
-                "com.example.RabbitMQ.DtoRabbitMQ.MovieDtoUpdateRM", MovieDtoUpdateRM.class
+                "com.example.RabbitMQ.DtoRabbitMQ.DeleteDto", DeleteDto.class
         ));
         converter.setClassMapper(classMapper);
         return converter;

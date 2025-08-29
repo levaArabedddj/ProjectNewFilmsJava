@@ -12,6 +12,7 @@ import com.example.Entity.Users;
 import com.example.Enum.DevelopmentStage;
 import com.example.Enum.Genre;
 import com.example.Exception.ApiException;
+import com.example.RabbitMQ.DtoRabbitMQ.DeleteDto;
 import com.example.RabbitMQ.DtoRabbitMQ.MovieDtoRM;
 import com.example.RabbitMQ.DtoRabbitMQ.MovieDtoUpdateRM;
 import com.example.RabbitMQ.ElasticTask.ElasticConfigQueue;
@@ -426,17 +427,20 @@ public class MovieControllers {
     @Loggable
     @DeleteMapping("/DeleteFilm_mq/{filmId}")
     @PreAuthorize("hasAuthority('ROLE_DIRECTOR')")
-    public ResponseEntity<?> deleteMovieMq(@PathVariable("filmId") Long filmId,
+    public ResponseEntity<?> deleteMovieMq(@PathVariable("filmId") long filmId,
                                          @AuthenticationPrincipal MyUserDetails principal) {
         try {
             // Получение имени текущего пользователя
             String username = principal.getUsername();
+            String gmail = principal.getGmail();
+
+            DeleteDto dto = new DeleteDto(filmId,username,gmail);
+
+            rabbitTemplate.convertAndSend("filmDeleteConfigExchange",
+                    "filmdelete.binding",dto);
 
 
-            rabbitTemplate.convertAndSend("filmDeleteConfigExchange","filmdelete.binding,");
-
-
-            return ResponseEntity.status(HttpStatus.OK).body("Film deleted successfully");
+            return ResponseEntity.status(HttpStatus.OK).body("Delete request sent");
 
         } catch (ApiException e) {
             logger.error("Error updating movie: {}", e.getMessage());

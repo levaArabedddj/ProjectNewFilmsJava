@@ -3,9 +3,7 @@ package org.example.servicefilm.RabbitMqDeleteMovie;
 import jakarta.persistence.EntityManager;
 import org.example.servicefilm.DirectorRepo;
 import org.example.servicefilm.Entity.Movies;
-import org.example.servicefilm.MovieCreatedEvent;
 import org.example.servicefilm.MoviesRepo;
-import org.example.servicefilm.RabbitMqUpdateMovie.MovieDtoUpdateRM;
 import org.example.servicefilm.SenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 
 @Component
-public class FilmEventListener {
+public class FilmEventListenerDelete {
 
     public static final String INDEX_EXCHANGE = "filmDeleteExchange";
     private final DirectorRepo directorRepo;
@@ -27,9 +25,9 @@ public class FilmEventListener {
     private final Logger logger = LoggerFactory.getLogger(org.example.servicefilm.RabbitMqService.FilmEventListener.class);
     private final SenderService senderService;
 
-    public FilmEventListener(DirectorRepo directorRepo, MoviesRepo moviesRepo,
-                             EntityManager entityManager, @Qualifier("rabbitTemplateDeleteFilm")RabbitTemplate rabbitTemplateDelete,
-                             SenderService senderService) {
+    public FilmEventListenerDelete(DirectorRepo directorRepo, MoviesRepo moviesRepo,
+                                   EntityManager entityManager, @Qualifier("rabbitTemplateDeleteFilm")RabbitTemplate rabbitTemplateDelete,
+                                   SenderService senderService) {
         this.directorRepo = directorRepo;
         this.moviesRepo = moviesRepo;
         this.entityManager = entityManager;
@@ -38,23 +36,21 @@ public class FilmEventListener {
     }
 
 
-    @RabbitListener(queues = "filmDeleteQueue", containerFactory = "rabbitListenerContainerFactoryDeleteFilm")
-    public void handleDeleteMovieEvent(long filmId,String username) {
+    @RabbitListener(queues = "filmDeleteQueueService", containerFactory = "rabbitListenerContainerFactoryDeleteFilm")
+    public void handleDeleteMovieEvent(DeleteDto dto) {
 
         byte result; // переменная успеха
         try {
-
+            logger.info("Попытка удалить фильм {} пользователем {}", dto.getFilm_id(), dto.getUsername());
             Movies movie = moviesRepo
-                    .findByIdAndDirectorUserUserName(filmId, username)
+                    .findByIdAndDirectorUserUserName(dto.getFilm_id(), dto.getUsername())
                     .orElseThrow(() -> new ResourceAccessException(
                             "Film not found or you have no permission to delete it"));
 
+
             moviesRepo.delete(movie);
 
-//            elasticsearchClient.delete( i -> i
-//                    .index("movies")
-//                    .id(String.valueOf(deleteMovie.getId())
-//                    ));
+
 
             rabbitTemplateDelete.convertAndSend(
                     INDEX_EXCHANGE,
@@ -62,13 +58,13 @@ public class FilmEventListener {
                     movie.getId());
 
             result = 1;
-            senderService.sendWithDirectorResultUpdateMovie(dtoRM.getEmail(),result);
+            senderService.sendWithDirectorResultDeleteMovie(dto.getGmail(),result);
 
         } catch (Exception e) {
             result = 0;
             logger.error("Ошибка при отправке события в RabbitMQ", e);
             System.out.println("ошибка!!!!!!!!!!!!!");
-            senderService.sendWithDirectorResultUpdateMovie(dtoRM.getEmail(),result);
+            senderService.sendWithDirectorResultDeleteMovie(dto.getGmail(),result);
         }
 
 
